@@ -1,0 +1,19 @@
+[package]
+name = "bluetui"
+version = "0.1.0"
+authors = ["pythops <contact@pythops.com>"]
+license = "GPL-3.0"
+edition = "2021"
+readme = "Readme.md"
+homepage = "https://github.com/pythops/bluetui"
+repository = "https://github.com/pythops/bluetui"
+
+[dependencies]
+bluer = { version = "0.17", features = ["full"] }
+crossterm = { version = "0.27", features = ["event-stream"] }
+futures = "0.3"
+ratatui = "0.26"
+tokio = { version = "1", features = ["full"] }
+
+[profile.release]
+strip = true
