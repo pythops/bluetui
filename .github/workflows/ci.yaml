@@ -1,0 +1,29 @@
+---
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - "*"
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: clippy rustfmt
+
+      - name: Setup the build env
+        run: |
+          sudo apt update
+          sudo apt install -y libdbus-1-dev pkg-config
+
+      - name: Linting
+        run: |
+          cargo clippy --workspace --all-features -- -D warnings
+          cargo fmt --all -- --check
+
+      - name: Debug builds
+        run: cargo build

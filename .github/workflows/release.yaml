@@ -1,0 +1,35 @@
+---
+name: Release
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  build:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Setup the build env
+        run: |
+          sudo apt update
+          sudo apt install -y libdbus-1-dev pkg-config
+
+      - name: Build for x86_64
+        run: |
+          cargo build --release
+          cp target/release/bluetui bluetui-x86_64-linux-gnu
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: |
+            [Release.md](${{ github.server_url }}/${{ github.repository }}/blob/master/Release.md)
+          files: "bluetui*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
