@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["pythops <contact@pythops.com>"]
 license = "GPL-3.0"
 edition = "2021"
+description = "TUI to manage bluetooth devices"
 readme = "Readme.md"
 homepage = "https://github.com/pythops/bluetui"
 repository = "https://github.com/pythops/bluetui"
