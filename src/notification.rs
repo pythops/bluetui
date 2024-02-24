@@ -37,7 +37,8 @@ impl Notification {
 
         text.extend(Text::from(self.message.as_str()));
 
-        let notification_height = text.height() as u16 + 4;
+        let notification_height = text.height() as u16 + 2;
+        let notification_width = text.width() as u16 + 4;
 
         let block = Paragraph::new(text)
             .alignment(Alignment::Center)
@@ -50,7 +51,12 @@ impl Notification {
                     .border_style(Style::default().fg(color)),
             );
 
-        let area = notification_rect(index as u16, notification_height, frame.size());
+        let area = notification_rect(
+            index as u16,
+            notification_height,
+            notification_width,
+            frame.size(),
+        );
 
         frame.render_widget(Clear, area);
         frame.render_widget(block, area);
@@ -72,13 +78,13 @@ impl Notification {
     }
 }
 
-pub fn notification_rect(offset: u16, notification_height: u16, r: Rect) -> Rect {
+pub fn notification_rect(offset: u16, height: u16, width: u16, r: Rect) -> Rect {
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints(
             [
-                Constraint::Length(1 + notification_height * offset),
-                Constraint::Length(notification_height),
+                Constraint::Length(1 + height * offset),
+                Constraint::Length(height),
                 Constraint::Min(1),
             ]
             .as_ref(),
@@ -90,7 +96,7 @@ pub fn notification_rect(offset: u16, notification_height: u16, r: Rect) -> Rect
         .constraints(
             [
                 Constraint::Min(1),
-                Constraint::Length(30),
+                Constraint::Length(width),
                 Constraint::Length(2),
             ]
             .as_ref(),
