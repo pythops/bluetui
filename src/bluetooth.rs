@@ -1,6 +1,10 @@
-use std::sync::{atomic::AtomicBool, Arc};
+use std::sync::{atomic::AtomicBool, mpsc::Sender, Arc};
 
-use bluer::{Adapter, Address};
+use async_channel::Receiver;
+use bluer::{
+    agent::{ReqError, ReqResult, RequestConfirmation},
+    Adapter, Address, Session,
+};
 
 use crate::app::AppResult;
 
@@ -45,10 +49,10 @@ impl Device {
 }
 
 impl Controller {
-    pub async fn get_all() -> AppResult<Vec<Controller>> {
+    pub async fn get_all(session: Arc<Session>) -> AppResult<Vec<Controller>> {
         let mut controllers: Vec<Controller> = Vec::new();
 
-        let session = bluer::Session::new().await?;
+        // let session = bluer::Session::new().await?;
         let adapter_names = session.adapter_names().await?;
         for adapter_name in adapter_names {
             if let Ok(adapter) = session.adapter(&adapter_name) {
@@ -112,4 +116,31 @@ impl Controller {
         new_devices.sort_by_key(|i| i.addr);
         Ok((paired_devices, new_devices))
     }
+}
+
+pub async fn request_confirmation(
+    req: RequestConfirmation,
+    display_confirmation_popup: Arc<AtomicBool>,
+    rx: Receiver<bool>,
+    sender: Sender<String>,
+) -> ReqResult<()> {
+    display_confirmation_popup.store(true, std::sync::atomic::Ordering::Relaxed);
+
+    sender
+        .send(format!(
+            "Is passkey \"{:06}\" correct for device {} on {}?",
+            req.passkey, &req.device, &req.adapter
+        ))
+        .unwrap();
+    match rx.recv().await {
+        Ok(v) => {
+            // false: reject the confirmation
+            if !v {
+                return Err(ReqError::Rejected);
+            }
+        }
+        Err(_) => return Err(ReqError::Rejected),
+    }
+
+    Ok(())
 }

@@ -53,7 +53,7 @@ pub async fn handle_key_events(
                 }
             }
             FocusedBlock::NewDevices => app.focused_block = FocusedBlock::Adapter,
-            FocusedBlock::Help => {}
+            _ => {}
         },
 
         // scroll down
@@ -121,6 +121,7 @@ pub async fn handle_key_events(
             FocusedBlock::Help => {
                 app.help.scroll_down();
             }
+            _ => {}
         },
 
         // scroll up
@@ -183,6 +184,7 @@ pub async fn handle_key_events(
             FocusedBlock::Help => {
                 app.help.scroll_up();
             }
+            _ => {}
         },
 
         // Start/Stop Scan
@@ -268,6 +270,7 @@ pub async fn handle_key_events(
                         }
 
                         // Connect / Disconnect
+                        // TODO: move to a task cause it is blocking
                         KeyCode::Char(' ') => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let controller = &app.controllers[selected_controller];
@@ -516,6 +519,33 @@ pub async fn handle_key_events(
                 }
 
                 FocusedBlock::Help => {}
+
+                FocusedBlock::PassKeyConfirmation => match key_event.code {
+                    KeyCode::Left | KeyCode::Char('h') => {
+                        if !app.pairing_confirmation.confirmed {
+                            app.pairing_confirmation.confirmed = true;
+                        }
+                    }
+                    KeyCode::Right | KeyCode::Char('l') => {
+                        if app.pairing_confirmation.confirmed {
+                            app.pairing_confirmation.confirmed = false;
+                        }
+                    }
+
+                    KeyCode::Enter => {
+                        app.pairing_confirmation
+                            .user_confirmation_sender
+                            .send(app.pairing_confirmation.confirmed)
+                            .await?;
+                        app.pairing_confirmation
+                            .display
+                            .store(false, Ordering::Relaxed);
+                        app.focused_block = FocusedBlock::PairedDevices;
+                        app.pairing_confirmation.message = None;
+                    }
+
+                    _ => {}
+                },
             }
         }
     }
