@@ -10,7 +10,7 @@ use crate::app::AppResult;
 
 #[derive(Debug, Clone)]
 pub struct Controller {
-    pub adapter: Adapter,
+    pub adapter: Arc<Adapter>,
     pub name: String,
     pub alias: String,
     pub is_powered: bool,
@@ -66,7 +66,7 @@ impl Controller {
                 let (paired_devices, new_devices) = Controller::get_all_devices(&adapter).await?;
 
                 let controller = Controller {
-                    adapter,
+                    adapter: Arc::new(adapter),
                     name,
                     alias,
                     is_powered,

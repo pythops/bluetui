@@ -251,18 +251,18 @@ pub async fn handle_key_events(
                                     let addr = controller.paired_devices[index].addr;
                                     match controller.adapter.remove_device(addr).await {
                                         Ok(_) => {
-                                            Notification::send(
+                                            let _ = Notification::send(
                                                 "Device unpaired".to_string(),
                                                 NotificationLevel::Info,
                                                 sender.clone(),
-                                            )?;
+                                            );
                                         }
                                         Err(e) => {
-                                            Notification::send(
+                                            let _ = Notification::send(
                                                 e.to_string(),
                                                 NotificationLevel::Error,
                                                 sender.clone(),
-                                            )?;
+                                            );
                                         }
                                     }
                                 }
@@ -270,46 +270,70 @@ pub async fn handle_key_events(
                         }
 
                         // Connect / Disconnect
-                        // TODO: move to a task cause it is blocking
                         KeyCode::Char(' ') => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let controller = &app.controllers[selected_controller];
                                 if let Some(index) = app.paired_devices_state.selected() {
                                     let addr = controller.paired_devices[index].addr;
-                                    let device = controller.adapter.device(addr)?;
-                                    if device.is_connected().await? {
-                                        match device.disconnect().await {
-                                            Ok(_) => {
-                                                Notification::send(
-                                                    "Device disconnected".to_string(),
-                                                    NotificationLevel::Info,
-                                                    sender.clone(),
-                                                )?;
-                                            }
-                                            Err(e) => {
-                                                Notification::send(
-                                                    e.to_string(),
-                                                    NotificationLevel::Error,
-                                                    sender.clone(),
-                                                )?;
-                                            }
+                                    match controller.adapter.device(addr) {
+                                        Ok(device) => {
+                                            tokio::spawn(async move {
+                                                match device.is_connected().await {
+                                                    Ok(is_connected) => {
+                                                        if is_connected {
+                                                            match device.disconnect().await {
+                                                                Ok(_) => {
+                                                                    let _ = Notification::send(
+                                                                        "Device disconnected"
+                                                                            .to_string(),
+                                                                        NotificationLevel::Info,
+                                                                        sender.clone(),
+                                                                    );
+                                                                }
+                                                                Err(e) => {
+                                                                    let _ = Notification::send(
+                                                                        e.to_string(),
+                                                                        NotificationLevel::Error,
+                                                                        sender.clone(),
+                                                                    );
+                                                                }
+                                                            }
+                                                        } else {
+                                                            match device.connect().await {
+                                                                Ok(_) => {
+                                                                    let _ = Notification::send(
+                                                                        "Device connected"
+                                                                            .to_string(),
+                                                                        NotificationLevel::Info,
+                                                                        sender.clone(),
+                                                                    );
+                                                                }
+                                                                Err(e) => {
+                                                                    let _ = Notification::send(
+                                                                        e.to_string(),
+                                                                        NotificationLevel::Error,
+                                                                        sender.clone(),
+                                                                    );
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    Err(e) => {
+                                                        let _ = Notification::send(
+                                                            e.to_string(),
+                                                            NotificationLevel::Error,
+                                                            sender.clone(),
+                                                        );
+                                                    }
+                                                }
+                                            });
                                         }
-                                    } else {
-                                        match device.connect().await {
-                                            Ok(_) => {
-                                                Notification::send(
-                                                    "Device connected".to_string(),
-                                                    NotificationLevel::Info,
-                                                    sender.clone(),
-                                                )?;
-                                            }
-                                            Err(e) => {
-                                                Notification::send(
-                                                    e.to_string(),
-                                                    NotificationLevel::Error,
-                                                    sender.clone(),
-                                                )?;
-                                            }
+                                        Err(e) => {
+                                            let _ = Notification::send(
+                                                e.to_string(),
+                                                NotificationLevel::Error,
+                                                sender.clone(),
+                                            );
                                         }
                                     }
                                 }
@@ -322,41 +346,66 @@ pub async fn handle_key_events(
                                 let controller = &app.controllers[selected_controller];
                                 if let Some(index) = app.paired_devices_state.selected() {
                                     let addr = controller.paired_devices[index].addr;
-                                    let device = controller.adapter.device(addr)?;
-                                    if device.is_trusted().await? {
-                                        match device.set_trusted(false).await {
-                                            Ok(_) => {
-                                                Notification::send(
-                                                    "Device untrusted".to_string(),
-                                                    NotificationLevel::Info,
-                                                    sender.clone(),
-                                                )?;
-                                            }
-                                            Err(e) => {
-                                                Notification::send(
-                                                    e.to_string(),
-                                                    NotificationLevel::Error,
-                                                    sender.clone(),
-                                                )?;
-                                            }
-                                        }
-                                    } else {
-                                        match device.set_trusted(true).await {
-                                            Ok(_) => {
-                                                Notification::send(
-                                                    "Device trusted".to_string(),
-                                                    NotificationLevel::Info,
-                                                    sender.clone(),
-                                                )?;
-                                            }
+                                    match controller.adapter.device(addr) {
+                                        Ok(device) => {
+                                            tokio::spawn(async move {
+                                                match device.is_trusted().await {
+                                                    Ok(is_trusted) => {
+                                                        if is_trusted {
+                                                            match device.set_trusted(false).await {
+                                                                Ok(_) => {
+                                                                    let _ = Notification::send(
+                                                                        "Device untrusted"
+                                                                            .to_string(),
+                                                                        NotificationLevel::Info,
+                                                                        sender.clone(),
+                                                                    );
+                                                                }
+                                                                Err(e) => {
+                                                                    let _ = Notification::send(
+                                                                        e.to_string(),
+                                                                        NotificationLevel::Error,
+                                                                        sender.clone(),
+                                                                    );
+                                                                }
+                                                            }
+                                                        } else {
+                                                            match device.set_trusted(true).await {
+                                                                Ok(_) => {
+                                                                    let _ = Notification::send(
+                                                                        "Device trusted"
+                                                                            .to_string(),
+                                                                        NotificationLevel::Info,
+                                                                        sender.clone(),
+                                                                    );
+                                                                }
 
-                                            Err(e) => {
-                                                Notification::send(
-                                                    e.to_string(),
-                                                    NotificationLevel::Error,
-                                                    sender.clone(),
-                                                )?;
-                                            }
+                                                                Err(e) => {
+                                                                    let _ = Notification::send(
+                                                                        e.to_string(),
+                                                                        NotificationLevel::Error,
+                                                                        sender.clone(),
+                                                                    );
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    Err(e) => {
+                                                        let _ = Notification::send(
+                                                            e.to_string(),
+                                                            NotificationLevel::Error,
+                                                            sender.clone(),
+                                                        );
+                                                    }
+                                                }
+                                            });
+                                        }
+                                        Err(e) => {
+                                            let _ = Notification::send(
+                                                e.to_string(),
+                                                NotificationLevel::Error,
+                                                sender.clone(),
+                                            );
                                         }
                                     }
                                 }
@@ -373,21 +422,57 @@ pub async fn handle_key_events(
                         KeyCode::Char('p') => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let adapter = &app.controllers[selected_controller].adapter;
-                                if adapter.is_pairable().await? {
-                                    adapter.set_pairable(false).await?;
-                                    Notification::send(
-                                        "Adpater unpairable".to_string(),
-                                        NotificationLevel::Info,
-                                        sender.clone(),
-                                    )?;
-                                } else {
-                                    adapter.set_pairable(true).await?;
-                                    Notification::send(
-                                        "Adpater pairable".to_string(),
-                                        NotificationLevel::Info,
-                                        sender.clone(),
-                                    )?;
-                                }
+                                tokio::spawn({
+                                    let adapter = adapter.clone();
+                                    async move {
+                                        match adapter.is_pairable().await {
+                                            Ok(is_pairable) => {
+                                                if is_pairable {
+                                                    match adapter.set_pairable(false).await {
+                                                        Ok(_) => {
+                                                            let _ = Notification::send(
+                                                                "Adpater unpairable".to_string(),
+                                                                NotificationLevel::Info,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                        Err(e) => {
+                                                            let _ = Notification::send(
+                                                                e.to_string(),
+                                                                NotificationLevel::Error,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                    }
+                                                } else {
+                                                    match adapter.set_pairable(true).await {
+                                                        Ok(_) => {
+                                                            let _ = Notification::send(
+                                                                "Adpater pairable".to_string(),
+                                                                NotificationLevel::Info,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                        Err(e) => {
+                                                            let _ = Notification::send(
+                                                                e.to_string(),
+                                                                NotificationLevel::Error,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Err(e) => {
+                                                let _ = Notification::send(
+                                                    e.to_string(),
+                                                    NotificationLevel::Error,
+                                                    sender.clone(),
+                                                );
+                                            }
+                                        }
+                                    }
+                                });
                             }
                         }
 
@@ -395,41 +480,57 @@ pub async fn handle_key_events(
                         KeyCode::Char('o') => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let adapter = &app.controllers[selected_controller].adapter;
-                                if adapter.is_powered().await? {
-                                    match adapter.set_powered(false).await {
-                                        Ok(_) => {
-                                            Notification::send(
-                                                "Adpater powered off".to_string(),
-                                                NotificationLevel::Info,
-                                                sender.clone(),
-                                            )?;
-                                        }
-                                        Err(e) => {
-                                            Notification::send(
-                                                e.to_string(),
-                                                NotificationLevel::Error,
-                                                sender.clone(),
-                                            )?;
+                                tokio::spawn({
+                                    let adapter = adapter.clone();
+                                    async move {
+                                        match adapter.is_powered().await {
+                                            Ok(is_powered) => {
+                                                if is_powered {
+                                                    match adapter.set_powered(false).await {
+                                                        Ok(_) => {
+                                                            let _ = Notification::send(
+                                                                "Adpater powered off".to_string(),
+                                                                NotificationLevel::Info,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                        Err(e) => {
+                                                            let _ = Notification::send(
+                                                                e.to_string(),
+                                                                NotificationLevel::Error,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                    }
+                                                } else {
+                                                    match adapter.set_powered(true).await {
+                                                        Ok(_) => {
+                                                            let _ = Notification::send(
+                                                                "Adpater powered on".to_string(),
+                                                                NotificationLevel::Info,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                        Err(e) => {
+                                                            let _ = Notification::send(
+                                                                e.to_string(),
+                                                                NotificationLevel::Error,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Err(e) => {
+                                                let _ = Notification::send(
+                                                    e.to_string(),
+                                                    NotificationLevel::Error,
+                                                    sender.clone(),
+                                                );
+                                            }
                                         }
                                     }
-                                } else {
-                                    match adapter.set_powered(true).await {
-                                        Ok(_) => {
-                                            Notification::send(
-                                                "Adpater powered on".to_string(),
-                                                NotificationLevel::Info,
-                                                sender.clone(),
-                                            )?;
-                                        }
-                                        Err(e) => {
-                                            Notification::send(
-                                                e.to_string(),
-                                                NotificationLevel::Error,
-                                                sender.clone(),
-                                            )?;
-                                        }
-                                    }
-                                }
+                                });
                             }
                         }
 
@@ -437,41 +538,59 @@ pub async fn handle_key_events(
                         KeyCode::Char('d') => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let adapter = &app.controllers[selected_controller].adapter;
-                                if adapter.is_discoverable().await? {
-                                    match adapter.set_discoverable(false).await {
-                                        Ok(_) => {
-                                            Notification::send(
-                                                "Adpater undiscoverable on".to_string(),
-                                                NotificationLevel::Info,
-                                                sender.clone(),
-                                            )?;
-                                        }
-                                        Err(e) => {
-                                            Notification::send(
-                                                e.to_string(),
-                                                NotificationLevel::Error,
-                                                sender.clone(),
-                                            )?;
+                                tokio::spawn({
+                                    let adapter = adapter.clone();
+                                    async move {
+                                        match adapter.is_discoverable().await {
+                                            Ok(is_discoverable) => {
+                                                if is_discoverable {
+                                                    match adapter.set_discoverable(false).await {
+                                                        Ok(_) => {
+                                                            let _ = Notification::send(
+                                                                "Adpater undiscoverable on"
+                                                                    .to_string(),
+                                                                NotificationLevel::Info,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                        Err(e) => {
+                                                            let _ = Notification::send(
+                                                                e.to_string(),
+                                                                NotificationLevel::Error,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                    }
+                                                } else {
+                                                    match adapter.set_discoverable(true).await {
+                                                        Ok(_) => {
+                                                            let _ = Notification::send(
+                                                                "Adpater discoverable on"
+                                                                    .to_string(),
+                                                                NotificationLevel::Info,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                        Err(e) => {
+                                                            let _ = Notification::send(
+                                                                e.to_string(),
+                                                                NotificationLevel::Error,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Err(e) => {
+                                                let _ = Notification::send(
+                                                    e.to_string(),
+                                                    NotificationLevel::Error,
+                                                    sender.clone(),
+                                                );
+                                            }
                                         }
                                     }
-                                } else {
-                                    match adapter.set_discoverable(true).await {
-                                        Ok(_) => {
-                                            Notification::send(
-                                                "Adpater discoverable on".to_string(),
-                                                NotificationLevel::Info,
-                                                sender.clone(),
-                                            )?;
-                                        }
-                                        Err(e) => {
-                                            Notification::send(
-                                                e.to_string(),
-                                                NotificationLevel::Error,
-                                                sender.clone(),
-                                            )?;
-                                        }
-                                    }
-                                }
+                                });
                             }
                         }
 
@@ -486,23 +605,36 @@ pub async fn handle_key_events(
                             let controller = &app.controllers[selected_controller];
                             if let Some(index) = app.new_devices_state.selected() {
                                 let addr = controller.new_devices[index].addr;
-                                let device = controller.adapter.device(addr)?;
-
-                                let device_name = device.alias().await?;
-                                Notification::send(
-                                    format!("Start pairing with the device\n `{}` ", device_name),
-                                    NotificationLevel::Info,
-                                    sender.clone(),
-                                )?;
-
-                                tokio::spawn(async move {
-                                    match device.pair().await {
-                                        Ok(_) => {
+                                match controller.adapter.device(addr) {
+                                    Ok(device) => match device.alias().await {
+                                        Ok(device_name) => {
                                             let _ = Notification::send(
-                                                "Device paired".to_string(),
+                                                format!(
+                                                    "Start pairing with the device\n `{}` ",
+                                                    device_name
+                                                ),
                                                 NotificationLevel::Info,
                                                 sender.clone(),
                                             );
+
+                                            tokio::spawn(async move {
+                                                match device.pair().await {
+                                                    Ok(_) => {
+                                                        let _ = Notification::send(
+                                                            "Device paired".to_string(),
+                                                            NotificationLevel::Info,
+                                                            sender.clone(),
+                                                        );
+                                                    }
+                                                    Err(e) => {
+                                                        let _ = Notification::send(
+                                                            e.to_string(),
+                                                            NotificationLevel::Error,
+                                                            sender.clone(),
+                                                        );
+                                                    }
+                                                }
+                                            });
                                         }
                                         Err(e) => {
                                             let _ = Notification::send(
@@ -511,8 +643,15 @@ pub async fn handle_key_events(
                                                 sender.clone(),
                                             );
                                         }
+                                    },
+                                    Err(e) => {
+                                        let _ = Notification::send(
+                                            e.to_string(),
+                                            NotificationLevel::Error,
+                                            sender.clone(),
+                                        );
                                     }
-                                });
+                                }
                             }
                         }
                     }
