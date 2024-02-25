@@ -1,7 +1,7 @@
 <div align="center">
   <img height="100" src="assets/logo.png"/>
   <h2> TUI to manage bluetooth devices </h2>
-  <img src="https://github.com/pythops/bluetui/assets/57548585/e4d475d8-9983-4428-9642-03016a8ed352"/>
+  <img src="https://github.com/pythops/bluetui/assets/57548585/37b8f8a8-1043-4245-bafb-237dc23a2905"/>
 </div>
 
 ## 💡 Prerequisites
