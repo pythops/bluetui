@@ -2,9 +2,10 @@ use std::sync::{atomic::AtomicBool, mpsc::Sender, Arc};
 
 use async_channel::Receiver;
 use bluer::{
-    agent::{ReqError, ReqResult, RequestConfirmation},
+    agent::{DisplayPasskey, ReqError, ReqResult, RequestConfirmation},
     Adapter, Address, Session,
 };
+use tokio::sync::oneshot;
 
 use crate::app::AppResult;
 
@@ -132,6 +133,14 @@ pub async fn request_confirmation(
             req.passkey, &req.device, &req.adapter
         ))
         .unwrap();
+
+    // request cancel
+    let (_done_tx, done_rx) = oneshot::channel::<()>();
+    tokio::spawn(async move {
+        if done_rx.await.is_err() {
+            display_confirmation_popup.store(false, std::sync::atomic::Ordering::Relaxed);
+        }
+    });
     match rx.recv().await {
         Ok(v) => {
             // false: reject the confirmation

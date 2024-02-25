@@ -333,6 +333,8 @@ impl App {
                 frame.render_stateful_widget(new_devices_table, new_devices_block, &mut state);
             }
 
+            // Pairing confirmation
+
             if self.pairing_confirmation.display.load(Ordering::Relaxed) {
                 self.focused_block = FocusedBlock::PassKeyConfirmation;
                 if self.pairing_confirmation.message.is_none() {
@@ -478,6 +480,12 @@ impl App {
     }
 
     pub async fn refresh(&mut self) -> AppResult<()> {
+        if !self.pairing_confirmation.display.load(Ordering::Relaxed)
+            & self.pairing_confirmation.message.is_some()
+        {
+            self.pairing_confirmation.message = None;
+        }
+
         let refreshed_controllers = Controller::get_all(self.session.clone()).await?;
 
         let names = {
