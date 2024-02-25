@@ -21,7 +21,7 @@ impl Default for Help {
             block_height: 0,
             state,
             keys: &[
-                ("# Global", ""),
+                ("## Global", ""),
                 ("Esc", "Dismiss help pop-up"),
                 ("Tab", "Switch between different sections"),
                 ("j or Down", "Scroll down"),
@@ -29,17 +29,17 @@ impl Default for Help {
                 ("s", "Start/Stop scanning"),
                 ("?", "Show help"),
                 ("", ""),
-                ("# Adapters", ""),
+                ("## Adapters", ""),
                 ("p", "Enable/Disable the pairing"),
                 ("o", "Power on/off the adapter"),
                 ("d", "Enable/Disable the discovery"),
                 ("", ""),
-                ("# Paired devices", ""),
+                ("## Paired devices", ""),
                 ("u", "Unpair the device"),
                 ("Space", "Connect/Disconnect the device"),
                 ("t", "Trust/Untrust the device"),
                 ("", ""),
-                ("# New devices", ""),
+                ("## New devices", ""),
                 ("p", "Pair the device"),
             ],
         }
@@ -84,7 +84,7 @@ impl Help {
         let block = help_rect(frame.size());
 
         self.block_height = block.height as usize;
-        let widths = [Constraint::Length(15), Constraint::Min(60)];
+        let widths = [Constraint::Length(20), Constraint::Max(40)];
         let rows: Vec<Row> = self
             .keys
             .iter()
