@@ -72,10 +72,6 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `p`: Pair the device.
 
-## 🗹 Todo
-
-- [ ] handle authentication
-
 ## ⚖️ License
 
 GPLv3
