@@ -547,7 +547,7 @@ pub async fn handle_key_events(
                                                     match adapter.set_discoverable(false).await {
                                                         Ok(_) => {
                                                             let _ = Notification::send(
-                                                                "Adpater undiscoverable on"
+                                                                "Adpater undiscoverable"
                                                                     .to_string(),
                                                                 NotificationLevel::Info,
                                                                 sender.clone(),
@@ -565,8 +565,7 @@ pub async fn handle_key_events(
                                                     match adapter.set_discoverable(true).await {
                                                         Ok(_) => {
                                                             let _ = Notification::send(
-                                                                "Adpater discoverable on"
-                                                                    .to_string(),
+                                                                "Adpater discoverable".to_string(),
                                                                 NotificationLevel::Info,
                                                                 sender.clone(),
                                                             );
