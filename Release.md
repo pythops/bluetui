@@ -7,6 +7,7 @@
 ### Updated
 
 - notification layout
+- notification ttl is set to 1 second
 
 ## v0.1 - 22/02/2024
 
