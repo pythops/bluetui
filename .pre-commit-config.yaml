@@ -1,0 +1,16 @@
+---
+fail_fast: true
+repos:
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: cargo fmt --all -- --check
+        language: system
+        types: [rust]
+      - id: clippy
+        name: clippy
+        entry: |
+          cargo clippy --workspace --all-targets --all-features -- -D warnings
+        language: system
+        pass_filenames: false
