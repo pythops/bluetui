@@ -2,7 +2,7 @@ use std::sync::{atomic::AtomicBool, mpsc::Sender, Arc};
 
 use async_channel::Receiver;
 use bluer::{
-    agent::{DisplayPasskey, ReqError, ReqResult, RequestConfirmation},
+    agent::{ReqError, ReqResult, RequestConfirmation},
     Adapter, Address, Session,
 };
 use tokio::sync::oneshot;
