@@ -52,7 +52,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `q`: Quit the app.
 
-### Adpters
+### Adapters
 
 `p`: Enable/Disable the pairing.
 

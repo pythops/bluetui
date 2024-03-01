@@ -431,7 +431,7 @@ pub async fn handle_key_events(
                                                     match adapter.set_pairable(false).await {
                                                         Ok(_) => {
                                                             let _ = Notification::send(
-                                                                "Adpater unpairable".to_string(),
+                                                                "Adapter unpairable".to_string(),
                                                                 NotificationLevel::Info,
                                                                 sender.clone(),
                                                             );
@@ -448,7 +448,7 @@ pub async fn handle_key_events(
                                                     match adapter.set_pairable(true).await {
                                                         Ok(_) => {
                                                             let _ = Notification::send(
-                                                                "Adpater pairable".to_string(),
+                                                                "Adapter pairable".to_string(),
                                                                 NotificationLevel::Info,
                                                                 sender.clone(),
                                                             );
@@ -489,7 +489,7 @@ pub async fn handle_key_events(
                                                     match adapter.set_powered(false).await {
                                                         Ok(_) => {
                                                             let _ = Notification::send(
-                                                                "Adpater powered off".to_string(),
+                                                                "Adapter powered off".to_string(),
                                                                 NotificationLevel::Info,
                                                                 sender.clone(),
                                                             );
@@ -506,7 +506,7 @@ pub async fn handle_key_events(
                                                     match adapter.set_powered(true).await {
                                                         Ok(_) => {
                                                             let _ = Notification::send(
-                                                                "Adpater powered on".to_string(),
+                                                                "Adapter powered on".to_string(),
                                                                 NotificationLevel::Info,
                                                                 sender.clone(),
                                                             );
@@ -547,7 +547,7 @@ pub async fn handle_key_events(
                                                     match adapter.set_discoverable(false).await {
                                                         Ok(_) => {
                                                             let _ = Notification::send(
-                                                                "Adpater undiscoverable"
+                                                                "Adapter undiscoverable"
                                                                     .to_string(),
                                                                 NotificationLevel::Info,
                                                                 sender.clone(),
@@ -565,7 +565,7 @@ pub async fn handle_key_events(
                                                     match adapter.set_discoverable(true).await {
                                                         Ok(_) => {
                                                             let _ = Notification::send(
-                                                                "Adpater discoverable".to_string(),
+                                                                "Adapter discoverable".to_string(),
                                                                 NotificationLevel::Info,
                                                                 sender.clone(),
                                                             );
