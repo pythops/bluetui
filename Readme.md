@@ -22,6 +22,14 @@ You can install `bluetui` from [crates.io](https://crates.io/crates/bluetui)
 cargo install bluetui
 ```
 
+### 🐧 Arch Linux
+
+You can install `bluetui` from the [AUR](https://aur.archlinux.org/packages/bluetui) with using an AUR helper.
+
+```shell
+paru -S bluetui
+```
+
 ### ⚒️ Build from source
 
 Run the following command:
