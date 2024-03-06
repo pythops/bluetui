@@ -239,22 +239,44 @@ impl App {
                         d.alias.to_owned(),
                         d.is_trusted.to_string(),
                         d.is_connected.to_string(),
+                        {
+                            if let Some(battery_percentage) = d.battery_percentage {
+                                format!("{} %", battery_percentage)
+                            } else {
+                                String::new()
+                            }
+                        },
                     ])
                 })
                 .collect();
 
-            let widths = [
+            let show_battery_column = selected_controller
+                .paired_devices
+                .iter()
+                .any(|device| device.battery_percentage.is_some());
+
+            let mut widths = vec![
                 Constraint::Max(25),
                 Constraint::Length(10),
                 Constraint::Length(10),
             ];
 
+            if show_battery_column {
+                widths.push(Constraint::Length(10));
+            }
+
             let paired_devices_table = Table::new(rows, widths)
-                .header(
-                    Row::new(vec!["Name", "Trusted", "Connected"])
-                        .style(Style::new().bold())
-                        .bottom_margin(1),
-                )
+                .header({
+                    if show_battery_column {
+                        Row::new(vec!["Name", "Trusted", "Connected", "Battery"])
+                            .style(Style::new().bold())
+                            .bottom_margin(1)
+                    } else {
+                        Row::new(vec!["Name", "Trusted", "Connected"])
+                            .style(Style::new().bold())
+                            .bottom_margin(1)
+                    }
+                })
                 .block(
                     Block::default()
                         .title("Paired Devices")

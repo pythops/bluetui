@@ -11,7 +11,9 @@ repository = "https://github.com/pythops/bluetui"
 
 [dependencies]
 async-channel = "2.2.0"
-bluer = { version = "0.17", features = ["full"] }
+bluer = { git = "https://github.com/bluez/bluer", rev = "e83517f", features = [
+  "full",
+] }
 crossterm = { version = "0.27", features = ["event-stream"] }
 futures = "0.3"
 ratatui = "0.26"

@@ -29,6 +29,7 @@ pub struct Device {
     pub is_paired: bool,
     pub is_trusted: bool,
     pub is_connected: bool,
+    pub battery_percentage: Option<u8>,
 }
 
 // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
@@ -98,6 +99,7 @@ impl Controller {
             let is_paired = device.is_paired().await?;
             let is_trusted = device.is_trusted().await?;
             let is_connected = device.is_connected().await?;
+            let battery_percentage = device.battery_percentage().await?;
 
             let device = Device {
                 addr,
@@ -105,6 +107,7 @@ impl Controller {
                 is_paired,
                 is_trusted,
                 is_connected,
+                battery_percentage,
             };
 
             if device.is_paired {
