@@ -26,8 +26,6 @@ use std::{
     },
 };
 
-use async_channel;
-
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -129,24 +127,25 @@ impl App {
         if let Some(selected_controller_index) = self.controller_state.selected() {
             let selected_controller = &self.controllers[selected_controller_index];
             // Layout
-
-            let controllers_block_length = self.controllers.len() as u16 + 4;
-
-            let paired_devices_area_length = selected_controller.paired_devices.len() as u16 + 4;
-
-            let new_devices_area_length = selected_controller.new_devices.len() as u16 + 4;
-
+            let render_new_devices = !selected_controller.new_devices.is_empty()
+                | selected_controller.is_scanning.load(Ordering::Relaxed);
             let (controller_block, paired_devices_block, new_devices_block) = {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints(
-                        [
-                            Constraint::Length(controllers_block_length),
-                            Constraint::Length(paired_devices_area_length),
-                            Constraint::Length(new_devices_area_length),
+                    .constraints(if render_new_devices {
+                        &[
+                            Constraint::Percentage(33),
+                            Constraint::Percentage(33),
+                            Constraint::Percentage(33),
                         ]
-                        .as_ref(),
-                    )
+                    } else {
+                        &[
+                            Constraint::Percentage(50),
+                            Constraint::Percentage(50),
+                            Constraint::Fill(1),
+                        ]
+                    })
+                    .margin(1)
                     .split(frame.size());
                 (chunks[0], chunks[1], chunks[2])
             };
@@ -283,9 +282,7 @@ impl App {
 
             //New devices
 
-            if !selected_controller.new_devices.is_empty()
-                | selected_controller.is_scanning.load(Ordering::Relaxed)
-            {
+            if render_new_devices {
                 let rows: Vec<Row> = selected_controller
                     .new_devices
                     .iter()
