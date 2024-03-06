@@ -1,3 +1,14 @@
+## v0.3 - 06/03/2024
+
+### Added
+
+- Show battery percentage
+- Colorful layout
+
+### Updated
+
+- Update the main layout
+
 ## v0.2 - 25/02/2024
 
 ### Added
