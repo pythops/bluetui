@@ -47,7 +47,7 @@ impl Notification {
                 Block::default()
                     .borders(Borders::ALL)
                     .style(Style::default())
-                    .border_type(BorderType::Rounded)
+                    .border_type(BorderType::Thick)
                     .border_style(Style::default().fg(color)),
             );
 
@@ -83,7 +83,7 @@ pub fn notification_rect(offset: u16, height: u16, width: u16, r: Rect) -> Rect 
         .direction(Direction::Vertical)
         .constraints(
             [
-                Constraint::Length(1 + height * offset),
+                Constraint::Length(height * offset),
                 Constraint::Length(height),
                 Constraint::Min(1),
             ]

@@ -7,7 +7,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Span, Text},
-    widgets::{Block, BorderType, Borders, Clear, Row, Table, TableState},
+    widgets::{Block, BorderType, Borders, Cell, Clear, Row, Table, TableState},
     Frame,
 };
 use std::sync::mpsc::channel;
@@ -197,22 +197,49 @@ impl App {
             ];
 
             let controller_table = Table::new(rows, widths)
-                .header(
-                    Row::new(vec![
-                        "",
-                        "Name",
-                        "Alias",
-                        "Power",
-                        "Pairable",
-                        "Discoverable",
-                    ])
-                    .style(Style::new().bold())
-                    .bottom_margin(1),
-                )
+                .header({
+                    if self.focused_block == FocusedBlock::Adapter {
+                        Row::new(vec![
+                            Cell::from(""),
+                            Cell::from("Name").style(Style::default().fg(Color::Yellow)),
+                            Cell::from("Alias").style(Style::default().fg(Color::Yellow)),
+                            Cell::from("Power").style(Style::default().fg(Color::Yellow)),
+                            Cell::from("Pairable").style(Style::default().fg(Color::Yellow)),
+                            Cell::from("Discoverable").style(Style::default().fg(Color::Yellow)),
+                        ])
+                        .style(Style::new().bold())
+                        .bottom_margin(1)
+                    } else {
+                        Row::new(vec![
+                            Cell::from(""),
+                            Cell::from("Name").style(Style::default().fg(Color::White)),
+                            Cell::from("Alias").style(Style::default().fg(Color::White)),
+                            Cell::from("Power").style(Style::default().fg(Color::White)),
+                            Cell::from("Pairable").style(Style::default().fg(Color::White)),
+                            Cell::from("Discoverable").style(Style::default().fg(Color::White)),
+                        ])
+                        .style(Style::new().bold())
+                        .bottom_margin(1)
+                    }
+                })
                 .block(
                     Block::default()
-                        .title("Adapter")
+                        .title(" Adapter ")
+                        .title_style({
+                            if self.focused_block == FocusedBlock::Adapter {
+                                Style::default().bold()
+                            } else {
+                                Style::default()
+                            }
+                        })
                         .borders(Borders::ALL)
+                        .border_style({
+                            if self.focused_block == FocusedBlock::Adapter {
+                                Style::default().fg(Color::Green)
+                            } else {
+                                Style::default()
+                            }
+                        })
                         .border_type({
                             if self.focused_block == FocusedBlock::Adapter {
                                 BorderType::Thick
@@ -241,7 +268,38 @@ impl App {
                         d.is_connected.to_string(),
                         {
                             if let Some(battery_percentage) = d.battery_percentage {
-                                format!("{} %", battery_percentage)
+                                match battery_percentage {
+                                    n if n >= 90 => {
+                                        format!("{}% 󰥈 ", battery_percentage)
+                                    }
+                                    n if (80..90).contains(&n) => {
+                                        format!("{}% 󰥅 ", battery_percentage)
+                                    }
+                                    n if (70..80).contains(&n) => {
+                                        format!("{}% 󰥄 ", battery_percentage)
+                                    }
+                                    n if (60..70).contains(&n) => {
+                                        format!("{}% 󰥃 ", battery_percentage)
+                                    }
+                                    n if (50..60).contains(&n) => {
+                                        format!("{}% 󰥂 ", battery_percentage)
+                                    }
+                                    n if (40..50).contains(&n) => {
+                                        format!("{}% 󰥁 ", battery_percentage)
+                                    }
+                                    n if (30..40).contains(&n) => {
+                                        format!("{}% 󰥀 ", battery_percentage)
+                                    }
+                                    n if (20..30).contains(&n) => {
+                                        format!("{}% 󰤿 ", battery_percentage)
+                                    }
+                                    n if (10..20).contains(&n) => {
+                                        format!("{}% 󰤾 ", battery_percentage)
+                                    }
+                                    _ => {
+                                        format!("{}% 󰤾 ", battery_percentage)
+                                    }
+                                }
                             } else {
                                 String::new()
                             }
@@ -268,19 +326,61 @@ impl App {
             let paired_devices_table = Table::new(rows, widths)
                 .header({
                     if show_battery_column {
-                        Row::new(vec!["Name", "Trusted", "Connected", "Battery"])
+                        if self.focused_block == FocusedBlock::PairedDevices {
+                            Row::new(vec![
+                                Cell::from("Name").style(Style::default().fg(Color::Yellow)),
+                                Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
+                                Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
+                                Cell::from("Battery").style(Style::default().fg(Color::Yellow)),
+                            ])
                             .style(Style::new().bold())
                             .bottom_margin(1)
+                        } else {
+                            Row::new(vec![
+                                Cell::from("Name").style(Style::default().fg(Color::White)),
+                                Cell::from("Trusted").style(Style::default().fg(Color::White)),
+                                Cell::from("Connected").style(Style::default().fg(Color::White)),
+                                Cell::from("Battery").style(Style::default().fg(Color::White)),
+                            ])
+                            .style(Style::new().bold())
+                            .bottom_margin(1)
+                        }
+                    } else if self.focused_block == FocusedBlock::PairedDevices {
+                        Row::new(vec![
+                            Cell::from("Name").style(Style::default().fg(Color::Yellow)),
+                            Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
+                            Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
+                        ])
+                        .style(Style::new().bold())
+                        .bottom_margin(1)
                     } else {
-                        Row::new(vec!["Name", "Trusted", "Connected"])
-                            .style(Style::new().bold())
-                            .bottom_margin(1)
+                        Row::new(vec![
+                            Cell::from("Name").style(Style::default().fg(Color::White)),
+                            Cell::from("Trusted").style(Style::default().fg(Color::White)),
+                            Cell::from("Connected").style(Style::default().fg(Color::White)),
+                        ])
+                        .style(Style::new().bold())
+                        .bottom_margin(1)
                     }
                 })
                 .block(
                     Block::default()
-                        .title("Paired Devices")
+                        .title(" Paired Devices ")
+                        .title_style({
+                            if self.focused_block == FocusedBlock::PairedDevices {
+                                Style::default().bold()
+                            } else {
+                                Style::default()
+                            }
+                        })
                         .borders(Borders::ALL)
+                        .border_style({
+                            if self.focused_block == FocusedBlock::PairedDevices {
+                                Style::default().fg(Color::Green)
+                            } else {
+                                Style::default()
+                            }
+                        })
                         .border_type({
                             if self.focused_block == FocusedBlock::PairedDevices {
                                 BorderType::Thick
@@ -314,21 +414,47 @@ impl App {
                 let widths = [Constraint::Length(25), Constraint::Length(20)];
 
                 let new_devices_table = Table::new(rows, widths)
-                    .header(
-                        Row::new(vec!["Address", "Name"])
+                    .header({
+                        if self.focused_block == FocusedBlock::NewDevices {
+                            Row::new(vec![
+                                Cell::from("Address").style(Style::default().fg(Color::Yellow)),
+                                Cell::from("Name").style(Style::default().fg(Color::Yellow)),
+                            ])
                             .style(Style::new().bold())
-                            .bottom_margin(1),
-                    )
+                            .bottom_margin(1)
+                        } else {
+                            Row::new(vec![
+                                Cell::from("Address").style(Style::default().fg(Color::White)),
+                                Cell::from("Name").style(Style::default().fg(Color::White)),
+                            ])
+                            .style(Style::new().bold())
+                            .bottom_margin(1)
+                        }
+                    })
                     .block(
                         Block::default()
                             .title({
                                 if selected_controller.is_scanning.load(Ordering::Relaxed) {
-                                    format!("Scanning {} ", self.spinner.draw())
+                                    format!(" Scanning {} ", self.spinner.draw())
                                 } else {
-                                    String::from("Discovered devices")
+                                    String::from(" Discovered devices ")
+                                }
+                            })
+                            .title_style({
+                                if self.focused_block == FocusedBlock::NewDevices {
+                                    Style::default().bold()
+                                } else {
+                                    Style::default()
                                 }
                             })
                             .borders(Borders::ALL)
+                            .border_style({
+                                if self.focused_block == FocusedBlock::NewDevices {
+                                    Style::default().fg(Color::Green)
+                                } else {
+                                    Style::default()
+                                }
+                            })
                             .border_type({
                                 if self.focused_block == FocusedBlock::NewDevices {
                                     BorderType::Thick
@@ -408,7 +534,8 @@ impl App {
                         .message
                         .clone()
                         .unwrap_or_default(),
-                );
+                )
+                .style(Style::default().fg(Color::White));
                 let (yes, no) = {
                     if self.pairing_confirmation.confirmed {
                         let no = Span::from("[No]").style(Style::default());
@@ -426,7 +553,8 @@ impl App {
                 frame.render_widget(
                     Block::new()
                         .borders(Borders::ALL)
-                        .border_type(BorderType::Thick),
+                        .border_type(BorderType::Thick)
+                        .border_style(Style::default().fg(Color::Green)),
                     popup_area,
                 );
                 frame.render_widget(text.alignment(Alignment::Center), text_area);

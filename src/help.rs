@@ -1,7 +1,7 @@
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Style, Stylize},
-    widgets::{Block, Borders, Clear, Padding, Row, Table, TableState},
+    style::{Color, Style, Stylize},
+    widgets::{Block, BorderType, Borders, Cell, Clear, Padding, Row, Table, TableState},
     Frame,
 };
 
@@ -9,7 +9,7 @@ use ratatui::{
 pub struct Help {
     block_height: usize,
     state: TableState,
-    keys: &'static [(&'static str, &'static str)],
+    keys: Vec<(Cell<'static>, &'static str)>,
 }
 
 impl Default for Help {
@@ -20,27 +20,39 @@ impl Default for Help {
         Self {
             block_height: 0,
             state,
-            keys: &[
-                ("## Global", ""),
-                ("Esc", "Dismiss help pop-up"),
-                ("Tab", "Switch between different sections"),
-                ("j or Down", "Scroll down"),
-                ("k or Up", "Scroll up"),
-                ("s", "Start/Stop scanning"),
-                ("?", "Show help"),
-                ("", ""),
-                ("## Adapters", ""),
-                ("p", "Enable/Disable the pairing"),
-                ("o", "Power on/off the adapter"),
-                ("d", "Enable/Disable the discovery"),
-                ("", ""),
-                ("## Paired devices", ""),
-                ("u", "Unpair the device"),
-                ("Space", "Connect/Disconnect the device"),
-                ("t", "Trust/Untrust the device"),
-                ("", ""),
-                ("## New devices", ""),
-                ("p", "Pair the device"),
+            keys: vec![
+                (
+                    Cell::from("## Global").style(Style::new().bold().fg(Color::Yellow)),
+                    "",
+                ),
+                (Cell::from("Esc"), "Dismiss help pop-up"),
+                (Cell::from("Tab"), "Switch between different sections"),
+                (Cell::from("j or Down"), "Scroll down"),
+                (Cell::from("k or Up"), "Scroll up"),
+                (Cell::from("s"), "Start/Stop scanning"),
+                (Cell::from("?"), "Show help"),
+                (Cell::from(""), ""),
+                (
+                    Cell::from("## Adapters").style(Style::new().bold().fg(Color::Yellow)),
+                    "",
+                ),
+                (Cell::from("p"), "Enable/Disable the pairing"),
+                (Cell::from("o"), "Power on/off the adapter"),
+                (Cell::from("d"), "Enable/Disable the discovery"),
+                (Cell::from(""), ""),
+                (
+                    Cell::from("## Paired devices").style(Style::new().bold().fg(Color::Yellow)),
+                    "",
+                ),
+                (Cell::from("u"), "Unpair the device"),
+                (Cell::from("Space"), "Connect/Disconnect the device"),
+                (Cell::from("t"), "Trust/Untrust the device"),
+                (Cell::from(""), ""),
+                (
+                    Cell::from("## New devices").style(Style::default().bold().fg(Color::Yellow)),
+                    "",
+                ),
+                (Cell::from("p"), "Pair the device"),
             ],
         }
     }
@@ -88,18 +100,22 @@ impl Help {
         let rows: Vec<Row> = self
             .keys
             .iter()
-            .map(|key| Row::new(vec![key.0, key.1]))
+            .map(|key| {
+                Row::new(vec![key.0.to_owned(), key.1.into()])
+                    .style(Style::default().fg(Color::White))
+            })
             .collect();
 
         let table = Table::new(rows, widths).block(
             Block::default()
                 .padding(Padding::uniform(2))
                 .title(" Help ")
-                .title_style(Style::default().bold())
+                .title_style(Style::default().bold().fg(Color::Green))
                 .title_alignment(Alignment::Center)
                 .borders(Borders::ALL)
                 .style(Style::default())
-                .border_style(Style::default()),
+                .border_type(BorderType::Thick)
+                .border_style(Style::default().fg(Color::Green)),
         );
 
         frame.render_widget(Clear, block);
