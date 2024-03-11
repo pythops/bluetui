@@ -1,7 +1,10 @@
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Style, Stylize},
-    widgets::{Block, BorderType, Borders, Cell, Clear, Padding, Row, Table, TableState},
+    widgets::{
+        Block, BorderType, Borders, Cell, Clear, Padding, Row, Scrollbar, ScrollbarOrientation,
+        ScrollbarState, Table, TableState,
+    },
     Frame,
 };
 
@@ -105,6 +108,7 @@ impl Help {
                     .style(Style::default().fg(Color::White))
             })
             .collect();
+        let rows_len = rows.len();
 
         let table = Table::new(rows, widths).block(
             Block::default()
@@ -120,6 +124,20 @@ impl Help {
 
         frame.render_widget(Clear, block);
         frame.render_stateful_widget(table, block, &mut self.state);
+
+        let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+            .begin_symbol(Some("↑"))
+            .end_symbol(Some("↓"));
+        let mut scrollbar_state =
+            ScrollbarState::new(rows_len).position(self.state.selected().unwrap_or_default());
+        frame.render_stateful_widget(
+            scrollbar,
+            block.inner(&Margin {
+                vertical: 1,
+                horizontal: 0,
+            }),
+            &mut scrollbar_state,
+        );
     }
 }
 

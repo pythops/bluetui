@@ -4,10 +4,13 @@ use bluer::{
 };
 use futures::FutureExt;
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Style, Stylize},
     text::{Span, Text},
-    widgets::{Block, BorderType, Borders, Cell, Clear, Row, Table, TableState},
+    widgets::{
+        Block, BorderType, Borders, Cell, Clear, Row, Scrollbar, ScrollbarOrientation,
+        ScrollbarState, Table, TableState,
+    },
     Frame,
 };
 use std::sync::mpsc::channel;
@@ -257,6 +260,20 @@ impl App {
 
             frame.render_widget(controller_table, controller_block);
 
+            let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+                .begin_symbol(Some("↑"))
+                .end_symbol(Some("↓"));
+            let mut scrollbar_state =
+                ScrollbarState::new(self.controllers.len()).position(selected_controller_index);
+            frame.render_stateful_widget(
+                scrollbar,
+                controller_block.inner(&Margin {
+                    vertical: 1,
+                    horizontal: 0,
+                }),
+                &mut scrollbar_state,
+            );
+
             //Paired devices
             let rows: Vec<Row> = selected_controller
                 .paired_devices
@@ -307,6 +324,7 @@ impl App {
                     ])
                 })
                 .collect();
+            let rows_len = rows.len();
 
             let show_battery_column = selected_controller
                 .paired_devices
@@ -402,6 +420,20 @@ impl App {
                 &mut self.paired_devices_state.clone(),
             );
 
+            let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+                .begin_symbol(Some("↑"))
+                .end_symbol(Some("↓"));
+            let mut scrollbar_state = ScrollbarState::new(rows_len)
+                .position(self.paired_devices_state.selected().unwrap_or_default());
+            frame.render_stateful_widget(
+                scrollbar,
+                paired_devices_block.inner(&Margin {
+                    vertical: 1,
+                    horizontal: 0,
+                }),
+                &mut scrollbar_state,
+            );
+
             //New devices
 
             if render_new_devices {
@@ -410,6 +442,7 @@ impl App {
                     .iter()
                     .map(|d| Row::new(vec![d.addr.to_string(), d.alias.to_owned()]))
                     .collect();
+                let rows_len = rows.len();
 
                 let widths = [Constraint::Length(25), Constraint::Length(20)];
 
@@ -476,6 +509,20 @@ impl App {
                 }
 
                 frame.render_stateful_widget(new_devices_table, new_devices_block, &mut state);
+
+                let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+                    .begin_symbol(Some("↑"))
+                    .end_symbol(Some("↓"));
+                let mut scrollbar_state =
+                    ScrollbarState::new(rows_len).position(state.selected().unwrap_or_default());
+                frame.render_stateful_widget(
+                    scrollbar,
+                    new_devices_block.inner(&Margin {
+                        vertical: 1,
+                        horizontal: 0,
+                    }),
+                    &mut scrollbar_state,
+                );
             }
 
             // Pairing confirmation
