@@ -108,7 +108,7 @@ impl Help {
                     .style(Style::default().fg(Color::White))
             })
             .collect();
-        let rows_len = rows.len();
+        let rows_len = self.keys.len().saturating_sub(self.block_height - 6);
 
         let table = Table::new(rows, widths).block(
             Block::default()
