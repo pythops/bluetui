@@ -1,3 +1,9 @@
+## v0.4 - TBA
+
+### Added
+
+- Add scrollbars by [@orhun](https://github.com/orhun/)
+
 ## v0.3 - 06/03/2024
 
 ### Added
