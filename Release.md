@@ -3,6 +3,7 @@
 ### Added
 
 - Add scrollbars by [@orhun](https://github.com/orhun/)
+- Custom keybindings
 
 ## v0.3 - 06/03/2024
 

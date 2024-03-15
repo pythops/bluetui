@@ -17,6 +17,7 @@ use std::sync::mpsc::channel;
 
 use crate::{
     bluetooth::{request_confirmation, Controller},
+    config::Config,
     help::Help,
     notification::Notification,
     spinner::Spinner,
@@ -610,7 +611,7 @@ impl App {
             }
         }
     }
-    pub async fn new() -> AppResult<Self> {
+    pub async fn new(config: Arc<Config>) -> AppResult<Self> {
         let session = Arc::new(bluer::Session::new().await?);
 
         // Pairing confirmation
@@ -650,7 +651,7 @@ impl App {
             running: true,
             session,
             agent: handle,
-            help: Help::new(),
+            help: Help::new(config),
             spinner: Spinner::default(),
             notifications: Vec::new(),
             controllers,

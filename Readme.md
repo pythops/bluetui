@@ -58,7 +58,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `esc`: Dismiss the help pop-up.
 
-`q`: Quit the app.
+`q` or `ctrl+c`: Quit the app.
 
 ### Adapters
 
@@ -79,6 +79,27 @@ This will produce an executable file at `target/release/bluetui` that you can co
 ### New devices
 
 `p`: Pair the device.
+
+## Custom keybindings
+
+Keybindings can be customized in the config file `$HOME/.config/bluetui/config.toml`
+
+```toml
+toggle_scanning = "s"
+
+[adapter]
+toggle_pairing = "p"
+toggle_power = "o"
+toggle_discovery = "d"
+
+[paired_device]
+unpair = "u"
+toggle_connect = " "
+toggle_trust = "t"
+
+[new_device]
+pair = "p"
+```
 
 ## ⚖️ License
 

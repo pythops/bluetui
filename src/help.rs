@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Style, Stylize},
@@ -8,6 +10,8 @@ use ratatui::{
     Frame,
 };
 
+use crate::config::Config;
+
 #[derive(Debug)]
 pub struct Help {
     block_height: usize,
@@ -15,8 +19,8 @@ pub struct Help {
     keys: Vec<(Cell<'static>, &'static str)>,
 }
 
-impl Default for Help {
-    fn default() -> Self {
+impl Help {
+    pub fn new(config: Arc<Config>) -> Self {
         let mut state = TableState::new().with_offset(0);
         state.select(Some(0));
 
@@ -28,42 +32,71 @@ impl Default for Help {
                     Cell::from("## Global").style(Style::new().bold().fg(Color::Yellow)),
                     "",
                 ),
-                (Cell::from("Esc"), "Dismiss help pop-up"),
-                (Cell::from("Tab"), "Switch between different sections"),
-                (Cell::from("j or Down"), "Scroll down"),
-                (Cell::from("k or Up"), "Scroll up"),
-                (Cell::from("s"), "Start/Stop scanning"),
-                (Cell::from("?"), "Show help"),
+                (Cell::from("Esc").bold(), "Dismiss help pop-up"),
+                (
+                    Cell::from("Tab").bold(),
+                    "Switch between different sections",
+                ),
+                (Cell::from("j or Down").bold(), "Scroll down"),
+                (Cell::from("k or Up").bold(), "Scroll up"),
+                (
+                    Cell::from(config.toggle_scanning.to_string()).bold(),
+                    "Start/Stop scanning",
+                ),
+                (Cell::from("?").bold(), "Show help"),
+                (Cell::from("q or ctrl+c").bold(), "Quit"),
                 (Cell::from(""), ""),
                 (
                     Cell::from("## Adapters").style(Style::new().bold().fg(Color::Yellow)),
                     "",
                 ),
-                (Cell::from("p"), "Enable/Disable the pairing"),
-                (Cell::from("o"), "Power on/off the adapter"),
-                (Cell::from("d"), "Enable/Disable the discovery"),
+                (
+                    Cell::from(config.adapter.toggle_pairing.to_string()).bold(),
+                    "Enable/Disable the pairing",
+                ),
+                (
+                    Cell::from(config.adapter.toggle_power.to_string()).bold(),
+                    "Power on/off the adapter",
+                ),
+                (
+                    Cell::from(config.adapter.toggle_discovery.to_string()).bold(),
+                    "Enable/Disable the discovery",
+                ),
                 (Cell::from(""), ""),
                 (
                     Cell::from("## Paired devices").style(Style::new().bold().fg(Color::Yellow)),
                     "",
                 ),
-                (Cell::from("u"), "Unpair the device"),
-                (Cell::from("Space"), "Connect/Disconnect the device"),
-                (Cell::from("t"), "Trust/Untrust the device"),
+                (
+                    Cell::from(config.paired_device.unpair.to_string()).bold(),
+                    "Unpair the device",
+                ),
+                (
+                    Cell::from({
+                        if config.paired_device.toggle_connect == ' ' {
+                            "Space".to_string()
+                        } else {
+                            config.paired_device.toggle_connect.to_string()
+                        }
+                    })
+                    .bold(),
+                    "Connect/Disconnect the device",
+                ),
+                (
+                    Cell::from(config.paired_device.toggle_trust.to_string()).bold(),
+                    "Trust/Untrust the device",
+                ),
                 (Cell::from(""), ""),
                 (
                     Cell::from("## New devices").style(Style::default().bold().fg(Color::Yellow)),
                     "",
                 ),
-                (Cell::from("p"), "Pair the device"),
+                (
+                    Cell::from(config.new_device.pair.to_string()).bold(),
+                    "Pair the device",
+                ),
             ],
         }
-    }
-}
-
-impl Help {
-    pub fn new() -> Self {
-        Self::default()
     }
 
     pub fn scroll_down(&mut self) {

@@ -1,7 +1,9 @@
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 
 use crate::app::FocusedBlock;
 use crate::app::{App, AppResult};
+use crate::config::Config;
 use crate::event::Event;
 use crate::notification::{Notification, NotificationLevel};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -12,13 +14,14 @@ pub async fn handle_key_events(
     key_event: KeyEvent,
     app: &mut App,
     sender: UnboundedSender<Event>,
+    config: Arc<Config>,
 ) -> AppResult<()> {
     match key_event.code {
         // Exit the app
         KeyCode::Char('q') => {
             app.quit();
         }
-        KeyCode::Char('C') => {
+        KeyCode::Char('c') => {
             if key_event.modifiers == KeyModifiers::CONTROL {
                 app.quit();
             }
@@ -188,7 +191,7 @@ pub async fn handle_key_events(
         },
 
         // Start/Stop Scan
-        KeyCode::Char('s') => {
+        KeyCode::Char(c) if c == config.toggle_scanning => {
             if let Some(selected_controller) = app.controller_state.selected() {
                 let controller = &app.controllers[selected_controller];
 
@@ -244,7 +247,7 @@ pub async fn handle_key_events(
                 FocusedBlock::PairedDevices => {
                     match key_event.code {
                         // Unpair
-                        KeyCode::Char('u') => {
+                        KeyCode::Char(c) if c == config.paired_device.unpair => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let controller = &app.controllers[selected_controller];
                                 if let Some(index) = app.paired_devices_state.selected() {
@@ -270,7 +273,7 @@ pub async fn handle_key_events(
                         }
 
                         // Connect / Disconnect
-                        KeyCode::Char(' ') => {
+                        KeyCode::Char(c) if c == config.paired_device.toggle_connect => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let controller = &app.controllers[selected_controller];
                                 if let Some(index) = app.paired_devices_state.selected() {
@@ -341,7 +344,7 @@ pub async fn handle_key_events(
                         }
 
                         // Trust / Untrust
-                        KeyCode::Char('t') => {
+                        KeyCode::Char(c) if c == config.paired_device.toggle_trust => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let controller = &app.controllers[selected_controller];
                                 if let Some(index) = app.paired_devices_state.selected() {
@@ -419,7 +422,7 @@ pub async fn handle_key_events(
                 FocusedBlock::Adapter => {
                     match key_event.code {
                         // toggle pairing
-                        KeyCode::Char('p') => {
+                        KeyCode::Char(c) if c == config.adapter.toggle_pairing => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let adapter = &app.controllers[selected_controller].adapter;
                                 tokio::spawn({
@@ -477,7 +480,7 @@ pub async fn handle_key_events(
                         }
 
                         // toggle power
-                        KeyCode::Char('o') => {
+                        KeyCode::Char(c) if c == config.adapter.toggle_power => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let adapter = &app.controllers[selected_controller].adapter;
                                 tokio::spawn({
@@ -535,7 +538,7 @@ pub async fn handle_key_events(
                         }
 
                         // toggle discovery
-                        KeyCode::Char('d') => {
+                        KeyCode::Char(c) if c == config.adapter.toggle_discovery => {
                             if let Some(selected_controller) = app.controller_state.selected() {
                                 let adapter = &app.controllers[selected_controller].adapter;
                                 tokio::spawn({
@@ -599,7 +602,7 @@ pub async fn handle_key_events(
 
                 FocusedBlock::NewDevices => {
                     // Pair new device
-                    if let KeyCode::Char('p') = key_event.code {
+                    if KeyCode::Char(config.new_device.pair) == key_event.code {
                         if let Some(selected_controller) = app.controller_state.selected() {
                             let controller = &app.controllers[selected_controller];
                             if let Some(index) = app.new_devices_state.selected() {
