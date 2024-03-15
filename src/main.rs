@@ -3,6 +3,7 @@ use bluetui::config::Config;
 use bluetui::event::{Event, EventHandler};
 use bluetui::handler::handle_key_events;
 use bluetui::tui::Tui;
+use clap::{crate_version, Command};
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use std::io;
@@ -10,8 +11,11 @@ use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> AppResult<()> {
-    let config = Arc::new(Config::new());
+    Command::new("bluetui")
+        .version(crate_version!())
+        .get_matches();
 
+    let config = Arc::new(Config::new());
     let mut app = App::new(config.clone()).await?;
     let backend = CrosstermBackend::new(io::stderr());
     let terminal = Terminal::new(backend)?;

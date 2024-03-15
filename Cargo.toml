@@ -19,6 +19,7 @@ tokio = { version = "1", features = ["full"] }
 dirs = "5"
 toml = { version = "0.8" }
 serde = { version = "1", features = ["derive"] }
+clap = { version = "4", features = ["derive", "cargo"] }
 
 [profile.release]
 strip = true
