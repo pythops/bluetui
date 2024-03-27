@@ -146,7 +146,7 @@ dependencies = [
  "libc",
  "log",
  "macaddr",
- "nix",
+ "nix 0.27.1",
  "num-derive",
  "num-traits",
  "pin-project",
@@ -170,6 +170,7 @@ dependencies = [
  "futures",
  "ratatui",
  "serde",
+ "terminal-light",
  "tokio",
  "toml",
 ]
@@ -206,6 +207,12 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "cfg_aliases"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
 
 [[package]]
 name = "clap"
@@ -274,6 +281,12 @@ checksum = "d16048cd947b08fa32c24458a22f5dc5e835264f689f4f5653210c69fd107363"
 dependencies = [
  "crossbeam-utils",
 ]
+
+[[package]]
+name = "coolor"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37e93977247fb916abeee1ff8c6594c9b421fd9c26c9b720a3944acb2a7de27b"
 
 [[package]]
 name = "crossbeam-utils"
@@ -748,6 +761,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nix"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab2156c4fce2f8df6c499cc1c763e4394b7482525bf2a9701c9d79d215f519e4"
+dependencies = [
+ "bitflags 2.4.2",
+ "cfg-if",
+ "cfg_aliases",
+ "libc",
+]
+
+[[package]]
 name = "num-derive"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1132,6 +1157,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "terminal-light"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2ecb7b6ab8a3eeff2b61770d313d1e971f184e29321785c62ef523b132437b7"
+dependencies = [
+ "coolor",
+ "crossterm",
+ "thiserror",
+ "xterm-query",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1433,6 +1470,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dffa400e67ed5a4dd237983829e66475f0a4a26938c4b04c21baede6262215b8"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "xterm-query"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2f29504d0a2ca8c1714781c1395a8a660d2557b2cf9c9669433153fc903e9bfc"
+dependencies = [
+ "nix 0.28.0",
+ "thiserror",
 ]
 
 [[package]]

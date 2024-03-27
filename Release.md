@@ -1,3 +1,9 @@
+## v0.5 - TBA
+
+### Added
+
+- Support light background
+
 ## v0.4 - 15/03/2024
 
 ### Added

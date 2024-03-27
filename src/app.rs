@@ -41,6 +41,12 @@ pub enum FocusedBlock {
     PassKeyConfirmation,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ColorMode {
+    Dark,
+    Light,
+}
+
 #[derive(Debug)]
 pub struct App {
     pub running: bool,
@@ -55,6 +61,7 @@ pub struct App {
     pub new_devices_state: TableState,
     pub focused_block: FocusedBlock,
     pub pairing_confirmation: PairingConfirmation,
+    pub color_mode: ColorMode,
 }
 
 #[derive(Debug)]
@@ -216,11 +223,26 @@ impl App {
                     } else {
                         Row::new(vec![
                             Cell::from(""),
-                            Cell::from("Name").style(Style::default().fg(Color::White)),
-                            Cell::from("Alias").style(Style::default().fg(Color::White)),
-                            Cell::from("Power").style(Style::default().fg(Color::White)),
-                            Cell::from("Pairable").style(Style::default().fg(Color::White)),
-                            Cell::from("Discoverable").style(Style::default().fg(Color::White)),
+                            Cell::from("Name").style(match self.color_mode {
+                                ColorMode::Dark => Style::default().fg(Color::White),
+                                ColorMode::Light => Style::default().fg(Color::Black),
+                            }),
+                            Cell::from("Alias").style(match self.color_mode {
+                                ColorMode::Dark => Style::default().fg(Color::White),
+                                ColorMode::Light => Style::default().fg(Color::Black),
+                            }),
+                            Cell::from("Power").style(match self.color_mode {
+                                ColorMode::Dark => Style::default().fg(Color::White),
+                                ColorMode::Light => Style::default().fg(Color::Black),
+                            }),
+                            Cell::from("Pairable").style(match self.color_mode {
+                                ColorMode::Dark => Style::default().fg(Color::White),
+                                ColorMode::Light => Style::default().fg(Color::Black),
+                            }),
+                            Cell::from("Discoverable").style(match self.color_mode {
+                                ColorMode::Dark => Style::default().fg(Color::White),
+                                ColorMode::Light => Style::default().fg(Color::Black),
+                            }),
                         ])
                         .style(Style::new().bold())
                         .bottom_margin(1)
@@ -252,7 +274,10 @@ impl App {
                             }
                         }),
                 )
-                .style(Style::default().fg(Color::White))
+                .style(match self.color_mode {
+                    ColorMode::Dark => Style::default().fg(Color::White),
+                    ColorMode::Light => Style::default().fg(Color::Black),
+                })
                 .highlight_style(if self.focused_block == FocusedBlock::Adapter {
                     Style::default().bg(Color::DarkGray)
                 } else {
@@ -356,10 +381,22 @@ impl App {
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
-                                Cell::from("Name").style(Style::default().fg(Color::White)),
-                                Cell::from("Trusted").style(Style::default().fg(Color::White)),
-                                Cell::from("Connected").style(Style::default().fg(Color::White)),
-                                Cell::from("Battery").style(Style::default().fg(Color::White)),
+                                Cell::from("Name").style(match self.color_mode {
+                                    ColorMode::Dark => Style::default().fg(Color::White),
+                                    ColorMode::Light => Style::default().fg(Color::Black),
+                                }),
+                                Cell::from("Trusted").style(match self.color_mode {
+                                    ColorMode::Dark => Style::default().fg(Color::White),
+                                    ColorMode::Light => Style::default().fg(Color::Black),
+                                }),
+                                Cell::from("Connected").style(match self.color_mode {
+                                    ColorMode::Dark => Style::default().fg(Color::White),
+                                    ColorMode::Light => Style::default().fg(Color::Black),
+                                }),
+                                Cell::from("Battery").style(match self.color_mode {
+                                    ColorMode::Dark => Style::default().fg(Color::White),
+                                    ColorMode::Light => Style::default().fg(Color::Black),
+                                }),
                             ])
                             .style(Style::new().bold())
                             .bottom_margin(1)
@@ -374,9 +411,18 @@ impl App {
                         .bottom_margin(1)
                     } else {
                         Row::new(vec![
-                            Cell::from("Name").style(Style::default().fg(Color::White)),
-                            Cell::from("Trusted").style(Style::default().fg(Color::White)),
-                            Cell::from("Connected").style(Style::default().fg(Color::White)),
+                            Cell::from("Name").style(match self.color_mode {
+                                ColorMode::Dark => Style::default().fg(Color::White),
+                                ColorMode::Light => Style::default().fg(Color::Black),
+                            }),
+                            Cell::from("Trusted").style(match self.color_mode {
+                                ColorMode::Dark => Style::default().fg(Color::White),
+                                ColorMode::Light => Style::default().fg(Color::Black),
+                            }),
+                            Cell::from("Connected").style(match self.color_mode {
+                                ColorMode::Dark => Style::default().fg(Color::White),
+                                ColorMode::Light => Style::default().fg(Color::Black),
+                            }),
                         ])
                         .style(Style::new().bold())
                         .bottom_margin(1)
@@ -408,7 +454,10 @@ impl App {
                             }
                         }),
                 )
-                .style(Style::default().fg(Color::White))
+                .style(match self.color_mode {
+                    ColorMode::Dark => Style::default().fg(Color::White),
+                    ColorMode::Light => Style::default().fg(Color::Black),
+                })
                 .highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
                     Style::default().bg(Color::DarkGray)
                 } else {
@@ -458,8 +507,14 @@ impl App {
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
-                                Cell::from("Address").style(Style::default().fg(Color::White)),
-                                Cell::from("Name").style(Style::default().fg(Color::White)),
+                                Cell::from("Address").style(match self.color_mode {
+                                    ColorMode::Dark => Style::default().fg(Color::White),
+                                    ColorMode::Light => Style::default().fg(Color::Black),
+                                }),
+                                Cell::from("Name").style(match self.color_mode {
+                                    ColorMode::Dark => Style::default().fg(Color::White),
+                                    ColorMode::Light => Style::default().fg(Color::Black),
+                                }),
                             ])
                             .style(Style::new().bold())
                             .bottom_margin(1)
@@ -497,7 +552,10 @@ impl App {
                                 }
                             }),
                     )
-                    .style(Style::default().fg(Color::White))
+                    .style(match self.color_mode {
+                        ColorMode::Dark => Style::default().fg(Color::White),
+                        ColorMode::Light => Style::default().fg(Color::Black),
+                    })
                     .highlight_style(if self.focused_block == FocusedBlock::NewDevices {
                         Style::default().bg(Color::Gray)
                     } else {
@@ -612,6 +670,12 @@ impl App {
         }
     }
     pub async fn new(config: Arc<Config>) -> AppResult<Self> {
+        let color_mode = match terminal_light::luma() {
+            Ok(luma) if luma > 0.6 => ColorMode::Light,
+            Ok(_) => ColorMode::Dark,
+            Err(_) => ColorMode::Dark,
+        };
+
         let session = Arc::new(bluer::Session::new().await?);
 
         // Pairing confirmation
@@ -660,6 +724,7 @@ impl App {
             new_devices_state: TableState::default(),
             focused_block: FocusedBlock::Adapter,
             pairing_confirmation,
+            color_mode,
         })
     }
 

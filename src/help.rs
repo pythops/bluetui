@@ -10,7 +10,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::config::Config;
+use crate::{app::ColorMode, config::Config};
 
 #[derive(Debug)]
 pub struct Help {
@@ -128,7 +128,7 @@ impl Help {
         self.state.select(Some(i));
     }
 
-    pub fn render(&mut self, frame: &mut Frame) {
+    pub fn render(&mut self, frame: &mut Frame, color_mode: ColorMode) {
         let block = help_rect(frame.size());
 
         self.block_height = block.height as usize;
@@ -137,8 +137,10 @@ impl Help {
             .keys
             .iter()
             .map(|key| {
-                Row::new(vec![key.0.to_owned(), key.1.into()])
-                    .style(Style::default().fg(Color::White))
+                Row::new(vec![key.0.to_owned(), key.1.into()]).style(match color_mode {
+                    ColorMode::Dark => Style::default().fg(Color::White),
+                    ColorMode::Light => Style::default().fg(Color::Black),
+                })
             })
             .collect();
         let rows_len = self.keys.len().saturating_sub(self.block_height - 6);
