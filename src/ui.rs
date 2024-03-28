@@ -8,7 +8,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     // Help
     if let FocusedBlock::Help = app.focused_block {
-        app.help.render(frame);
+        app.help.render(frame, app.color_mode);
     }
 
     // Notifications
