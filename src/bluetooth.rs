@@ -45,7 +45,7 @@ impl Device {
             "input-keyboard" => String::from("󰌌"),
             "input-mouse" => String::from("󰍽"),
             "phone" => String::from("󰏲"),
-            _ => String::from("?"),
+            _ => String::from(" "),
         }
     }
 }
