@@ -36,16 +36,16 @@ pub struct Device {
 impl Device {
     pub fn get_icon(name: &str) -> String {
         match name {
-            "audio-card" => String::from("󰦢 "),
+            "audio-card" => String::from("󰓃"),
             "audio-input-microphone" => String::from(""),
-            "audio-headphones" => String::from("󰥰"),
-            "battery" => String::from("󰥆"),
+            "audio-headphones" => String::from("󰋋"),
+            "battery" => String::from("󰂀"),
             "camera-photo" => String::from("󰻛"),
             "computer" => String::from(""),
             "input-keyboard" => String::from("󰌌"),
-            "input-mouse" => String::from("󰦋"),
-            "phone" => String::from("󰏳"),
-            _ => String::new(),
+            "input-mouse" => String::from("󰍽"),
+            "phone" => String::from("󰏲"),
+            _ => String::from(" "),
         }
     }
 }
@@ -103,7 +103,7 @@ impl Controller {
 
             let device = Device {
                 addr,
-                alias: format!("{} {}", alias, icon),
+                alias: format!("{} {}", icon, alias),
                 is_paired,
                 is_trusted,
                 is_connected,
@@ -116,6 +116,7 @@ impl Controller {
                 new_devices.push(device);
             }
         }
+
         paired_devices.sort_by_key(|i| i.addr);
         new_devices.sort_by_key(|i| i.addr);
         Ok((paired_devices, new_devices))
