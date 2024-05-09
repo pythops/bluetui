@@ -34,18 +34,18 @@ pub struct Device {
 
 // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 impl Device {
-    pub fn get_icon(name: &str) -> String {
+    pub fn get_icon(name: &str) -> Option<String> {
         match name {
-            "audio-card" => String::from("󰓃"),
-            "audio-input-microphone" => String::from(""),
-            "audio-headphones" => String::from("󰋋"),
-            "battery" => String::from("󰂀"),
-            "camera-photo" => String::from("󰻛"),
-            "computer" => String::from(""),
-            "input-keyboard" => String::from("󰌌"),
-            "input-mouse" => String::from("󰍽"),
-            "phone" => String::from("󰏲"),
-            _ => String::from(" "),
+            "audio-card" => Some(String::from("󰓃")),
+            "audio-input-microphone" => Some(String::from("")),
+            "audio-headphones" => Some(String::from("󰋋")),
+            "battery" => Some(String::from("󰂀")),
+            "camera-photo" => Some(String::from("󰻛")),
+            "computer" => Some(String::from("")),
+            "input-keyboard" => Some(String::from("󰌌")),
+            "input-mouse" => Some(String::from("󰍽")),
+            "phone" => Some(String::from("󰏲")),
+            _ => None,
         }
     }
 }
@@ -103,7 +103,13 @@ impl Controller {
 
             let device = Device {
                 addr,
-                alias: format!("{} {}", icon, alias),
+                alias: {
+                    if let Some(icon) = icon {
+                        format!("{} {}", icon, alias)
+                    } else {
+                        alias
+                    }
+                },
                 is_paired,
                 is_trusted,
                 is_connected,
