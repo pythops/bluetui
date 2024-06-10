@@ -8,6 +8,9 @@
 
 A Linux based OS with [bluez](https://www.bluez.org/) installed.
 
+> [!NOTE]
+> You might need to install [nerdfonts](https://www.nerdfonts.com/) for the icons to be displayed correctly.
+
 ## 🚀 Installation
 
 ### 📥 Binary release
