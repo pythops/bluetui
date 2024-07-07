@@ -1,7 +1,7 @@
 [package]
 name = "bluetui"
 version = "0.4.0"
-authors = ["pythops <contact@pythops.com>"]
+authors = ["Badr Badri <contact@pythops.com>"]
 license = "GPL-3.0"
 edition = "2021"
 description = "TUI for managing bluetooth devices"
@@ -14,13 +14,14 @@ async-channel = "2"
 bluer = { version = "0.17", features = ["full"] }
 crossterm = { version = "0.27", features = ["event-stream"] }
 futures = "0.3"
-ratatui = "0.26"
+ratatui = "0.27"
 tokio = { version = "1", features = ["full"] }
 dirs = "5"
 toml = { version = "0.8" }
 serde = { version = "1", features = ["derive"] }
 clap = { version = "4", features = ["derive", "cargo"] }
 terminal-light = "1"
+tui-input = "0.9"
 
 [profile.release]
 strip = true
