@@ -2,6 +2,7 @@
 
 ### Added
 
+- Rename paired devices
 - Support light background
 
 ## v0.4 - 15/03/2024

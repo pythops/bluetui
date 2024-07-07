@@ -5,15 +5,16 @@ use bluer::{
 use futures::FutureExt;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
-    style::{Color, Style, Stylize},
-    text::{Span, Text},
+    style::{Color, Modifier, Style, Stylize},
+    text::{Line, Span, Text},
     widgets::{
-        Block, BorderType, Borders, Cell, Clear, Row, Scrollbar, ScrollbarOrientation,
-        ScrollbarState, Table, TableState,
+        Block, BorderType, Borders, Cell, Clear, Padding, Paragraph, Row, Scrollbar,
+        ScrollbarOrientation, ScrollbarState, Table, TableState,
     },
     Frame,
 };
 use std::sync::mpsc::channel;
+use tui_input::Input;
 
 use crate::{
     bluetooth::{request_confirmation, Controller},
@@ -39,6 +40,7 @@ pub enum FocusedBlock {
     NewDevices,
     Help,
     PassKeyConfirmation,
+    SetDeviceAliasBox,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -62,6 +64,7 @@ pub struct App {
     pub focused_block: FocusedBlock,
     pub pairing_confirmation: PairingConfirmation,
     pub color_mode: ColorMode,
+    pub new_alias: Input,
 }
 
 #[derive(Debug)]
@@ -134,6 +137,118 @@ impl App {
             }
         }
     }
+
+    pub fn render_set_alias(&mut self, frame: &mut Frame) {
+        let area = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(
+                [
+                    Constraint::Percentage(45),
+                    Constraint::Length(6),
+                    Constraint::Percentage(45),
+                ]
+                .as_ref(),
+            )
+            .split(frame.size());
+
+        let area = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints(
+                [
+                    Constraint::Length((frame.size().width - 80) / 2),
+                    Constraint::Min(80),
+                    Constraint::Length((frame.size().width - 80) / 2),
+                ]
+                .as_ref(),
+            )
+            .split(area[1]);
+
+        let area = area[1];
+
+        let (text_area, alias_area) = {
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints(
+                    [
+                        Constraint::Length(1),
+                        Constraint::Length(3),
+                        Constraint::Length(1),
+                        Constraint::Length(2),
+                    ]
+                    .as_ref(),
+                )
+                .split(area);
+
+            let area1 = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(
+                    [
+                        Constraint::Length(1),
+                        Constraint::Fill(1),
+                        Constraint::Length(1),
+                    ]
+                    .as_ref(),
+                )
+                .split(chunks[1]);
+
+            let area2 = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(
+                    [
+                        Constraint::Percentage(20),
+                        Constraint::Fill(1),
+                        Constraint::Percentage(20),
+                    ]
+                    .as_ref(),
+                )
+                .split(chunks[2]);
+
+            (area1[1], area2[1])
+        };
+
+        frame.render_widget(Clear, area);
+        frame.render_widget(
+            Block::new()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Thick)
+                .style(Style::default().green())
+                .border_style(Style::default().fg(Color::Green)),
+            area,
+        );
+
+        if let Some(selected_controller) = self.controller_state.selected() {
+            let controller = &self.controllers[selected_controller];
+            if let Some(index) = self.paired_devices_state.selected() {
+                let name = controller.paired_devices[index].alias.as_str();
+
+                let text = Line::from(vec![
+                    Span::from("Enter the new name for "),
+                    Span::styled(
+                        name,
+                        Style::default().add_modifier(Modifier::BOLD | Modifier::ITALIC),
+                    ),
+                ]);
+
+                let msg = Paragraph::new(text)
+                    .alignment(Alignment::Center)
+                    .style(Style::default().fg(Color::White))
+                    .block(Block::new().padding(Padding::horizontal(2)));
+
+                let alias = Paragraph::new(self.new_alias.value())
+                    .alignment(Alignment::Left)
+                    .style(Style::default().fg(Color::White))
+                    .block(
+                        Block::new()
+                            .bg(Color::DarkGray)
+                            .padding(Padding::horizontal(2)),
+                    );
+
+                frame.render_widget(msg, text_area);
+                frame.render_widget(alias, alias_area);
+            }
+        }
+    }
+
     pub fn render(&mut self, frame: &mut Frame) {
         if let Some(selected_controller_index) = self.controller_state.selected() {
             let selected_controller = &self.controllers[selected_controller_index];
@@ -293,7 +408,7 @@ impl App {
                 ScrollbarState::new(self.controllers.len()).position(selected_controller_index);
             frame.render_stateful_widget(
                 scrollbar,
-                controller_block.inner(&Margin {
+                controller_block.inner(Margin {
                     vertical: 1,
                     horizontal: 0,
                 }),
@@ -306,7 +421,13 @@ impl App {
                 .iter()
                 .map(|d| {
                     Row::new(vec![
-                        d.alias.to_owned(),
+                        {
+                            if let Some(icon) = &d.icon {
+                                format!("{} {}", icon, &d.alias)
+                            } else {
+                                d.alias.to_owned()
+                            }
+                        },
                         d.is_trusted.to_string(),
                         d.is_connected.to_string(),
                         {
@@ -477,7 +598,7 @@ impl App {
                 .position(self.paired_devices_state.selected().unwrap_or_default());
             frame.render_stateful_widget(
                 scrollbar,
-                paired_devices_block.inner(&Margin {
+                paired_devices_block.inner(Margin {
                     vertical: 1,
                     horizontal: 0,
                 }),
@@ -490,7 +611,15 @@ impl App {
                 let rows: Vec<Row> = selected_controller
                     .new_devices
                     .iter()
-                    .map(|d| Row::new(vec![d.addr.to_string(), d.alias.to_owned()]))
+                    .map(|d| {
+                        Row::new(vec![d.addr.to_string(), {
+                            if let Some(icon) = &d.icon {
+                                format!("{} {}", icon, &d.alias)
+                            } else {
+                                d.alias.to_owned()
+                            }
+                        }])
+                    })
                     .collect();
                 let rows_len = rows.len();
 
@@ -576,7 +705,7 @@ impl App {
                     ScrollbarState::new(rows_len).position(state.selected().unwrap_or_default());
                 frame.render_stateful_widget(
                     scrollbar,
-                    new_devices_block.inner(&Margin {
+                    new_devices_block.inner(Margin {
                         vertical: 1,
                         horizontal: 0,
                     }),
@@ -725,6 +854,7 @@ impl App {
             focused_block: FocusedBlock::Adapter,
             pairing_confirmation,
             color_mode,
+            new_alias: Input::default(),
         })
     }
 

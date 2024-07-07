@@ -5,6 +5,9 @@ use bluer::{
     agent::{ReqError, ReqResult, RequestConfirmation},
     Adapter, Address, Session,
 };
+
+use bluer::Device as BTDevice;
+
 use tokio::sync::oneshot;
 
 use crate::app::AppResult;
@@ -24,7 +27,9 @@ pub struct Controller {
 
 #[derive(Debug, Clone)]
 pub struct Device {
+    device: BTDevice,
     pub addr: Address,
+    pub icon: Option<String>,
     pub alias: String,
     pub is_paired: bool,
     pub is_trusted: bool,
@@ -32,8 +37,13 @@ pub struct Device {
     pub battery_percentage: Option<u8>,
 }
 
-// https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 impl Device {
+    pub async fn set_alias(&self, alias: String) -> AppResult<()> {
+        self.device.set_alias(alias).await?;
+        Ok(())
+    }
+
+    // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
     pub fn get_icon(name: &str) -> Option<String> {
         match name {
             "audio-card" => Some(String::from("󰓃")),
@@ -101,25 +111,21 @@ impl Controller {
             let is_connected = device.is_connected().await?;
             let battery_percentage = device.battery_percentage().await?;
 
-            let device = Device {
+            let dev = Device {
+                device,
                 addr,
-                alias: {
-                    if let Some(icon) = icon {
-                        format!("{} {}", icon, alias)
-                    } else {
-                        alias
-                    }
-                },
+                alias,
+                icon,
                 is_paired,
                 is_trusted,
                 is_connected,
                 battery_percentage,
             };
 
-            if device.is_paired {
-                paired_devices.push(device);
+            if dev.is_paired {
+                paired_devices.push(dev);
             } else {
-                new_devices.push(device);
+                new_devices.push(dev);
             }
         }
 

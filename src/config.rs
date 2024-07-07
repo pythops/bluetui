@@ -50,6 +50,9 @@ pub struct PairedDevice {
 
     #[serde(default = "default_toggle_device_trust")]
     pub toggle_trust: char,
+
+    #[serde(default = "default_set_new_name")]
+    pub rename: char,
 }
 
 impl Default for PairedDevice {
@@ -58,8 +61,13 @@ impl Default for PairedDevice {
             unpair: 'u',
             toggle_connect: ' ',
             toggle_trust: 't',
+            rename: 'e',
         }
     }
+}
+
+fn default_set_new_name() -> char {
+    'e'
 }
 
 #[derive(Deserialize, Debug)]

@@ -61,7 +61,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `esc`: Dismiss the help pop-up.
 
-`q` or `ctrl+c`: Quit the app.
+`ctrl+c`: Quit the app.
 
 ### Adapters
 
@@ -99,6 +99,7 @@ toggle_discovery = "d"
 unpair = "u"
 toggle_connect = " "
 toggle_trust = "t"
+rename = "e"
 
 [new_device]
 pair = "p"

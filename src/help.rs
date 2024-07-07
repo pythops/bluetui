@@ -32,7 +32,7 @@ impl Help {
                     Cell::from("## Global").style(Style::new().bold().fg(Color::Yellow)),
                     "",
                 ),
-                (Cell::from("Esc").bold(), "Dismiss help pop-up"),
+                (Cell::from("Esc").bold(), "Dismiss different pop-ups"),
                 (
                     Cell::from("Tab").bold(),
                     "Switch between different sections",
@@ -44,7 +44,7 @@ impl Help {
                     "Start/Stop scanning",
                 ),
                 (Cell::from("?").bold(), "Show help"),
-                (Cell::from("q or ctrl+c").bold(), "Quit"),
+                (Cell::from("ctrl+c").bold(), "Quit"),
                 (Cell::from(""), ""),
                 (
                     Cell::from("## Adapters").style(Style::new().bold().fg(Color::Yellow)),
@@ -85,6 +85,10 @@ impl Help {
                 (
                     Cell::from(config.paired_device.toggle_trust.to_string()).bold(),
                     "Trust/Untrust the device",
+                ),
+                (
+                    Cell::from(config.paired_device.rename.to_string()).bold(),
+                    "Rename the device",
                 ),
                 (Cell::from(""), ""),
                 (
@@ -167,7 +171,7 @@ impl Help {
             ScrollbarState::new(rows_len).position(self.state.selected().unwrap_or_default());
         frame.render_stateful_widget(
             scrollbar,
-            block.inner(&Margin {
+            block.inner(Margin {
                 vertical: 1,
                 horizontal: 0,
             }),
