@@ -11,19 +11,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: cargo-bins/cargo-binstall@main
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
 
       - name: Setup the build env
         run: |
-          sudo apt update
-          sudo apt install -y libdbus-1-dev pkg-config
+          sudo apt-get update && \
+          sudo apt-get install -y \
+            podman \
+            qemu-user-static\
+            pkg-config \
+            libdbus-1-dev && \
+          cargo binstall --no-confirm cross
 
-      - name: Build for x86_64
+      - name: Build for x86_64 linux gnu
         run: |
           cargo build --release
           cp target/release/bluetui bluetui-x86_64-linux-gnu
+
+      - name: Build for aarch64 linux gnu
+        run: |
+          CROSS_CONTAINER_ENGINE=podman cross build --target aarch64-unknown-linux-gnu --release
+          cp target/aarch64-unknown-linux-gnu/release/bluetui bluetui-aarch64-linux-gnu
 
       - name: Release
         uses: softprops/action-gh-release@v1
