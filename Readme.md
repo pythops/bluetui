@@ -1,6 +1,6 @@
 <div align="center">
   <img height="100" src="assets/logo.png"/>
-  <h2> TUI for managing bluetooth devices </h2>
+  <h2> TUI for managing bluetooth on Linux </h2>
   <img src="https://github.com/pythops/bluetui/assets/57548585/885f4d40-ba48-49c3-8baf-1cc91e08659d"/>
 </div>
 
@@ -78,6 +78,8 @@ This will produce an executable file at `target/release/bluetui` that you can co
 `Space`: Connect/Disconnect the device.
 
 `t`: Trust/Untrust the device.
+
+`e`: Rename the device.
 
 ### New devices
 
