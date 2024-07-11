@@ -1,10 +1,10 @@
 [package]
 name = "bluetui"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Badr Badri <contact@pythops.com>"]
 license = "GPL-3.0"
 edition = "2021"
-description = "TUI for managing bluetooth devices"
+description = "TUI for managing bluetooth on Linux"
 readme = "Readme.md"
 homepage = "https://github.com/pythops/bluetui"
 repository = "https://github.com/pythops/bluetui"
