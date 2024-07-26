@@ -17,3 +17,5 @@ pub mod spinner;
 pub mod help;
 
 pub mod config;
+
+pub mod rfkill;

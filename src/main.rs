@@ -2,6 +2,7 @@ use bluetui::app::{App, AppResult};
 use bluetui::config::Config;
 use bluetui::event::{Event, EventHandler};
 use bluetui::handler::handle_key_events;
+use bluetui::rfkill;
 use bluetui::tui::Tui;
 use clap::{crate_version, Command};
 use ratatui::backend::CrosstermBackend;
@@ -14,6 +15,8 @@ async fn main() -> AppResult<()> {
     Command::new("bluetui")
         .version(crate_version!())
         .get_matches();
+
+    rfkill::check()?;
 
     let config = Arc::new(Config::new());
     let mut app = App::new(config.clone()).await?;
