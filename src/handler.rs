@@ -65,6 +65,10 @@ pub async fn handle_key_events(
                     }
                 }
 
+                KeyCode::Char('q') => {
+                    app.quit();
+                }
+
                 // Show help
                 KeyCode::Char('?') => {
                     app.focused_block = FocusedBlock::Help;

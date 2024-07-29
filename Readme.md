@@ -61,7 +61,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `esc`: Dismiss the help pop-up.
 
-`ctrl+c`: Quit the app.
+`ctrl+c` or `q`: Quit the app.
 
 ### Adapters
 

@@ -44,7 +44,7 @@ impl Help {
                     "Start/Stop scanning",
                 ),
                 (Cell::from("?").bold(), "Show help"),
-                (Cell::from("ctrl+c").bold(), "Quit"),
+                (Cell::from("ctrl+c or q").bold(), "Quit"),
                 (Cell::from(""), ""),
                 (
                     Cell::from("## Adapters").style(Style::new().bold().fg(Color::Yellow)),
