@@ -1,3 +1,10 @@
+## v0.5.1 - 29/07/2024
+
+### Added
+
+- Detect when the device is soft/hard blocked
+- Add `q` to quit
+
 ## v0.5 - 11/07/2024
 
 ### Added
