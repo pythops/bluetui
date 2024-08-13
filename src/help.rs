@@ -133,7 +133,7 @@ impl Help {
     }
 
     pub fn render(&mut self, frame: &mut Frame, color_mode: ColorMode) {
-        let block = help_rect(frame.size());
+        let block = help_rect(frame.area());
 
         self.block_height = block.height as usize;
         let widths = [Constraint::Length(20), Constraint::Max(40)];

@@ -149,15 +149,15 @@ impl App {
                 ]
                 .as_ref(),
             )
-            .split(frame.size());
+            .split(frame.area());
 
         let area = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(
                 [
-                    Constraint::Length((frame.size().width - 80) / 2),
+                    Constraint::Length((frame.area().width - 80) / 2),
                     Constraint::Min(80),
-                    Constraint::Length((frame.size().width - 80) / 2),
+                    Constraint::Length((frame.area().width - 80) / 2),
                 ]
                 .as_ref(),
             )
@@ -272,7 +272,7 @@ impl App {
                         ]
                     })
                     .margin(1)
-                    .split(frame.size());
+                    .split(frame.area());
                 (chunks[0], chunks[1], chunks[2])
             };
 
@@ -726,7 +726,7 @@ impl App {
                     self.pairing_confirmation.message = Some(msg);
                 }
 
-                let popup_area = popup(frame.size());
+                let popup_area = popup(frame.area());
 
                 let (text_area, choices_area) = {
                     let chunks = Layout::default()

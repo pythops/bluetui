@@ -55,7 +55,7 @@ impl Notification {
             index as u16,
             notification_height,
             notification_width,
-            frame.size(),
+            frame.area(),
         );
 
         frame.render_widget(Clear, area);
