@@ -686,7 +686,7 @@ impl App {
                         ColorMode::Light => Style::default().fg(Color::Black),
                     })
                     .highlight_style(if self.focused_block == FocusedBlock::NewDevices {
-                        Style::default().bg(Color::Gray)
+                        Style::default().bg(Color::DarkGray)
                     } else {
                         Style::default()
                     });
