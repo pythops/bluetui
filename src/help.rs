@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Margin},
     style::{Color, Style, Stylize},
     widgets::{
         Block, BorderType, Borders, Cell, Clear, Padding, Row, Scrollbar, ScrollbarOrientation,
@@ -133,9 +133,28 @@ impl Help {
     }
 
     pub fn render(&mut self, frame: &mut Frame, color_mode: ColorMode) {
-        let block = help_rect(frame.area());
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Fill(1),
+                Constraint::Min(10),
+                Constraint::Fill(1),
+            ])
+            .flex(ratatui::layout::Flex::SpaceBetween)
+            .split(frame.area());
+
+        let block = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Fill(1),
+                Constraint::Length(70),
+                Constraint::Fill(1),
+            ])
+            .flex(ratatui::layout::Flex::SpaceBetween)
+            .split(layout[1])[1];
 
         self.block_height = block.height as usize;
+
         let widths = [Constraint::Length(20), Constraint::Max(40)];
         let rows: Vec<Row> = self
             .keys
@@ -178,30 +197,4 @@ impl Help {
             &mut scrollbar_state,
         );
     }
-}
-
-pub fn help_rect(r: Rect) -> Rect {
-    let popup_layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(
-            [
-                Constraint::Percentage(35),
-                Constraint::Min(10),
-                Constraint::Percentage(35),
-            ]
-            .as_ref(),
-        )
-        .split(r);
-
-    Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints(
-            [
-                Constraint::Length((r.width - 80) / 2),
-                Constraint::Min(80),
-                Constraint::Length((r.width - 80) / 2),
-            ]
-            .as_ref(),
-        )
-        .split(popup_layout[1])[1]
 }
