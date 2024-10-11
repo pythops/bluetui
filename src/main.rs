@@ -39,11 +39,10 @@ async fn main() -> AppResult<()> {
                 )
                 .await?
             }
-            Event::Mouse(_) => {}
-            Event::Resize(_, _) => {}
             Event::Notification(notification) => {
                 app.notifications.push(notification);
             }
+            _ => {}
         }
     }
 
