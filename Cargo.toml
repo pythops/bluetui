@@ -14,14 +14,16 @@ async-channel = "2"
 bluer = { version = "0.17", features = ["full"] }
 crossterm = { version = "0.28", features = ["event-stream"] }
 futures = "0.3"
-ratatui = "0.28"
+ratatui = "0.29"
 tokio = { version = "1", features = ["full"] }
 dirs = "5"
 toml = { version = "0.8" }
 serde = { version = "1", features = ["derive"] }
 clap = { version = "4", features = ["derive", "cargo"] }
 terminal-light = "1"
-tui-input = "0.10"
+tui-input = "0.11"
 
 [profile.release]
 strip = true
+codegen-units = 1
+lto = "fat"
