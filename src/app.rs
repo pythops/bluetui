@@ -324,6 +324,8 @@ impl App {
                 Constraint::Length(14),
             ];
 
+            let rows_len = rows.len();
+
             let controller_table = Table::new(rows, widths)
                 .header({
                     if self.focused_block == FocusedBlock::Adapter {
@@ -403,19 +405,21 @@ impl App {
 
             frame.render_widget(controller_table, controller_block);
 
-            let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
-                .begin_symbol(Some("↑"))
-                .end_symbol(Some("↓"));
-            let mut scrollbar_state =
-                ScrollbarState::new(self.controllers.len()).position(selected_controller_index);
-            frame.render_stateful_widget(
-                scrollbar,
-                controller_block.inner(Margin {
-                    vertical: 1,
-                    horizontal: 0,
-                }),
-                &mut scrollbar_state,
-            );
+            if rows_len > controller_block.height.saturating_sub(4) as usize {
+                let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+                    .begin_symbol(Some("↑"))
+                    .end_symbol(Some("↓"));
+                let mut scrollbar_state =
+                    ScrollbarState::new(self.controllers.len()).position(selected_controller_index);
+                frame.render_stateful_widget(
+                    scrollbar,
+                    controller_block.inner(Margin {
+                        vertical: 1,
+                        horizontal: 0,
+                    }),
+                    &mut scrollbar_state,
+                );
+            }
 
             //Paired devices
             let rows: Vec<Row> = selected_controller
@@ -600,19 +604,21 @@ impl App {
                 &mut self.paired_devices_state.clone(),
             );
 
-            let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
-                .begin_symbol(Some("↑"))
-                .end_symbol(Some("↓"));
-            let mut scrollbar_state = ScrollbarState::new(rows_len)
-                .position(self.paired_devices_state.selected().unwrap_or_default());
-            frame.render_stateful_widget(
-                scrollbar,
-                paired_devices_block.inner(Margin {
-                    vertical: 1,
-                    horizontal: 0,
-                }),
-                &mut scrollbar_state,
-            );
+            if rows_len > paired_devices_block.height.saturating_sub(4) as usize {
+                let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+                    .begin_symbol(Some("↑"))
+                    .end_symbol(Some("↓"));
+                let mut scrollbar_state = ScrollbarState::new(rows_len)
+                    .position(self.paired_devices_state.selected().unwrap_or_default());
+                frame.render_stateful_widget(
+                    scrollbar,
+                    paired_devices_block.inner(Margin {
+                        vertical: 1,
+                        horizontal: 0,
+                    }),
+                    &mut scrollbar_state,
+                );
+            }
 
             //New devices
 
@@ -707,19 +713,21 @@ impl App {
 
                 frame.render_stateful_widget(new_devices_table, new_devices_block, &mut state);
 
-                let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
-                    .begin_symbol(Some("↑"))
-                    .end_symbol(Some("↓"));
-                let mut scrollbar_state =
-                    ScrollbarState::new(rows_len).position(state.selected().unwrap_or_default());
-                frame.render_stateful_widget(
-                    scrollbar,
-                    new_devices_block.inner(Margin {
-                        vertical: 1,
-                        horizontal: 0,
-                    }),
-                    &mut scrollbar_state,
-                );
+                if rows_len > new_devices_block.height.saturating_sub(4) as usize {
+                    let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+                        .begin_symbol(Some("↑"))
+                        .end_symbol(Some("↓"));
+                    let mut scrollbar_state = ScrollbarState::new(rows_len)
+                        .position(state.selected().unwrap_or_default());
+                    frame.render_stateful_widget(
+                        scrollbar,
+                        new_devices_block.inner(Margin {
+                            vertical: 1,
+                            horizontal: 0,
+                        }),
+                        &mut scrollbar_state,
+                    );
+                }
             }
 
             // Pairing confirmation
