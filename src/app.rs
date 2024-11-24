@@ -4,31 +4,28 @@ use bluer::{
 };
 use futures::FutureExt;
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Margin},
     style::{Color, Modifier, Style, Stylize},
-    text::{Line, Span, Text},
+    text::{Line, Span},
     widgets::{
         Block, BorderType, Borders, Cell, Clear, Padding, Paragraph, Row, Scrollbar,
         ScrollbarOrientation, ScrollbarState, Table, TableState,
     },
     Frame,
 };
-use std::sync::mpsc::channel;
 use tui_input::Input;
 
 use crate::{
     bluetooth::{request_confirmation, Controller},
     config::Config,
+    confirmation::PairingConfirmation,
     help::Help,
     notification::Notification,
     spinner::Spinner,
 };
 use std::{
     error,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
+    sync::{atomic::Ordering, Arc},
 };
 
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -67,60 +64,66 @@ pub struct App {
     pub new_alias: Input,
 }
 
-#[derive(Debug)]
-pub struct PairingConfirmation {
-    pub confirmed: bool,
-    pub display: Arc<AtomicBool>,
-    pub message: Option<String>,
-    pub user_confirmation_sender: async_channel::Sender<bool>,
-    pub user_confirmation_receiver: async_channel::Receiver<bool>,
-    pub confirmation_message_sender: std::sync::mpsc::Sender<String>,
-    pub confirmation_message_receiver: std::sync::mpsc::Receiver<String>,
-}
-
-impl Default for PairingConfirmation {
-    fn default() -> Self {
-        let (user_confirmation_sender, user_confirmation_receiver) = async_channel::unbounded();
-
-        let (confirmation_message_sender, confirmation_message_receiver) = channel::<String>();
-        Self {
-            confirmed: true,
-            display: Arc::new(AtomicBool::new(false)),
-            message: None,
-            user_confirmation_sender,
-            user_confirmation_receiver,
-            confirmation_message_sender,
-            confirmation_message_receiver,
-        }
-    }
-}
-
-pub fn popup(r: Rect) -> Rect {
-    let popup_layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(
-            [
-                Constraint::Percentage(45),
-                Constraint::Length(5),
-                Constraint::Percentage(45),
-            ]
-            .as_ref(),
-        )
-        .split(r);
-
-    Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints(
-            [
-                Constraint::Length((r.width - 80) / 2),
-                Constraint::Min(80),
-                Constraint::Length((r.width - 80) / 2),
-            ]
-            .as_ref(),
-        )
-        .split(popup_layout[1])[1]
-}
 impl App {
+    pub async fn new(config: Arc<Config>) -> AppResult<Self> {
+        let color_mode = match terminal_light::luma() {
+            Ok(luma) if luma > 0.6 => ColorMode::Light,
+            Ok(_) => ColorMode::Dark,
+            Err(_) => ColorMode::Dark,
+        };
+
+        let session = Arc::new(bluer::Session::new().await?);
+
+        let pairing_confirmation = PairingConfirmation::new();
+
+        let user_confirmation_receiver = pairing_confirmation.user_confirmation_receiver.clone();
+
+        let confirmation_message_sender = pairing_confirmation.confirmation_message_sender.clone();
+
+        let confirmation_display = pairing_confirmation.display.clone();
+
+        let agent = Agent {
+            request_default: false,
+            request_confirmation: Some(Box::new(move |req| {
+                request_confirmation(
+                    req,
+                    confirmation_display.clone(),
+                    user_confirmation_receiver.clone(),
+                    confirmation_message_sender.clone(),
+                )
+                .boxed()
+            })),
+            ..Default::default()
+        };
+
+        let handle = session.register_agent(agent).await?;
+        let controllers: Vec<Controller> = Controller::get_all(session.clone()).await?;
+
+        let mut controller_state = TableState::default();
+        if controllers.is_empty() {
+            controller_state.select(None);
+        } else {
+            controller_state.select(Some(0));
+        }
+
+        Ok(Self {
+            running: true,
+            session,
+            agent: handle,
+            help: Help::new(config),
+            spinner: Spinner::default(),
+            notifications: Vec::new(),
+            controllers,
+            controller_state,
+            paired_devices_state: TableState::default(),
+            new_devices_state: TableState::default(),
+            focused_block: FocusedBlock::PairedDevices,
+            pairing_confirmation,
+            color_mode,
+            new_alias: Input::default(),
+        })
+    }
+
     pub fn reset_devices_state(&mut self) {
         if let Some(selected_controller) = self.controller_state.selected() {
             let controller = &self.controllers[selected_controller];
@@ -141,26 +144,20 @@ impl App {
     pub fn render_set_alias(&mut self, frame: &mut Frame) {
         let area = Layout::default()
             .direction(Direction::Vertical)
-            .constraints(
-                [
-                    Constraint::Percentage(45),
-                    Constraint::Length(6),
-                    Constraint::Percentage(45),
-                ]
-                .as_ref(),
-            )
+            .constraints([
+                Constraint::Fill(1),
+                Constraint::Length(6),
+                Constraint::Fill(1),
+            ])
             .split(frame.area());
 
         let area = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints(
-                [
-                    Constraint::Length((frame.area().width - 80) / 2),
-                    Constraint::Min(80),
-                    Constraint::Length((frame.area().width - 80) / 2),
-                ]
-                .as_ref(),
-            )
+            .constraints([
+                Constraint::Fill(1),
+                Constraint::Min(80),
+                Constraint::Fill(1),
+            ])
             .split(area[1]);
 
         let area = area[1];
@@ -255,20 +252,25 @@ impl App {
             // Layout
             let render_new_devices = !selected_controller.new_devices.is_empty()
                 | selected_controller.is_scanning.load(Ordering::Relaxed);
-            let (controller_block, paired_devices_block, new_devices_block) = {
+
+            let adapter_block_height = self.controllers.len() as u16 + 6;
+
+            let paired_devices_block_height = selected_controller.paired_devices.len() as u16 + 4;
+
+            let (paired_devices_block, new_devices_block, controller_block) = {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints(if render_new_devices {
-                        &[
-                            Constraint::Percentage(33),
-                            Constraint::Percentage(33),
-                            Constraint::Percentage(33),
+                        [
+                            Constraint::Length(paired_devices_block_height),
+                            Constraint::Fill(1),
+                            Constraint::Length(adapter_block_height),
                         ]
                     } else {
-                        &[
-                            Constraint::Percentage(50),
-                            Constraint::Percentage(50),
+                        [
                             Constraint::Fill(1),
+                            Constraint::Length(0),
+                            Constraint::Length(adapter_block_height),
                         ]
                     })
                     .margin(1)
@@ -393,7 +395,7 @@ impl App {
                     ColorMode::Dark => Style::default().fg(Color::White),
                     ColorMode::Light => Style::default().fg(Color::Black),
                 })
-                .highlight_style(if self.focused_block == FocusedBlock::Adapter {
+                .row_highlight_style(if self.focused_block == FocusedBlock::Adapter {
                     Style::default().bg(Color::DarkGray)
                 } else {
                     Style::default()
@@ -472,6 +474,13 @@ impl App {
                 })
                 .collect();
             let rows_len = rows.len();
+
+            if rows_len > 0
+                && self.focused_block == FocusedBlock::PairedDevices
+                && self.paired_devices_state.selected().is_none()
+            {
+                self.paired_devices_state.select(Some(0));
+            }
 
             let show_battery_column = selected_controller
                 .paired_devices
@@ -579,7 +588,7 @@ impl App {
                     ColorMode::Dark => Style::default().fg(Color::White),
                     ColorMode::Light => Style::default().fg(Color::Black),
                 })
-                .highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
+                .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
                     Style::default().bg(Color::DarkGray)
                 } else {
                     Style::default()
@@ -685,7 +694,7 @@ impl App {
                         ColorMode::Dark => Style::default().fg(Color::White),
                         ColorMode::Light => Style::default().fg(Color::Black),
                     })
-                    .highlight_style(if self.focused_block == FocusedBlock::NewDevices {
+                    .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
                         Style::default().bg(Color::DarkGray)
                     } else {
                         Style::default()
@@ -717,145 +726,9 @@ impl App {
 
             if self.pairing_confirmation.display.load(Ordering::Relaxed) {
                 self.focused_block = FocusedBlock::PassKeyConfirmation;
-                if self.pairing_confirmation.message.is_none() {
-                    let msg = self
-                        .pairing_confirmation
-                        .confirmation_message_receiver
-                        .recv()
-                        .unwrap();
-                    self.pairing_confirmation.message = Some(msg);
-                }
-
-                let popup_area = popup(frame.area());
-
-                let (text_area, choices_area) = {
-                    let chunks = Layout::default()
-                        .direction(Direction::Vertical)
-                        .constraints(
-                            [
-                                Constraint::Length(1),
-                                Constraint::Length(1),
-                                Constraint::Length(1),
-                                Constraint::Length(1),
-                                Constraint::Length(1),
-                            ]
-                            .as_ref(),
-                        )
-                        .split(popup_area);
-
-                    (chunks[1], chunks[3])
-                };
-
-                let (yes_area, no_area) = {
-                    let chunks = Layout::default()
-                        .direction(Direction::Horizontal)
-                        .constraints(
-                            [
-                                Constraint::Percentage(30),
-                                Constraint::Length(5),
-                                Constraint::Min(1),
-                                Constraint::Length(5),
-                                Constraint::Percentage(30),
-                            ]
-                            .as_ref(),
-                        )
-                        .split(choices_area);
-
-                    (chunks[1], chunks[3])
-                };
-
-                let text = Text::from(
-                    self.pairing_confirmation
-                        .message
-                        .clone()
-                        .unwrap_or_default(),
-                )
-                .style(Style::default().fg(Color::White));
-                let (yes, no) = {
-                    if self.pairing_confirmation.confirmed {
-                        let no = Span::from("[No]").style(Style::default());
-                        let yes = Span::from("[Yes]").style(Style::default().bg(Color::DarkGray));
-                        (yes, no)
-                    } else {
-                        let no = Span::from("[No]").style(Style::default().bg(Color::DarkGray));
-                        let yes = Span::from("[Yes]").style(Style::default());
-                        (yes, no)
-                    }
-                };
-
-                frame.render_widget(Clear, popup_area);
-
-                frame.render_widget(
-                    Block::new()
-                        .borders(Borders::ALL)
-                        .border_type(BorderType::Thick)
-                        .border_style(Style::default().fg(Color::Green)),
-                    popup_area,
-                );
-                frame.render_widget(text.alignment(Alignment::Center), text_area);
-                frame.render_widget(yes, yes_area);
-                frame.render_widget(no, no_area);
+                self.pairing_confirmation.render(frame);
             }
         }
-    }
-    pub async fn new(config: Arc<Config>) -> AppResult<Self> {
-        let color_mode = match terminal_light::luma() {
-            Ok(luma) if luma > 0.6 => ColorMode::Light,
-            Ok(_) => ColorMode::Dark,
-            Err(_) => ColorMode::Dark,
-        };
-
-        let session = Arc::new(bluer::Session::new().await?);
-
-        // Pairing confirmation
-        let pairing_confirmation = PairingConfirmation::default();
-
-        let user_confirmation_receiver = pairing_confirmation.user_confirmation_receiver.clone();
-
-        let confirmation_message_sender = pairing_confirmation.confirmation_message_sender.clone();
-
-        let confirmation_display = pairing_confirmation.display.clone();
-
-        let agent = Agent {
-            request_default: false,
-            request_confirmation: Some(Box::new(move |req| {
-                request_confirmation(
-                    req,
-                    confirmation_display.clone(),
-                    user_confirmation_receiver.clone(),
-                    confirmation_message_sender.clone(),
-                )
-                .boxed()
-            })),
-            ..Default::default()
-        };
-
-        let handle = session.register_agent(agent).await?;
-        let controllers: Vec<Controller> = Controller::get_all(session.clone()).await?;
-
-        let mut controller_state = TableState::default();
-        if controllers.is_empty() {
-            controller_state.select(None);
-        } else {
-            controller_state.select(Some(0));
-        }
-
-        Ok(Self {
-            running: true,
-            session,
-            agent: handle,
-            help: Help::new(config),
-            spinner: Spinner::default(),
-            notifications: Vec::new(),
-            controllers,
-            controller_state,
-            paired_devices_state: TableState::default(),
-            new_devices_state: TableState::default(),
-            focused_block: FocusedBlock::Adapter,
-            pairing_confirmation,
-            color_mode,
-            new_alias: Input::default(),
-        })
     }
 
     pub async fn tick(&mut self) -> AppResult<()> {
