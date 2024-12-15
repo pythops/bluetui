@@ -1,9 +1,10 @@
 use bluer::{
-    agent::{Agent, AgentHandle},
     Session,
+    agent::{Agent, AgentHandle},
 };
 use futures::FutureExt;
 use ratatui::{
+    Frame,
     layout::{Alignment, Constraint, Direction, Layout, Margin},
     style::{Color, Modifier, Style, Stylize},
     text::{Line, Span},
@@ -11,12 +12,11 @@ use ratatui::{
         Block, BorderType, Borders, Cell, Clear, Padding, Paragraph, Row, Scrollbar,
         ScrollbarOrientation, ScrollbarState, Table, TableState,
     },
-    Frame,
 };
 use tui_input::Input;
 
 use crate::{
-    bluetooth::{request_confirmation, Controller},
+    bluetooth::{Controller, request_confirmation},
     config::Config,
     confirmation::PairingConfirmation,
     help::Help,
@@ -25,7 +25,7 @@ use crate::{
 };
 use std::{
     error,
-    sync::{atomic::Ordering, Arc},
+    sync::{Arc, atomic::Ordering},
 };
 
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -303,15 +303,6 @@ impl App {
                         controller.is_pairable.to_string(),
                         controller.is_discoverable.to_string(),
                     ])
-                    .style(if self.focused_block == FocusedBlock::Adapter {
-                        if controller.name == selected_controller.name {
-                            Style::default().bg(Color::DarkGray)
-                        } else {
-                            Style::default()
-                        }
-                    } else {
-                        Style::default()
-                    })
                 })
                 .collect();
 
@@ -398,12 +389,16 @@ impl App {
                     ColorMode::Light => Style::default().fg(Color::Black),
                 })
                 .row_highlight_style(if self.focused_block == FocusedBlock::Adapter {
-                    Style::default().bg(Color::DarkGray)
+                    Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
                     Style::default()
                 });
 
-            frame.render_widget(controller_table, controller_block);
+            frame.render_stateful_widget(
+                controller_table,
+                controller_block,
+                &mut self.controller_state.clone(),
+            );
 
             if rows_len > controller_block.height.saturating_sub(4) as usize {
                 let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
@@ -593,7 +588,7 @@ impl App {
                     ColorMode::Light => Style::default().fg(Color::Black),
                 })
                 .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
-                    Style::default().bg(Color::DarkGray)
+                    Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
                     Style::default()
                 });
@@ -701,7 +696,7 @@ impl App {
                         ColorMode::Light => Style::default().fg(Color::Black),
                     })
                     .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
-                        Style::default().bg(Color::DarkGray)
+                        Style::default().bg(Color::DarkGray).fg(Color::White)
                     } else {
                         Style::default()
                     });

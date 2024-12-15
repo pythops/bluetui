@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use ratatui::{
+    Frame,
     layout::{Alignment, Constraint, Direction, Layout, Margin},
     style::{Color, Style, Stylize},
     widgets::{
         Block, BorderType, Borders, Cell, Clear, Padding, Row, Scrollbar, ScrollbarOrientation,
         ScrollbarState, Table, TableState,
     },
-    Frame,
 };
 
 use crate::{app::ColorMode, config::Config};
@@ -137,7 +137,7 @@ impl Help {
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Min(10),
+                Constraint::Percentage(80),
                 Constraint::Fill(1),
             ])
             .flex(ratatui::layout::Flex::SpaceBetween)
