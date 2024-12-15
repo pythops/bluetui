@@ -1,10 +1,9 @@
 use bluer::{
-    Session,
     agent::{Agent, AgentHandle},
+    Session,
 };
 use futures::FutureExt;
 use ratatui::{
-    Frame,
     layout::{Alignment, Constraint, Direction, Layout, Margin},
     style::{Color, Modifier, Style, Stylize},
     text::{Line, Span},
@@ -12,11 +11,12 @@ use ratatui::{
         Block, BorderType, Borders, Cell, Clear, Padding, Paragraph, Row, Scrollbar,
         ScrollbarOrientation, ScrollbarState, Table, TableState,
     },
+    Frame,
 };
 use tui_input::Input;
 
 use crate::{
-    bluetooth::{Controller, request_confirmation},
+    bluetooth::{request_confirmation, Controller},
     config::Config,
     confirmation::PairingConfirmation,
     help::Help,
@@ -25,7 +25,7 @@ use crate::{
 };
 use std::{
     error,
-    sync::{Arc, atomic::Ordering},
+    sync::{atomic::Ordering, Arc},
 };
 
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
