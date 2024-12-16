@@ -91,9 +91,9 @@ pub async fn handle_key_events(
                         if let Some(selected_controller) = app.controller_state.selected() {
                             let controller = &app.controllers[selected_controller];
                             if controller.new_devices.is_empty() {
-                                app.focused_block = FocusedBlock::Adapter
+                                app.focused_block = FocusedBlock::Adapter;
                             } else {
-                                app.focused_block = FocusedBlock::NewDevices
+                                app.focused_block = FocusedBlock::NewDevices;
                             }
                         }
                     }
@@ -116,7 +116,6 @@ pub async fn handle_key_events(
                                 None => 0,
                             };
 
-                            app.reset_devices_state();
                             app.controller_state.select(Some(i));
                         }
                     }
@@ -184,7 +183,6 @@ pub async fn handle_key_events(
                                 None => 0,
                             };
 
-                            app.reset_devices_state();
                             app.controller_state.select(Some(i));
                         }
                     }

@@ -137,7 +137,7 @@ impl Help {
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Min(10),
+                Constraint::Length(28),
                 Constraint::Fill(1),
             ])
             .flex(ratatui::layout::Flex::SpaceBetween)
