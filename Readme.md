@@ -1,7 +1,7 @@
 <div align="center">
   <img height="100" src="assets/logo.png"/>
   <h2> TUI for managing bluetooth on Linux </h2>
-  <img src="https://github.com/pythops/bluetui/assets/57548585/885f4d40-ba48-49c3-8baf-1cc91e08659d"/>
+  <img src="https://github.com/user-attachments/assets/13498e90-b2d0-43c8-9dd7-8a9de2734f64"/>
 </div>
 
 ## 💡 Prerequisites

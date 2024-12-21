@@ -1,6 +1,6 @@
 [package]
 name = "bluetui"
-version = "0.5.1"
+version = "0.6.0"
 authors = ["Badr Badri <contact@pythops.com>"]
 license = "GPL-3.0"
 edition = "2021"
@@ -17,7 +17,7 @@ futures = "0.3"
 ratatui = "0.29"
 tokio = { version = "1", features = ["full"] }
 dirs = "5"
-toml = { version = "0.8" }
+toml = "0.8"
 serde = { version = "1", features = ["derive"] }
 clap = { version = "4", features = ["derive", "cargo"] }
 terminal-light = "1"
