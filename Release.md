@@ -1,3 +1,13 @@
+## v0.6 - 2024-12-21
+
+### Updated
+
+- The layout has been reorgonized to show paired devices section on the top
+
+### Fix
+
+- fg color is fixed for light mode
+
 ## v0.5.1 - 29/07/2024
 
 ### Added
