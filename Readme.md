@@ -27,10 +27,10 @@ cargo install bluetui
 
 ### 🐧 Arch Linux
 
-You can install `bluetui` from the [AUR](https://aur.archlinux.org/packages/bluetui) with using an AUR helper.
+You can install `bluetui` from the [extra repository](https://archlinux.org/packages/extra/x86_64/bluetui/):
 
 ```shell
-paru -S bluetui
+pacman -S bluetui
 ```
 
 ### 🐧 Gentoo
