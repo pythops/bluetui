@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=BlueTUI
+GenericName=Bluetooth Manager
+Comment=TUI for managing bluetooth on Linux.
+Icon=bluetui
+Exec=bluetui
+Terminal=true
+Categories=System;Manager;ConsoleOnly;TUI;Bluetooth
+Keywords=process;task;tui;bluetooth
