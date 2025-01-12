@@ -284,13 +284,6 @@ impl App {
                 .iter()
                 .map(|controller| {
                     Row::new(vec![
-                        {
-                            if selected_controller.name == controller.name {
-                                " ".to_string()
-                            } else {
-                                String::from(" ")
-                            }
-                        },
                         controller.name.to_string(),
                         controller.alias.to_string(),
                         {
@@ -307,7 +300,6 @@ impl App {
                 .collect();
 
             let widths = [
-                Constraint::Length(4),
                 Constraint::Length(10),
                 Constraint::Length(10),
                 Constraint::Length(10),
@@ -321,7 +313,6 @@ impl App {
                 .header({
                     if self.focused_block == FocusedBlock::Adapter {
                         Row::new(vec![
-                            Cell::from(""),
                             Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Alias").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Power").style(Style::default().fg(Color::Yellow)),
@@ -332,7 +323,6 @@ impl App {
                         .bottom_margin(1)
                     } else {
                         Row::new(vec![
-                            Cell::from(""),
                             Cell::from("Name").style(match self.color_mode {
                                 ColorMode::Dark => Style::default().fg(Color::White),
                                 ColorMode::Light => Style::default().fg(Color::Black),
@@ -388,6 +378,7 @@ impl App {
                     ColorMode::Dark => Style::default().fg(Color::White),
                     ColorMode::Light => Style::default().fg(Color::Black),
                 })
+                .highlight_symbol("  ")
                 .row_highlight_style(if self.focused_block == FocusedBlock::Adapter {
                     Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
@@ -587,6 +578,7 @@ impl App {
                     ColorMode::Dark => Style::default().fg(Color::White),
                     ColorMode::Light => Style::default().fg(Color::Black),
                 })
+                .highlight_symbol("  ")
                 .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
                     Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
@@ -695,6 +687,7 @@ impl App {
                         ColorMode::Dark => Style::default().fg(Color::White),
                         ColorMode::Light => Style::default().fg(Color::Black),
                     })
+                    .highlight_symbol("  ")
                     .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
                         Style::default().bg(Color::DarkGray).fg(Color::White)
                     } else {
