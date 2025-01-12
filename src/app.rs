@@ -8,8 +8,8 @@ use ratatui::{
     style::{Color, Modifier, Style, Stylize},
     text::{Line, Span},
     widgets::{
-        Block, BorderType, Borders, Cell, Clear, Padding, Paragraph, Row, Scrollbar,
-        ScrollbarOrientation, ScrollbarState, Table, TableState,
+        Block, BorderType, Borders, Cell, Clear, HighlightSpacing, Padding, Paragraph, Row,
+        Scrollbar, ScrollbarOrientation, ScrollbarState, Table, TableState,
     },
     Frame,
 };
@@ -388,6 +388,8 @@ impl App {
                     ColorMode::Dark => Style::default().fg(Color::White),
                     ColorMode::Light => Style::default().fg(Color::Black),
                 })
+                .highlight_spacing(HighlightSpacing::Always)
+                .highlight_symbol("→ ")
                 .row_highlight_style(if self.focused_block == FocusedBlock::Adapter {
                     Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
@@ -587,6 +589,8 @@ impl App {
                     ColorMode::Dark => Style::default().fg(Color::White),
                     ColorMode::Light => Style::default().fg(Color::Black),
                 })
+                .highlight_spacing(HighlightSpacing::Always)
+                .highlight_symbol("→ ")
                 .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
                     Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
@@ -695,6 +699,8 @@ impl App {
                         ColorMode::Dark => Style::default().fg(Color::White),
                         ColorMode::Light => Style::default().fg(Color::Black),
                     })
+                    .highlight_spacing(HighlightSpacing::Always)
+                    .highlight_symbol("→ ")
                     .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
                         Style::default().bg(Color::DarkGray).fg(Color::White)
                     } else {
