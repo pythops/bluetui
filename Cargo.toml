@@ -16,7 +16,7 @@ crossterm = { version = "0.28", features = ["event-stream"] }
 futures = "0.3"
 ratatui = "0.29"
 tokio = { version = "1", features = ["full"] }
-dirs = "5"
+dirs = "6"
 toml = "0.8"
 serde = { version = "1", features = ["derive"] }
 clap = { version = "4", features = ["derive", "cargo"] }
