@@ -59,10 +59,8 @@ pub async fn handle_key_events(
         _ => {
             match key_event.code {
                 // Exit the app
-                KeyCode::Char('c') => {
-                    if key_event.modifiers == KeyModifiers::CONTROL {
-                        app.quit();
-                    }
+                KeyCode::Char('c') if key_event.modifiers == KeyModifiers::CONTROL => {
+                    app.quit();
                 }
 
                 KeyCode::Char('q') => {
