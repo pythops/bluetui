@@ -1,13 +1,15 @@
 use std::sync::Arc;
 use std::time::Instant;
 
-use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Margin}, style::{Color, Style, Stylize}, text::ToText, widgets::{Block, BorderType, Borders, Padding, Row, Table, TableState}, Frame
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Color, Style, Stylize},
+    widgets::{Block, BorderType, Borders, Padding, Row, Table, TableState},
+    Frame
 };
-use tui_input::{backend::crossterm::EventHandler, Input, InputRequest};
+use tui_input::{Input, InputRequest};
 
-use crate::{app::ColorMode, config::Config};
+use crate::config::Config;
 
 
 #[derive(Debug)]
@@ -19,7 +21,7 @@ pub struct AliasFilter{
 }
 
 impl AliasFilter {
-    pub fn new(config: Arc<Config>) -> Self {
+    pub fn new(_config: Arc<Config>) -> Self {
         let mut state = TableState::new().with_offset(0);
         state.select(Some(0));
 
@@ -47,7 +49,7 @@ impl AliasFilter {
         self.filter = Some(self.input.value().to_string());
     }
 
-    pub fn render(&mut self, frame: &mut Frame, color_mode: ColorMode) {
+    pub fn render(&mut self, frame: &mut Frame) {
         let layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints([

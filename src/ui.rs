@@ -8,7 +8,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     match app.focused_block {
         FocusedBlock::Help => app.help.render(frame, app.color_mode),
-        FocusedBlock::AliasFilterPopup => app.alias_filter.render(frame, app.color_mode),
+        FocusedBlock::AliasFilterPopup => app.alias_filter.render(frame),
         FocusedBlock::SetDeviceAliasBox => app.render_set_alias(frame),
         _ => {}
     }
