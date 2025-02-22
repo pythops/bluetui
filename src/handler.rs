@@ -56,6 +56,25 @@ pub async fn handle_key_events(
                     .handle_event(&crossterm::event::Event::Key(key_event));
             }
         },
+
+        FocusedBlock::AliasFilterPopup => {
+            match key_event.code {
+                KeyCode::Backspace => {
+                    app.alias_filter.delete_char();
+                }
+
+                KeyCode::Char(c) => {
+                    app.alias_filter.insert_char(c);
+                }
+                
+                KeyCode::Esc => {
+                    app.focused_block = FocusedBlock::NewDevices;
+                }
+
+                _=> {},
+            }
+        },
+
         _ => {
             match key_event.code {
                 // Exit the app
@@ -78,7 +97,7 @@ pub async fn handle_key_events(
 
                 // Discard help popup
                 KeyCode::Esc => {
-                    if app.focused_block == FocusedBlock::Help || app.focused_block == FocusedBlock::AliasFilterPopup {
+                    if app.focused_block == FocusedBlock::Help {
                         app.focused_block = FocusedBlock::Adapter;
                     }
                 }
@@ -754,8 +773,6 @@ pub async fn handle_key_events(
                                         }
                                     }
                                 }
-                            } else if KeyCode::Char('/') == key_event.code {
-                                app.focused_block = FocusedBlock::AliasFilterPopup;
                             }
                         }
 

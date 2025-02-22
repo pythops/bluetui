@@ -21,7 +21,7 @@ toml = "0.8"
 serde = { version = "1", features = ["derive"] }
 clap = { version = "4", features = ["derive", "cargo"] }
 terminal-light = "1"
-tui-input = "0.11"
+tui-input = "0.11.1"
 
 [profile.release]
 strip = true
