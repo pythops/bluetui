@@ -52,7 +52,7 @@ impl AliasFilter {
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Length(28),
+                Constraint::Length(5),
                 Constraint::Fill(1),
             ])
             .flex(ratatui::layout::Flex::SpaceBetween)
@@ -62,7 +62,7 @@ impl AliasFilter {
             .direction(Direction::Horizontal)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Length(60),
+                Constraint::Min(80),
                 Constraint::Fill(1),
             ])
             .flex(ratatui::layout::Flex::SpaceBetween)
@@ -79,7 +79,7 @@ impl AliasFilter {
 
         let table = Table::new([row], [Constraint::Length(20)]).block(
             Block::default()
-                .padding(Padding::uniform(2))
+                .padding(Padding::uniform(1))
                 .title(" Filter Device Names ")
                 .title_style(Style::default().bold().fg(Color::Green))
                 .title_alignment(Alignment::Center)
