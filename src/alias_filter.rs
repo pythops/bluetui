@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Instant;
 
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
@@ -14,6 +15,7 @@ pub struct AliasFilter{
     pub filter: Option<String>,
     input: Input,
     state: TableState,
+    start: Instant
 }
 
 impl AliasFilter {
@@ -22,11 +24,14 @@ impl AliasFilter {
         state.select(Some(0));
 
         let input = Input::new("".to_string());
+        
+        let start = Instant::now();
 
         Self {
             state,
             input,
-            filter: None
+            filter: None,
+            start,
         }
     }
 
@@ -63,10 +68,12 @@ impl AliasFilter {
             .flex(ratatui::layout::Flex::SpaceBetween)
             .split(layout[1])[1];
 
-        let text = match &self.filter {
+        let mut text = match &self.filter {
             Some(f) => f.to_string(),
             None => "".to_string()
         };
+
+        self.insert_cursor(&mut text);
 
         let row = Row::new(vec![text]);
 
@@ -83,5 +90,17 @@ impl AliasFilter {
         );
 
         frame.render_stateful_widget(table, block, &mut self.state);
+    }
+
+    fn insert_cursor(&self, s: &mut String) {
+        let time = Instant::now()
+            .duration_since(self.start)
+            .as_secs();
+
+        let c = 
+            if time % 2 == 0 { '_' }
+            else { ' ' };
+        
+        s.insert(self.input.cursor(), c);
     }
 }
