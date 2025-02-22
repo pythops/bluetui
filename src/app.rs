@@ -20,6 +20,7 @@ use crate::{
     config::Config,
     confirmation::PairingConfirmation,
     help::Help,
+    alias_filter::AliasFilter,
     notification::Notification,
     spinner::Spinner,
 };
@@ -38,6 +39,7 @@ pub enum FocusedBlock {
     Help,
     PassKeyConfirmation,
     SetDeviceAliasBox,
+    AliasFilterPopup
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -52,6 +54,7 @@ pub struct App {
     pub session: Arc<Session>,
     pub agent: AgentHandle,
     pub help: Help,
+    pub alias_filter: AliasFilter,
     pub spinner: Spinner,
     pub notifications: Vec<Notification>,
     pub controllers: Vec<Controller>,
@@ -110,7 +113,8 @@ impl App {
             running: true,
             session,
             agent: handle,
-            help: Help::new(config),
+            help: Help::new(config.clone()),
+            alias_filter: AliasFilter::new(config.clone()),
             spinner: Spinner::default(),
             notifications: Vec::new(),
             controllers,
@@ -613,6 +617,10 @@ impl App {
                 let rows: Vec<Row> = selected_controller
                     .new_devices
                     .iter()
+                    .filter(|d| match &self.alias_filter.filter {
+                        Some(filter) => { d.alias.contains(filter) }
+                        None => { true }
+                    })
                     .map(|d| {
                         Row::new(vec![d.addr.to_string(), {
                             if let Some(icon) = &d.icon {

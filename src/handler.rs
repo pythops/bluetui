@@ -72,9 +72,13 @@ pub async fn handle_key_events(
                     app.focused_block = FocusedBlock::Help;
                 }
 
+                KeyCode::Char('/') => {
+                    app.focused_block = FocusedBlock::AliasFilterPopup;
+                }
+
                 // Discard help popup
                 KeyCode::Esc => {
-                    if app.focused_block == FocusedBlock::Help {
+                    if app.focused_block == FocusedBlock::Help || app.focused_block == FocusedBlock::AliasFilterPopup {
                         app.focused_block = FocusedBlock::Adapter;
                     }
                 }
@@ -750,6 +754,8 @@ pub async fn handle_key_events(
                                         }
                                     }
                                 }
+                            } else if KeyCode::Char('/') == key_event.code {
+                                app.focused_block = FocusedBlock::AliasFilterPopup;
                             }
                         }
 
