@@ -99,6 +99,10 @@ impl Help {
                     Cell::from(config.new_device.pair.to_string()).bold(),
                     "Pair the device",
                 ),
+                (
+                    Cell::from("/").bold(),
+                    "Filter device names"
+                )
             ],
         }
     }
@@ -137,7 +141,7 @@ impl Help {
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Length(28),
+                Constraint::Length(29),
                 Constraint::Fill(1),
             ])
             .flex(ratatui::layout::Flex::SpaceBetween)
