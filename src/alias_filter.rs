@@ -4,7 +4,7 @@ use std::time::Instant;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style, Stylize},
-    widgets::{Block, BorderType, Borders, Padding, Row, Table, TableState},
+    widgets::{Block, BorderType, Borders, Clear, Padding, Row, Table, TableState},
     Frame
 };
 use tui_input::{Input, InputRequest};
@@ -91,6 +91,7 @@ impl AliasFilter {
                 .border_style(Style::default().fg(Color::Green)),
         );
 
+        frame.render_widget(Clear, block);
         frame.render_stateful_widget(table, block, &mut self.state);
     }
 
