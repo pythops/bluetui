@@ -16,11 +16,11 @@ use ratatui::{
 use tui_input::Input;
 
 use crate::{
+    alias_filter::AliasFilter,
     bluetooth::{request_confirmation, Controller},
     config::Config,
     confirmation::PairingConfirmation,
     help::Help,
-    alias_filter::AliasFilter,
     notification::Notification,
     spinner::Spinner,
 };
@@ -39,7 +39,7 @@ pub enum FocusedBlock {
     Help,
     PassKeyConfirmation,
     SetDeviceAliasBox,
-    AliasFilterPopup
+    AliasFilterPopup,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -618,8 +618,8 @@ impl App {
                     .new_devices
                     .iter()
                     .filter(|d| match &self.alias_filter.filter {
-                        Some(filter) => { d.alias.contains(filter) }
-                        None => { true }
+                        Some(filter) => d.alias.contains(filter),
+                        None => true,
                     })
                     .map(|d| {
                         Row::new(vec![d.addr.to_string(), {

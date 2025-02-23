@@ -57,22 +57,20 @@ pub async fn handle_key_events(
             }
         },
 
-        FocusedBlock::AliasFilterPopup => {
-            match key_event.code {
-                KeyCode::Backspace => {
-                    app.alias_filter.delete_char();
-                }
-
-                KeyCode::Char(c) => {
-                    app.alias_filter.insert_char(c);
-                }
-                
-                KeyCode::Esc | KeyCode::Enter => {
-                    app.focused_block = FocusedBlock::NewDevices;
-                }
-
-                _=> {},
+        FocusedBlock::AliasFilterPopup => match key_event.code {
+            KeyCode::Backspace => {
+                app.alias_filter.delete_char();
             }
+
+            KeyCode::Char(c) => {
+                app.alias_filter.insert_char(c);
+            }
+
+            KeyCode::Esc | KeyCode::Enter => {
+                app.focused_block = FocusedBlock::NewDevices;
+            }
+
+            _ => {}
         },
 
         _ => {

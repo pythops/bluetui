@@ -5,19 +5,18 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style, Stylize},
     widgets::{Block, BorderType, Borders, Clear, Padding, Row, Table, TableState},
-    Frame
+    Frame,
 };
 use tui_input::{Input, InputRequest};
 
 use crate::config::Config;
 
-
 #[derive(Debug)]
-pub struct AliasFilter{ 
+pub struct AliasFilter {
     pub filter: Option<String>,
     input: Input,
     state: TableState,
-    start: Instant
+    start: Instant,
 }
 
 impl AliasFilter {
@@ -26,7 +25,7 @@ impl AliasFilter {
         state.select(Some(0));
 
         let input = Input::new("".to_string());
-        
+
         let start = Instant::now();
 
         Self {
@@ -59,7 +58,7 @@ impl AliasFilter {
             ])
             .flex(ratatui::layout::Flex::SpaceBetween)
             .split(frame.area());
-        
+
         let block = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([
@@ -72,7 +71,7 @@ impl AliasFilter {
 
         let mut text = match &self.filter {
             Some(f) => f.to_string(),
-            None => "".to_string()
+            None => "".to_string(),
         };
 
         self.insert_cursor(&mut text);
@@ -96,14 +95,10 @@ impl AliasFilter {
     }
 
     fn insert_cursor(&self, s: &mut String) {
-        let time = Instant::now()
-            .duration_since(self.start)
-            .as_secs();
+        let time = Instant::now().duration_since(self.start).as_secs();
 
-        let c = 
-            if time % 2 == 0 { '_' }
-            else { ' ' };
-        
+        let c = if time % 2 == 0 { '_' } else { ' ' };
+
         s.insert(self.input.cursor(), c);
     }
 }

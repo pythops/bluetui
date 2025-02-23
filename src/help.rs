@@ -99,10 +99,7 @@ impl Help {
                     Cell::from(config.new_device.pair.to_string()).bold(),
                     "Pair the device",
                 ),
-                (
-                    Cell::from("/").bold(),
-                    "Filter device names"
-                )
+                (Cell::from("/").bold(), "Filter device names"),
             ],
         }
     }
