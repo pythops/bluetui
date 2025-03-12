@@ -14,5 +14,15 @@
             bluetui = nixpkgs.legacyPackages.${system}.callPackage ./package.nix { };
             default = bluetui;
           });
+
+      devShells.x86_64-linux.default = 
+      let
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      in
+      pkgs.mkShell {
+        buildInputs = [
+          self.packages.x86_64-linux.bluetui
+        ];
+      };
     };
 }
