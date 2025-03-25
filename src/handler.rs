@@ -120,6 +120,47 @@ pub async fn handle_key_events(
                     _ => {}
                 },
 
+                KeyCode::Char('h') => match app.focused_block {
+                    FocusedBlock::Adapter => {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            let controller = &app.controllers[selected_controller];
+                            if controller.new_devices.is_empty() {
+                                app.focused_block = FocusedBlock::PairedDevices;
+                            } else {
+                                app.focused_block = FocusedBlock::NewDevices;
+                            }
+                        }
+                    }
+                    FocusedBlock::PairedDevices => {
+                        app.focused_block = FocusedBlock::Adapter;
+                    }
+                    FocusedBlock::NewDevices => {
+                        app.focused_block = FocusedBlock::PairedDevices;
+                        app.reset_devices_state();
+                    }
+                    _ => {}
+                },
+
+                KeyCode::Char('l') => match app.focused_block {
+                    FocusedBlock::Adapter => {
+                        app.focused_block = FocusedBlock::PairedDevices;
+                        app.reset_devices_state();
+                    }
+                    FocusedBlock::PairedDevices => {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            let controller = &app.controllers[selected_controller];
+                            if controller.new_devices.is_empty() {
+                                app.focused_block = FocusedBlock::Adapter;
+                            } else {
+                                app.focused_block = FocusedBlock::NewDevices;
+                            }
+                        }
+                    }
+                    FocusedBlock::NewDevices => app.focused_block = FocusedBlock::Adapter,
+                    _ => {}
+                },
+
+
                 // scroll down
                 KeyCode::Char('j') | KeyCode::Down => match app.focused_block {
                     FocusedBlock::Adapter => {
