@@ -42,6 +42,14 @@ sudo emaint -r lamdness sync
 sudo emerge -av net-wireless/bluetui
 ```
 
+### 🧰 X-CMD
+
+If you are a user of [x-cmd](https://x-cmd.com), you can run:
+
+```shell
+x install bluetui
+```
+
 
 ### ⚒️ Build from source
 
