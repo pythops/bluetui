@@ -1,9 +1,10 @@
 use bluer::{
-    agent::{Agent, AgentHandle},
     Session,
+    agent::{Agent, AgentHandle},
 };
 use futures::FutureExt;
 use ratatui::{
+    Frame,
     layout::{Alignment, Constraint, Direction, Layout, Margin},
     style::{Color, Modifier, Style, Stylize},
     text::{Line, Span},
@@ -11,12 +12,11 @@ use ratatui::{
         Block, BorderType, Borders, Cell, Clear, Padding, Paragraph, Row, Scrollbar,
         ScrollbarOrientation, ScrollbarState, Table, TableState,
     },
-    Frame,
 };
 use tui_input::Input;
 
 use crate::{
-    bluetooth::{request_confirmation, Controller},
+    bluetooth::{Controller, request_confirmation},
     config::Config,
     confirmation::PairingConfirmation,
     help::Help,
@@ -25,7 +25,7 @@ use crate::{
 };
 use std::{
     error,
-    sync::{atomic::Ordering, Arc},
+    sync::{Arc, atomic::Ordering},
 };
 
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -426,34 +426,34 @@ impl App {
                             if let Some(battery_percentage) = d.battery_percentage {
                                 match battery_percentage {
                                     n if n >= 90 => {
-                                        format!("{}% 󰥈 ", battery_percentage)
+                                        format!("{battery_percentage}% 󰥈 ")
                                     }
                                     n if (80..90).contains(&n) => {
-                                        format!("{}% 󰥅 ", battery_percentage)
+                                        format!("{battery_percentage}% 󰥅 ")
                                     }
                                     n if (70..80).contains(&n) => {
-                                        format!("{}% 󰥄 ", battery_percentage)
+                                        format!("{battery_percentage}% 󰥄 ")
                                     }
                                     n if (60..70).contains(&n) => {
-                                        format!("{}% 󰥃 ", battery_percentage)
+                                        format!("{battery_percentage}% 󰥃 ")
                                     }
                                     n if (50..60).contains(&n) => {
-                                        format!("{}% 󰥂 ", battery_percentage)
+                                        format!("{battery_percentage}% 󰥂 ")
                                     }
                                     n if (40..50).contains(&n) => {
-                                        format!("{}% 󰥁 ", battery_percentage)
+                                        format!("{battery_percentage}% 󰥁 ")
                                     }
                                     n if (30..40).contains(&n) => {
-                                        format!("{}% 󰥀 ", battery_percentage)
+                                        format!("{battery_percentage}% 󰥀 ")
                                     }
                                     n if (20..30).contains(&n) => {
-                                        format!("{}% 󰤿 ", battery_percentage)
+                                        format!("{battery_percentage}% 󰤿 ")
                                     }
                                     n if (10..20).contains(&n) => {
-                                        format!("{}% 󰤾 ", battery_percentage)
+                                        format!("{battery_percentage}% 󰤾 ")
                                     }
                                     _ => {
-                                        format!("{}% 󰤾 ", battery_percentage)
+                                        format!("{battery_percentage}% 󰤾 ")
                                     }
                                 }
                             } else {

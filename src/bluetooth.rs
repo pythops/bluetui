@@ -1,9 +1,9 @@
-use std::sync::{atomic::AtomicBool, mpsc::Sender, Arc};
+use std::sync::{Arc, atomic::AtomicBool, mpsc::Sender};
 
 use async_channel::Receiver;
 use bluer::{
-    agent::{ReqError, ReqResult, RequestConfirmation},
     Adapter, Address, Session,
+    agent::{ReqError, ReqResult, RequestConfirmation},
 };
 
 use bluer::Device as BTDevice;

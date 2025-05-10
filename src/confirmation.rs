@@ -1,11 +1,11 @@
 use std::sync::mpsc::channel;
-use std::sync::{atomic::AtomicBool, Arc};
+use std::sync::{Arc, atomic::AtomicBool};
 
+use ratatui::Frame;
 use ratatui::layout::{Alignment, Constraint, Direction, Layout};
 use ratatui::style::{Color, Style};
 use ratatui::text::{Span, Text};
 use ratatui::widgets::{Block, BorderType, Borders, Clear};
-use ratatui::Frame;
 
 #[derive(Debug)]
 pub struct PairingConfirmation {

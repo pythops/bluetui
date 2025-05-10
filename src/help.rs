@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use ratatui::{
+    Frame,
     layout::{Alignment, Constraint, Direction, Layout, Margin},
     style::{Color, Style, Stylize},
     widgets::{
         Block, BorderType, Borders, Cell, Clear, Padding, Row, Scrollbar, ScrollbarOrientation,
         ScrollbarState, Table, TableState,
     },
-    Frame,
 };
 
 use crate::{app::ColorMode, config::Config};
@@ -119,13 +119,7 @@ impl Help {
     }
     pub fn scroll_up(&mut self) {
         let i = match self.state.selected() {
-            Some(i) => {
-                if i > 1 {
-                    i - 1
-                } else {
-                    0
-                }
-            }
+            Some(i) => i.saturating_sub(1),
             None => 1,
         };
         *self.state.offset_mut() = i;

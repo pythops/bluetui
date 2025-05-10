@@ -1,9 +1,9 @@
 use ratatui::{
+    Frame,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Text},
     widgets::{Block, BorderType, Borders, Clear, Paragraph, Wrap},
-    Frame,
 };
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -32,7 +32,7 @@ impl Notification {
         };
 
         let mut text = Text::from(vec![
-            Line::from(title).style(Style::new().fg(color).add_modifier(Modifier::BOLD))
+            Line::from(title).style(Style::new().fg(color).add_modifier(Modifier::BOLD)),
         ]);
 
         text.extend(Text::from(self.message.as_str()));
