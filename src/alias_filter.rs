@@ -53,8 +53,8 @@ impl AliasFilter {
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Length(5),
                 Constraint::Fill(1),
+                Constraint::Length(5),
             ])
             .flex(ratatui::layout::Flex::SpaceBetween)
             .split(frame.area());
@@ -63,11 +63,11 @@ impl AliasFilter {
             .direction(Direction::Horizontal)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Min(80),
+                Constraint::Min(100),
                 Constraint::Fill(1),
             ])
             .flex(ratatui::layout::Flex::SpaceBetween)
-            .split(layout[1])[1];
+            .split(layout[2])[1];
 
         let mut text = match &self.filter {
             Some(f) => f.to_string(),
