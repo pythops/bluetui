@@ -90,7 +90,12 @@ pub async fn handle_key_events(
                 }
 
                 KeyCode::Char('/') => {
-                    app.focused_block = FocusedBlock::AliasFilterPopup;
+                    if let Some(selected_controller_index) = app.controller_state.selected() {
+                        let selected_controller = &app.controllers[selected_controller_index];
+                        if !selected_controller.new_devices.is_empty() {
+                            app.focused_block = FocusedBlock::AliasFilterPopup;
+                        }
+                    }
                 }
 
                 // Discard help popup
