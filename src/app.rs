@@ -6,7 +6,7 @@ use futures::FutureExt;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Margin},
     style::{Color, Modifier, Style, Stylize},
-    text::{Line, Span},
+    text::{Span, Line},
     widgets::{
         Block, BorderType, Borders, Cell, Clear, Padding, Paragraph, Row, Scrollbar,
         ScrollbarOrientation, ScrollbarState, Table, TableState,
@@ -618,17 +618,35 @@ impl App {
                     .new_devices
                     .iter()
                     .filter(|d| match &self.alias_filter.filter {
-                        Some(filter) => d.alias.contains(filter),
+                        Some(pattern) => d.alias.contains(pattern),
                         None => true,
                     })
                     .map(|d| {
-                        Row::new(vec![d.addr.to_string(), {
-                            if let Some(icon) = &d.icon {
-                                format!("{} {}", icon, &d.alias)
-                            } else {
-                                d.alias.to_owned()
-                            }
-                        }])
+                        let device_name = match &self.alias_filter.filter {
+                            Some(pattern) => {
+                                let match_idxs: Vec<usize> = d.alias.match_indices(pattern)
+                                    .map(|(i, _)| i)
+                                    .collect();
+
+                                let highlighted = Style::default()
+                                    .bg(Color::LightBlue);
+
+                                Line::from(vec![
+                                    Span::raw(&d.alias[0..match_idxs[0]]),
+                                    Span::styled(pattern, highlighted),
+                                    Span::raw(&d.alias[match_idxs[0] + pattern.len()..]),
+                                ])
+                            },
+                            None => Line::raw(d.alias.clone()),
+                        };
+
+                        let icon = Line::styled(if let Some(icon) = &d.icon {
+                            format!("{} {}", icon, &d.alias)
+                        } else {
+                            d.alias.to_owned()
+                        }, Style::default());
+                        
+                        Row::new(vec![device_name, icon])
                     })
                     .collect();
                 let rows_len = rows.len();
