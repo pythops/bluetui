@@ -66,7 +66,12 @@ pub async fn handle_key_events(
                 app.alias_filter.insert_char(c);
             }
 
-            KeyCode::Esc | KeyCode::Enter => {
+            KeyCode::Enter => {
+                app.focused_block = FocusedBlock::NewDevices;
+            }
+
+            KeyCode::Esc => {
+                app.alias_filter.filter = None;
                 app.focused_block = FocusedBlock::NewDevices;
             }
 
