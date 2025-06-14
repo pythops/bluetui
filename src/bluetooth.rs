@@ -99,6 +99,7 @@ impl Controller {
     pub async fn get_all_devices(adapter: &Adapter) -> AppResult<(Vec<Device>, Vec<Device>)> {
         let mut paired_devices: Vec<Device> = Vec::new();
         let mut new_devices: Vec<Device> = Vec::new();
+        let mut devices_without_aliases: Vec<Device> = Vec::new();
 
         let connected_devices_addresses = adapter.device_addresses().await?;
         for addr in connected_devices_addresses {
@@ -125,14 +126,27 @@ impl Controller {
             if dev.is_paired {
                 paired_devices.push(dev);
             } else {
-                new_devices.push(dev);
+                match is_mac_addr(&dev.alias) {
+                    // most device names without aliases may default to their mac addresses, but we should not
+                    // assume that to be 100% the case
+                    true => devices_without_aliases.push(dev),
+                    false => new_devices.push(dev),
+                }
             }
         }
 
         paired_devices.sort_by_key(|i| i.addr);
-        new_devices.sort_by_key(|i| i.addr);
+        new_devices.sort_by_key(|i| i.clone().alias);
+        devices_without_aliases.sort_by_key(|i| i.addr);
+        new_devices.extend(devices_without_aliases);
+
         Ok((paired_devices, new_devices))
     }
+}
+
+fn is_mac_addr(s: &str) -> bool {
+    let s: String = s.chars().filter(|&c| c != '-').collect();
+    s.len() == 12 && s.chars().all(|c| c.is_ascii_hexdigit())
 }
 
 pub async fn request_confirmation(
