@@ -160,7 +160,6 @@ pub async fn handle_key_events(
                     _ => {}
                 },
 
-
                 // scroll down
                 KeyCode::Char('j') | KeyCode::Down => match app.focused_block {
                     FocusedBlock::Adapter => {
