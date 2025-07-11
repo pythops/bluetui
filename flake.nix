@@ -28,7 +28,25 @@
         };
         packages = rec {
           default = bluetui;
-          bluetui = nixpkgs.legacyPackages.${system}.callPackage ./package.nix {};
+          bluetui = let
+            cargo = (pkgs.lib.importTOML ./Cargo.toml).package;
+          in
+            pkgs.rustPlatform.buildRustPackage {
+              pname = cargo.name;
+              version = cargo.version;
+              src = ./.;
+              cargoLock.lockFile = ./Cargo.lock;
+
+              buildInputs = with pkgs; [dbus];
+              nativeBuildInputs = with pkgs; [pkg-config];
+
+              meta = {
+                description = cargo.description;
+                homepage = cargo.homepage;
+                license = pkgs.lib.licenses.gpl3Only;
+                maintainers = with pkgs.lib.maintainers; [samuel-martineau];
+              };
+            };
         };
       }
     );
