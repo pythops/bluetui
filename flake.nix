@@ -9,6 +9,7 @@
   };
 
   outputs = {
+    self,
     nixpkgs,
     flake-utils,
     rust-overlay,
@@ -24,6 +25,7 @@
             dbus
             pkg-config
             rust-bin.stable.latest.default
+            self.packages.${system}.default
           ];
         };
         packages = rec {
