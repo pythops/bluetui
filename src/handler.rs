@@ -1,5 +1,5 @@
-use std::sync::atomic::Ordering;
 use std::sync::Arc;
+use std::sync::atomic::Ordering;
 
 use crate::app::FocusedBlock;
 use crate::app::{App, AppResult};
@@ -233,13 +233,7 @@ pub async fn handle_key_events(
                     FocusedBlock::Adapter => {
                         if !app.controllers.is_empty() {
                             let i = match app.controller_state.selected() {
-                                Some(i) => {
-                                    if i > 1 {
-                                        i - 1
-                                    } else {
-                                        0
-                                    }
-                                }
+                                Some(i) => i.saturating_sub(1),
                                 None => 0,
                             };
 
@@ -252,13 +246,7 @@ pub async fn handle_key_events(
                             let controller = &mut app.controllers[selected_controller];
                             if !controller.paired_devices.is_empty() {
                                 let i = match app.paired_devices_state.selected() {
-                                    Some(i) => {
-                                        if i > 1 {
-                                            i - 1
-                                        } else {
-                                            0
-                                        }
-                                    }
+                                    Some(i) => i.saturating_sub(1),
                                     None => 0,
                                 };
                                 app.paired_devices_state.select(Some(i));
@@ -271,13 +259,7 @@ pub async fn handle_key_events(
                             let controller = &mut app.controllers[selected_controller];
                             if !controller.new_devices.is_empty() {
                                 let i = match app.new_devices_state.selected() {
-                                    Some(i) => {
-                                        if i > 1 {
-                                            i - 1
-                                        } else {
-                                            0
-                                        }
-                                    }
+                                    Some(i) => i.saturating_sub(1),
                                     None => 0,
                                 };
                                 app.new_devices_state.select(Some(i));
@@ -747,8 +729,7 @@ pub async fn handle_key_events(
                                                 Ok(device_name) => {
                                                     let _ = Notification::send(
                                                         format!(
-                                                            "Start pairing with the device\n `{}` ",
-                                                            device_name
+                                                            "Start pairing with the device\n `{device_name}`",
                                                         ),
                                                         NotificationLevel::Info,
                                                         sender.clone(),

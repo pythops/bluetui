@@ -1,14 +1,14 @@
-use bluetui::app::{App, AppResult};
-use bluetui::config::Config;
-use bluetui::event::{Event, EventHandler};
-use bluetui::handler::handle_key_events;
-use bluetui::rfkill;
-use bluetui::tui::Tui;
-use clap::{crate_version, Command};
-use ratatui::backend::CrosstermBackend;
-use ratatui::Terminal;
-use std::io;
-use std::sync::Arc;
+use bluetui::{
+    app::{App, AppResult},
+    config::Config,
+    event::{Event, EventHandler},
+    handler::handle_key_events,
+    rfkill,
+    tui::Tui,
+};
+use clap::{Command, crate_version};
+use ratatui::{Terminal, backend::CrosstermBackend};
+use std::{io, sync::Arc};
 
 #[tokio::main]
 async fn main() -> AppResult<()> {

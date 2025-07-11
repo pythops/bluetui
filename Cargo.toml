@@ -3,7 +3,7 @@ name = "bluetui"
 version = "0.6.0"
 authors = ["Badr Badri <contact@pythops.com>"]
 license = "GPL-3.0"
-edition = "2021"
+edition = "2024"
 description = "TUI for managing bluetooth on Linux"
 readme = "Readme.md"
 homepage = "https://github.com/pythops/bluetui"
@@ -12,7 +12,7 @@ repository = "https://github.com/pythops/bluetui"
 [dependencies]
 async-channel = "2"
 bluer = { version = "0.17", features = ["full"] }
-crossterm = { version = "0.28", features = ["event-stream"] }
+crossterm = { version = "0.29", features = ["event-stream"] }
 futures = "0.3"
 ratatui = "0.29"
 tokio = { version = "1", features = ["full"] }
@@ -21,7 +21,7 @@ toml = "0.8"
 serde = { version = "1", features = ["derive"] }
 clap = { version = "4", features = ["derive", "cargo"] }
 terminal-light = "1"
-tui-input = "0.11"
+tui-input = "0.12"
 
 [profile.release]
 strip = true
