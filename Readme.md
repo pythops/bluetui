@@ -128,3 +128,7 @@ pair = "p"
 ## ⚖️ License
 
 GPLv3
+
+## ✍️ Credits
+
+Bluetui logo: [Marco Bulgarelli](https://github.com/Bugg4)
