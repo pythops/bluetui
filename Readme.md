@@ -1,5 +1,5 @@
 <div align="center">
-  <img height="100" src="assets/logo.png"/>
+  <img height="125" src="assets/bluetui-logo-anim.svg"/>
   <h2> TUI for managing bluetooth on Linux </h2>
   <img src="https://github.com/user-attachments/assets/13498e90-b2d0-43c8-9dd7-8a9de2734f64"/>
 </div>
@@ -128,3 +128,7 @@ pair = "p"
 ## ⚖️ License
 
 GPLv3
+
+## ✍️ Credits
+
+Bluetui logo: [Marco Bulgarelli](https://github.com/Bugg4)
