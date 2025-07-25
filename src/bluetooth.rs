@@ -48,7 +48,7 @@ impl Device {
         match name {
             "audio-card" => Some(String::from("󰓃")),
             "audio-input-microphone" => Some(String::from("")),
-            "audio-headphones" => Some(String::from("󰋋")),
+            "audio-headphones" | "audio-headset" => Some(String::from("󰋋")),
             "battery" => Some(String::from("󰂀")),
             "camera-photo" => Some(String::from("󰻛")),
             "computer" => Some(String::from("")),
