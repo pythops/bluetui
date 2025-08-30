@@ -718,49 +718,42 @@ pub async fn handle_key_events(
 
                         FocusedBlock::NewDevices => {
                             // Pair new device
-                            if KeyCode::Char(config.new_device.pair) == key_event.code {
-                                if let Some(selected_controller) = app.controller_state.selected() {
-                                    let controller = &app.controllers[selected_controller];
-                                    if let Some(index) = app.new_devices_state.selected() {
-                                        let addr = controller.new_devices[index].addr;
-                                        match controller.adapter.device(addr) {
-                                            Ok(device) => match device.alias().await {
-                                                Ok(device_name) => {
-                                                    let _ = Notification::send(
-                                                        format!(
-                                                            "Start pairing with the device\n `{device_name}`",
-                                                        ),
-                                                        NotificationLevel::Info,
-                                                        sender.clone(),
-                                                    );
+                            if KeyCode::Char(config.new_device.pair) == key_event.code
+                                && let Some(selected_controller) = app.controller_state.selected()
+                            {
+                                let controller = &app.controllers[selected_controller];
+                                if let Some(index) = app.new_devices_state.selected() {
+                                    let addr = controller.new_devices[index].addr;
+                                    match controller.adapter.device(addr) {
+                                        Ok(device) => match device.alias().await {
+                                            Ok(device_name) => {
+                                                let _ = Notification::send(
+                                                    format!(
+                                                        "Start pairing with the device\n `{device_name}`",
+                                                    ),
+                                                    NotificationLevel::Info,
+                                                    sender.clone(),
+                                                );
 
-                                                    tokio::spawn(async move {
-                                                        match device.pair().await {
-                                                            Ok(_) => {
-                                                                let _ = Notification::send(
-                                                                    "Device paired".to_string(),
-                                                                    NotificationLevel::Info,
-                                                                    sender.clone(),
-                                                                );
-                                                            }
-                                                            Err(e) => {
-                                                                let _ = Notification::send(
-                                                                    e.to_string(),
-                                                                    NotificationLevel::Error,
-                                                                    sender.clone(),
-                                                                );
-                                                            }
+                                                tokio::spawn(async move {
+                                                    match device.pair().await {
+                                                        Ok(_) => {
+                                                            let _ = Notification::send(
+                                                                "Device paired".to_string(),
+                                                                NotificationLevel::Info,
+                                                                sender.clone(),
+                                                            );
                                                         }
-                                                    });
-                                                }
-                                                Err(e) => {
-                                                    let _ = Notification::send(
-                                                        e.to_string(),
-                                                        NotificationLevel::Error,
-                                                        sender.clone(),
-                                                    );
-                                                }
-                                            },
+                                                        Err(e) => {
+                                                            let _ = Notification::send(
+                                                                e.to_string(),
+                                                                NotificationLevel::Error,
+                                                                sender.clone(),
+                                                            );
+                                                        }
+                                                    }
+                                                });
+                                            }
                                             Err(e) => {
                                                 let _ = Notification::send(
                                                     e.to_string(),
@@ -768,6 +761,13 @@ pub async fn handle_key_events(
                                                     sender.clone(),
                                                 );
                                             }
+                                        },
+                                        Err(e) => {
+                                            let _ = Notification::send(
+                                                e.to_string(),
+                                                NotificationLevel::Error,
+                                                sender.clone(),
+                                            );
                                         }
                                     }
                                 }
