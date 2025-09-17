@@ -545,6 +545,19 @@ pub async fn handle_key_events(
                                     app.focused_block = FocusedBlock::SetDeviceAliasBox;
                                 }
 
+                                // Favorite / Unfavorite
+                                KeyCode::Char(c) if c == config.paired_device.toggle_favorite => {
+                                    if let Some(selected_controller) =
+                                        app.controller_state.selected()
+                                    {
+                                        let controller = &app.controllers[selected_controller];
+                                        if let Some(index) = app.paired_devices_state.selected() {
+                                            let device = &controller.paired_devices[index];
+                                            device.toggle_favorite();
+                                        }
+                                    }
+                                }
+
                                 _ => {}
                             }
                         }

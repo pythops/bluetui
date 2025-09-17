@@ -34,6 +34,7 @@ pub struct Device {
     pub is_paired: bool,
     pub is_trusted: bool,
     pub is_connected: bool,
+    pub is_favorite: bool,
     pub battery_percentage: Option<u8>,
 }
 
@@ -41,6 +42,10 @@ impl Device {
     pub async fn set_alias(&self, alias: String) -> AppResult<()> {
         self.device.set_alias(alias).await?;
         Ok(())
+    }
+
+    pub fn toggle_favorite(&mut self) -> () {
+        self.is_favorite = !self.is_favorite;
     }
 
     // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html

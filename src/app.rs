@@ -392,8 +392,16 @@ impl App {
             }
 
             //Paired devices
-            let rows: Vec<Row> = selected_controller
-                .paired_devices
+            let mut paired_devices_sorted = selected_controller.paired_devices.clone();
+            paired_devices_sorted.sort_by(|a, b| {
+                use std::cmp::Ordering;
+                match (a.is_favorite, b.is_favorite) {
+                    (true, false) => Ordering::Less,
+                    (false, true) => Ordering::Greater,
+                    _ => Ordering::Equal,
+                }
+            });
+            let rows: Vec<Row> = paired_devices_sorted
                 .iter()
                 .map(|d| {
                     Row::new(vec![
