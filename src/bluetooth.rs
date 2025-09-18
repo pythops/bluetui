@@ -44,10 +44,6 @@ impl Device {
         Ok(())
     }
 
-    pub fn toggle_favorite(&mut self) -> () {
-        self.is_favorite = !self.is_favorite;
-    }
-
     // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
     pub fn get_icon(name: &str) -> Option<String> {
         match name {
