@@ -99,6 +99,8 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `e`: Rename the device.
 
+`f`: Favorite/Unfavorite the device.
+
 ### New devices
 
 `Space or Enter`: Pair the device.
@@ -119,6 +121,7 @@ toggle_discovery = "d"
 unpair = "u"
 toggle_trust = "t"
 rename = "e"
+toggle_favorite = "f"
 ```
 
 ## ⚖️ License
