@@ -53,6 +53,9 @@ pub struct PairedDevice {
 
     #[serde(default = "default_set_new_name")]
     pub rename: char,
+
+    #[serde(default = "default_toggle_device_favorite")] 
+    pub toggle_favorite: char,
 }
 
 impl Default for PairedDevice {
@@ -62,6 +65,7 @@ impl Default for PairedDevice {
             toggle_connect: ' ',
             toggle_trust: 't',
             rename: 'e',
+            toggle_favorite: 'f',
         }
     }
 }
@@ -112,6 +116,10 @@ fn default_toggle_device_trust() -> char {
 
 fn default_pair_new_device() -> char {
     'p'
+}
+
+fn default_toggle_device_favorite() -> char {
+    'f'
 }
 
 impl Config {

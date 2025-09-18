@@ -34,6 +34,7 @@ pub struct Device {
     pub is_paired: bool,
     pub is_trusted: bool,
     pub is_connected: bool,
+    pub is_favorite: bool,
     pub battery_percentage: Option<u8>,
 }
 
