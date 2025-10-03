@@ -3,6 +3,7 @@ use bluetui::{
     config::Config,
     event::{Event, EventHandler},
     handler::handle_key_events,
+    keybindings::keybindings_string,
     rfkill,
     tui::Tui,
 };
@@ -12,13 +13,14 @@ use std::{io, sync::Arc};
 
 #[tokio::main]
 async fn main() -> AppResult<()> {
+    let config = Arc::new(Config::new());
     Command::new("bluetui")
         .version(crate_version!())
+        .after_help(keybindings_string(&config))
         .get_matches();
 
     rfkill::check()?;
 
-    let config = Arc::new(Config::new());
     let mut app = App::new(config.clone()).await?;
     let backend = CrosstermBackend::new(io::stdout());
     let terminal = Terminal::new(backend)?;
