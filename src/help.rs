@@ -10,13 +10,17 @@ use ratatui::{
     },
 };
 
-use crate::{app::ColorMode, config::Config};
+use crate::{
+    app::ColorMode,
+    config::Config,
+    keybindings::{Keybinding, build_keybindings},
+};
 
 #[derive(Debug)]
 pub struct Help {
     block_height: usize,
     state: TableState,
-    keys: Vec<(Cell<'static>, &'static str)>,
+    keys: Vec<Keybinding>,
 }
 
 impl Help {
@@ -27,79 +31,7 @@ impl Help {
         Self {
             block_height: 0,
             state,
-            keys: vec![
-                (
-                    Cell::from("## Global").style(Style::new().bold().fg(Color::Yellow)),
-                    "",
-                ),
-                (Cell::from("Esc").bold(), "Dismiss different pop-ups"),
-                (
-                    Cell::from("Tab or h/l").bold(),
-                    "Switch between different sections",
-                ),
-                (Cell::from("j or Down").bold(), "Scroll down"),
-                (Cell::from("k or Up").bold(), "Scroll up"),
-                (
-                    Cell::from(config.toggle_scanning.to_string()).bold(),
-                    "Start/Stop scanning",
-                ),
-                (Cell::from("?").bold(), "Show help"),
-                (Cell::from("ctrl+c or q").bold(), "Quit"),
-                (Cell::from(""), ""),
-                (
-                    Cell::from("## Adapters").style(Style::new().bold().fg(Color::Yellow)),
-                    "",
-                ),
-                (
-                    Cell::from(config.adapter.toggle_pairing.to_string()).bold(),
-                    "Enable/Disable the pairing",
-                ),
-                (
-                    Cell::from(config.adapter.toggle_power.to_string()).bold(),
-                    "Power on/off the adapter",
-                ),
-                (
-                    Cell::from(config.adapter.toggle_discovery.to_string()).bold(),
-                    "Enable/Disable the discovery",
-                ),
-                (Cell::from(""), ""),
-                (
-                    Cell::from("## Paired devices").style(Style::new().bold().fg(Color::Yellow)),
-                    "",
-                ),
-                (
-                    Cell::from(config.paired_device.unpair.to_string()).bold(),
-                    "Unpair the device",
-                ),
-                (
-                    Cell::from({
-                        if config.paired_device.toggle_connect == ' ' {
-                            "Space".to_string()
-                        } else {
-                            config.paired_device.toggle_connect.to_string()
-                        }
-                    })
-                    .bold(),
-                    "Connect/Disconnect the device",
-                ),
-                (
-                    Cell::from(config.paired_device.toggle_trust.to_string()).bold(),
-                    "Trust/Untrust the device",
-                ),
-                (
-                    Cell::from(config.paired_device.rename.to_string()).bold(),
-                    "Rename the device",
-                ),
-                (Cell::from(""), ""),
-                (
-                    Cell::from("## New devices").style(Style::default().bold().fg(Color::Yellow)),
-                    "",
-                ),
-                (
-                    Cell::from(config.new_device.pair.to_string()).bold(),
-                    "Pair the device",
-                ),
-            ],
+            keys: build_keybindings(&config),
         }
     }
 
@@ -153,8 +85,15 @@ impl Help {
         let rows: Vec<Row> = self
             .keys
             .iter()
-            .map(|key| {
-                Row::new(vec![key.0.to_owned(), key.1.into()]).style(match color_mode {
+            .map(|keybinding| {
+                let key_cell = if keybinding.is_section {
+                    Cell::from(keybinding.key.clone())
+                        .style(Style::default().bold().fg(Color::Yellow))
+                } else {
+                    Cell::from(keybinding.key.clone()).style(Style::default().bold())
+                };
+                let description_cell = Cell::from(keybinding.description);
+                Row::new(vec![key_cell, description_cell]).style(match color_mode {
                     ColorMode::Dark => Style::default().fg(Color::White),
                     ColorMode::Light => Style::default().fg(Color::Black),
                 })

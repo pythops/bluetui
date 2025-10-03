@@ -21,3 +21,5 @@ pub mod config;
 pub mod rfkill;
 
 pub mod confirmation;
+
+pub mod keybindings;
