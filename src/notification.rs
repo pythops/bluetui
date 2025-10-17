@@ -6,6 +6,7 @@ use ratatui::{
     widgets::{Block, BorderType, Borders, Clear, Paragraph, Wrap},
 };
 use tokio::sync::mpsc::UnboundedSender;
+use notify_rust::{Notification as NotifyRustNotification, Timeout};
 
 use crate::{app::AppResult, event::Event};
 
@@ -60,6 +61,17 @@ impl Notification {
 
         frame.render_widget(Clear, area);
         frame.render_widget(block, area);
+
+        NotifyRustNotification::new()
+            .summary("bluetui")
+            .body(&self.message.as_str())
+            .urgency(match self.level {
+                NotificationLevel::Info => notify_rust::Urgency::Low,
+                NotificationLevel::Warning => notify_rust::Urgency::Normal,
+                NotificationLevel::Error => notify_rust::Urgency::Critical
+            })
+            .timeout(Timeout::Milliseconds(5000))
+            .show().unwrap();
     }
     pub fn send(
         message: String,

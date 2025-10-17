@@ -22,6 +22,7 @@ serde = { version = "1", features = ["derive"] }
 clap = { version = "4", features = ["derive", "cargo"] }
 terminal-light = "1"
 tui-input = "0.12"
+notify-rust = "4.11.7"
 
 [profile.release]
 strip = true
