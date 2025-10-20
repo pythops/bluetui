@@ -13,9 +13,6 @@ pub struct Config {
 
     #[serde(default)]
     pub paired_device: PairedDevice,
-
-    #[serde(default)]
-    pub new_device: NewDevice,
 }
 
 #[derive(Deserialize, Debug)]
@@ -45,9 +42,6 @@ pub struct PairedDevice {
     #[serde(default = "default_unpair_device")]
     pub unpair: char,
 
-    #[serde(default = "default_toggle_device_connection")]
-    pub toggle_connect: char,
-
     #[serde(default = "default_toggle_device_trust")]
     pub toggle_trust: char,
 
@@ -59,7 +53,6 @@ impl Default for PairedDevice {
     fn default() -> Self {
         Self {
             unpair: 'u',
-            toggle_connect: ' ',
             toggle_trust: 't',
             rename: 'e',
         }
@@ -68,18 +61,6 @@ impl Default for PairedDevice {
 
 fn default_set_new_name() -> char {
     'e'
-}
-
-#[derive(Deserialize, Debug)]
-pub struct NewDevice {
-    #[serde(default = "default_pair_new_device")]
-    pub pair: char,
-}
-
-impl Default for NewDevice {
-    fn default() -> Self {
-        Self { pair: 'p' }
-    }
 }
 
 fn default_toggle_scanning() -> char {
@@ -102,16 +83,8 @@ fn default_unpair_device() -> char {
     'u'
 }
 
-fn default_toggle_device_connection() -> char {
-    ' '
-}
-
 fn default_toggle_device_trust() -> char {
     't'
-}
-
-fn default_pair_new_device() -> char {
-    'p'
 }
 
 impl Config {

@@ -19,7 +19,6 @@ use crate::{
     bluetooth::{Controller, request_confirmation},
     config::Config,
     confirmation::PairingConfirmation,
-    help::Help,
     notification::Notification,
     spinner::Spinner,
 };
@@ -35,7 +34,6 @@ pub enum FocusedBlock {
     Adapter,
     PairedDevices,
     NewDevices,
-    Help,
     PassKeyConfirmation,
     SetDeviceAliasBox,
 }
@@ -51,7 +49,6 @@ pub struct App {
     pub running: bool,
     pub session: Arc<Session>,
     pub agent: AgentHandle,
-    pub help: Help,
     pub spinner: Spinner,
     pub notifications: Vec<Notification>,
     pub controllers: Vec<Controller>,
@@ -62,6 +59,7 @@ pub struct App {
     pub pairing_confirmation: PairingConfirmation,
     pub color_mode: ColorMode,
     pub new_alias: Input,
+    pub config: Arc<Config>,
 }
 
 impl App {
@@ -110,7 +108,6 @@ impl App {
             running: true,
             session,
             agent: handle,
-            help: Help::new(config),
             spinner: Spinner::default(),
             notifications: Vec::new(),
             controllers,
@@ -121,6 +118,7 @@ impl App {
             pairing_confirmation,
             color_mode,
             new_alias: Input::default(),
+            config,
         })
     }
 
@@ -257,7 +255,7 @@ impl App {
 
             let paired_devices_block_height = selected_controller.paired_devices.len() as u16 + 4;
 
-            let (paired_devices_block, new_devices_block, controller_block) = {
+            let (paired_devices_block, new_devices_block, controller_block, help_block) = {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints(if render_new_devices {
@@ -265,17 +263,19 @@ impl App {
                             Constraint::Length(paired_devices_block_height),
                             Constraint::Fill(1),
                             Constraint::Length(adapter_block_height),
+                            Constraint::Length(1),
                         ]
                     } else {
                         [
                             Constraint::Fill(1),
                             Constraint::Length(0),
                             Constraint::Length(adapter_block_height),
+                            Constraint::Length(1),
                         ]
                     })
                     .margin(1)
                     .split(frame.area());
-                (chunks[0], chunks[1], chunks[2])
+                (chunks[0], chunks[1], chunks[2], chunks[3])
             };
 
             //Adapters
@@ -718,11 +718,85 @@ impl App {
                 }
             }
 
+            // Help
+            let help = match self.focused_block {
+                FocusedBlock::PairedDevices => Line::from(vec![
+                    Span::from("k,").bold(),
+                    Span::from("  Up"),
+                    Span::from(" | "),
+                    Span::from("j,").bold(),
+                    Span::from("  Down"),
+                    Span::from(" | "),
+                    Span::from("s").bold(),
+                    Span::from("  Scan on/off"),
+                    Span::from(" | "),
+                    Span::from(self.config.paired_device.unpair.to_string()).bold(),
+                    Span::from("  Unpair"),
+                    Span::from(" | "),
+                    Span::from("󱁐  or ↵ ").bold(),
+                    Span::from(" Dis/Connect"),
+                    Span::from(" | "),
+                    Span::from(self.config.paired_device.toggle_trust.to_string()).bold(),
+                    Span::from(" Un/Trust"),
+                    Span::from(" | "),
+                    Span::from(self.config.paired_device.rename.to_string()).bold(),
+                    Span::from(" Rename"),
+                    Span::from(" | "),
+                    Span::from("⇄").bold(),
+                    Span::from(" Nav"),
+                ]),
+                FocusedBlock::NewDevices => Line::from(vec![
+                    Span::from("k,").bold(),
+                    Span::from("  Up"),
+                    Span::from(" | "),
+                    Span::from("j,").bold(),
+                    Span::from("  Down"),
+                    Span::from(" | "),
+                    Span::from("󱁐  or ↵ ").bold(),
+                    Span::from(" Pair"),
+                    Span::from(" | "),
+                    Span::from("s").bold(),
+                    Span::from("  Scan on/off"),
+                    Span::from(" | "),
+                    Span::from("⇄").bold(),
+                    Span::from(" Nav"),
+                ]),
+                FocusedBlock::Adapter => Line::from(vec![
+                    Span::from("s").bold(),
+                    Span::from("  Scan on/off"),
+                    Span::from(" | "),
+                    Span::from(self.config.adapter.toggle_pairing.to_string()).bold(),
+                    Span::from(" Pairing on/off"),
+                    Span::from(" | "),
+                    Span::from(self.config.adapter.toggle_power.to_string()).bold(),
+                    Span::from(" Power on/off"),
+                    Span::from(" | "),
+                    Span::from(self.config.adapter.toggle_discovery.to_string()).bold(),
+                    Span::from(" Discory on/off"),
+                    Span::from(" | "),
+                    Span::from("⇄").bold(),
+                    Span::from(" Nav"),
+                ]),
+                FocusedBlock::SetDeviceAliasBox => {
+                    Line::from(vec![Span::from("󱊷 ").bold(), Span::from(" Discard")])
+                }
+                FocusedBlock::PassKeyConfirmation => {
+                    Line::from(vec![Span::from("󱊷 ").bold(), Span::from(" Discard")])
+                }
+            };
+            frame.render_widget(help.centered().blue(), help_block);
+
             // Pairing confirmation
 
             if self.pairing_confirmation.display.load(Ordering::Relaxed) {
                 self.focused_block = FocusedBlock::PassKeyConfirmation;
                 self.pairing_confirmation.render(frame);
+                return;
+            }
+
+            // Set alias popup
+            if self.focused_block == FocusedBlock::SetDeviceAliasBox {
+                self.render_set_alias(frame)
             }
         }
     }

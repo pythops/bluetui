@@ -36,6 +36,7 @@ pacman -S bluetui
 ### 🐧 Gentoo
 
 You can install `bluetui` from the [lamdness Gentoo Overlay](https://gpo.zugaina.org/net-wireless/bluetui):
+
 ```sh
 sudo eselect repository enable lamdness
 sudo emaint -r lamdness sync
@@ -49,7 +50,6 @@ If you are a user of [x-cmd](https://x-cmd.com), you can run:
 ```shell
 x install bluetui
 ```
-
 
 ### ⚒️ Build from source
 
@@ -93,7 +93,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `u`: Unpair the device.
 
-`Space`: Connect/Disconnect the device.
+`Space or Enter`: Connect/Disconnect the device.
 
 `t`: Trust/Untrust the device.
 
@@ -101,7 +101,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 ### New devices
 
-`p`: Pair the device.
+`Space or Enter`: Pair the device.
 
 ## Custom keybindings
 
@@ -117,12 +117,8 @@ toggle_discovery = "d"
 
 [paired_device]
 unpair = "u"
-toggle_connect = " "
 toggle_trust = "t"
 rename = "e"
-
-[new_device]
-pair = "p"
 ```
 
 ## ⚖️ License
