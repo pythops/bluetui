@@ -1,3 +1,10 @@
+## v0.7 - 2025-10-21
+
+- Use help banner instead of the popup
+- Fix crash when rfkill dir is not present
+- Add h/l nav controls
+- Add BackTab key handler
+
 ## v0.6 - 2024-12-21
 
 ### Updated
