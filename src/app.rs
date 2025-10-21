@@ -251,6 +251,10 @@ impl App {
             let render_new_devices = !selected_controller.new_devices.is_empty()
                 | selected_controller.is_scanning.load(Ordering::Relaxed);
 
+            if !render_new_devices && self.focused_block == FocusedBlock::NewDevices {
+                self.focused_block = FocusedBlock::PairedDevices;
+            }
+
             let adapter_block_height = self.controllers.len() as u16 + 6;
 
             let paired_devices_block_height = selected_controller.paired_devices.len() as u16 + 4;
@@ -302,9 +306,9 @@ impl App {
             let widths = [
                 Constraint::Length(10),
                 Constraint::Length(10),
-                Constraint::Length(10),
-                Constraint::Length(10),
-                Constraint::Length(14),
+                Constraint::Length(5),
+                Constraint::Length(8),
+                Constraint::Length(12),
             ];
 
             let rows_len = rows.len();
@@ -323,28 +327,12 @@ impl App {
                         .bottom_margin(1)
                     } else {
                         Row::new(vec![
-                            Cell::from("Name").style(match self.color_mode {
-                                ColorMode::Dark => Style::default().fg(Color::White),
-                                ColorMode::Light => Style::default().fg(Color::Black),
-                            }),
-                            Cell::from("Alias").style(match self.color_mode {
-                                ColorMode::Dark => Style::default().fg(Color::White),
-                                ColorMode::Light => Style::default().fg(Color::Black),
-                            }),
-                            Cell::from("Power").style(match self.color_mode {
-                                ColorMode::Dark => Style::default().fg(Color::White),
-                                ColorMode::Light => Style::default().fg(Color::Black),
-                            }),
-                            Cell::from("Pairable").style(match self.color_mode {
-                                ColorMode::Dark => Style::default().fg(Color::White),
-                                ColorMode::Light => Style::default().fg(Color::Black),
-                            }),
-                            Cell::from("Discoverable").style(match self.color_mode {
-                                ColorMode::Dark => Style::default().fg(Color::White),
-                                ColorMode::Light => Style::default().fg(Color::Black),
-                            }),
+                            Cell::from("Name"),
+                            Cell::from("Alias"),
+                            Cell::from("Power"),
+                            Cell::from("Pairable"),
+                            Cell::from("Discoverable"),
                         ])
-                        .style(Style::new().bold())
                         .bottom_margin(1)
                     }
                 })
@@ -374,11 +362,7 @@ impl App {
                             }
                         }),
                 )
-                .style(match self.color_mode {
-                    ColorMode::Dark => Style::default().fg(Color::White),
-                    ColorMode::Light => Style::default().fg(Color::Black),
-                })
-                .highlight_symbol("  ")
+                .flex(ratatui::layout::Flex::SpaceAround)
                 .row_highlight_style(if self.focused_block == FocusedBlock::Adapter {
                     Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
@@ -479,8 +463,8 @@ impl App {
 
             let mut widths = vec![
                 Constraint::Max(25),
-                Constraint::Length(10),
-                Constraint::Length(10),
+                Constraint::Length(7),
+                Constraint::Length(9),
             ];
 
             if show_battery_column {
@@ -501,24 +485,11 @@ impl App {
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
-                                Cell::from("Name").style(match self.color_mode {
-                                    ColorMode::Dark => Style::default().fg(Color::White),
-                                    ColorMode::Light => Style::default().fg(Color::Black),
-                                }),
-                                Cell::from("Trusted").style(match self.color_mode {
-                                    ColorMode::Dark => Style::default().fg(Color::White),
-                                    ColorMode::Light => Style::default().fg(Color::Black),
-                                }),
-                                Cell::from("Connected").style(match self.color_mode {
-                                    ColorMode::Dark => Style::default().fg(Color::White),
-                                    ColorMode::Light => Style::default().fg(Color::Black),
-                                }),
-                                Cell::from("Battery").style(match self.color_mode {
-                                    ColorMode::Dark => Style::default().fg(Color::White),
-                                    ColorMode::Light => Style::default().fg(Color::Black),
-                                }),
+                                Cell::from("Name"),
+                                Cell::from("Trusted"),
+                                Cell::from("Connected"),
+                                Cell::from("Battery"),
                             ])
-                            .style(Style::new().bold())
                             .bottom_margin(1)
                         }
                     } else if self.focused_block == FocusedBlock::PairedDevices {
@@ -574,11 +545,7 @@ impl App {
                             }
                         }),
                 )
-                .style(match self.color_mode {
-                    ColorMode::Dark => Style::default().fg(Color::White),
-                    ColorMode::Light => Style::default().fg(Color::Black),
-                })
-                .highlight_symbol("  ")
+                .flex(ratatui::layout::Flex::SpaceAround)
                 .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
                     Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
@@ -637,22 +604,13 @@ impl App {
                             .style(Style::new().bold())
                             .bottom_margin(1)
                         } else {
-                            Row::new(vec![
-                                Cell::from("Address").style(match self.color_mode {
-                                    ColorMode::Dark => Style::default().fg(Color::White),
-                                    ColorMode::Light => Style::default().fg(Color::Black),
-                                }),
-                                Cell::from("Name").style(match self.color_mode {
-                                    ColorMode::Dark => Style::default().fg(Color::White),
-                                    ColorMode::Light => Style::default().fg(Color::Black),
-                                }),
-                            ])
-                            .style(Style::new().bold())
-                            .bottom_margin(1)
+                            Row::new(vec![Cell::from("Address"), Cell::from("Name")])
+                                .bottom_margin(1)
                         }
                     })
                     .block(
                         Block::default()
+                            .padding(Padding::horizontal(1))
                             .title({
                                 if selected_controller.is_scanning.load(Ordering::Relaxed) {
                                     format!(" Scanning {} ", self.spinner.draw())
@@ -683,11 +641,7 @@ impl App {
                                 }
                             }),
                     )
-                    .style(match self.color_mode {
-                        ColorMode::Dark => Style::default().fg(Color::White),
-                        ColorMode::Light => Style::default().fg(Color::Black),
-                    })
-                    .highlight_symbol("  ")
+                    .flex(ratatui::layout::Flex::SpaceAround)
                     .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
                         Style::default().bg(Color::DarkGray).fg(Color::White)
                     } else {

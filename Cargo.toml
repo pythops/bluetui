@@ -12,7 +12,9 @@ repository = "https://github.com/pythops/bluetui"
 [dependencies]
 async-channel = "2"
 bluer = { version = "0.17", features = ["full"] }
-crossterm = { version = "0.29", features = ["event-stream"] }
+crossterm = { version = "0.29", default-features = false, features = [
+    "event-stream",
+] }
 futures = "0.3"
 ratatui = "0.29"
 tokio = { version = "1", features = ["full"] }

@@ -198,7 +198,10 @@ pub async fn handle_key_events(
                             }
                         }
                     }
-                    FocusedBlock::NewDevices => app.focused_block = FocusedBlock::Adapter,
+                    FocusedBlock::NewDevices => {
+                        app.focused_block = FocusedBlock::Adapter;
+                        app.new_devices_state.select(None);
+                    }
                     _ => {}
                 },
 
@@ -211,14 +214,16 @@ pub async fn handle_key_events(
                             } else {
                                 app.focused_block = FocusedBlock::NewDevices;
                             }
+                            app.reset_devices_state();
                         }
                     }
                     FocusedBlock::PairedDevices => {
                         app.focused_block = FocusedBlock::Adapter;
+                        app.paired_devices_state.select(None);
                     }
                     FocusedBlock::NewDevices => {
                         app.focused_block = FocusedBlock::PairedDevices;
-                        app.reset_devices_state();
+                        app.new_devices_state.select(None);
                     }
                     _ => {}
                 },
