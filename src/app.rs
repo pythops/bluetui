@@ -267,14 +267,14 @@ impl App {
                             Constraint::Length(paired_devices_block_height),
                             Constraint::Fill(1),
                             Constraint::Length(adapter_block_height),
-                            Constraint::Length(1),
+                            Constraint::Length(2),
                         ]
                     } else {
                         [
                             Constraint::Fill(1),
                             Constraint::Length(0),
                             Constraint::Length(adapter_block_height),
-                            Constraint::Length(1),
+                            Constraint::Length(2),
                         ]
                     })
                     .margin(1)
@@ -674,32 +674,66 @@ impl App {
 
             // Help
             let help = match self.focused_block {
-                FocusedBlock::PairedDevices => Line::from(vec![
-                    Span::from("k,").bold(),
-                    Span::from("  Up"),
-                    Span::from(" | "),
-                    Span::from("j,").bold(),
-                    Span::from("  Down"),
-                    Span::from(" | "),
-                    Span::from("s").bold(),
-                    Span::from("  Scan on/off"),
-                    Span::from(" | "),
-                    Span::from(self.config.paired_device.unpair.to_string()).bold(),
-                    Span::from("  Unpair"),
-                    Span::from(" | "),
-                    Span::from("󱁐  or ↵ ").bold(),
-                    Span::from(" Dis/Connect"),
-                    Span::from(" | "),
-                    Span::from(self.config.paired_device.toggle_trust.to_string()).bold(),
-                    Span::from(" Un/Trust"),
-                    Span::from(" | "),
-                    Span::from(self.config.paired_device.rename.to_string()).bold(),
-                    Span::from(" Rename"),
-                    Span::from(" | "),
-                    Span::from("⇄").bold(),
-                    Span::from(" Nav"),
-                ]),
-                FocusedBlock::NewDevices => Line::from(vec![
+                FocusedBlock::PairedDevices => {
+                    if frame.area().width > 103 {
+                        vec![Line::from(vec![
+                            Span::from("k,").bold(),
+                            Span::from("  Up"),
+                            Span::from(" | "),
+                            Span::from("j,").bold(),
+                            Span::from("  Down"),
+                            Span::from(" | "),
+                            Span::from("s").bold(),
+                            Span::from("  Scan on/off"),
+                            Span::from(" | "),
+                            Span::from(self.config.paired_device.unpair.to_string()).bold(),
+                            Span::from("  Unpair"),
+                            Span::from(" | "),
+                            Span::from("󱁐  or ↵ ").bold(),
+                            Span::from(" Dis/Connect"),
+                            Span::from(" | "),
+                            Span::from(self.config.paired_device.toggle_trust.to_string()).bold(),
+                            Span::from(" Un/Trust"),
+                            Span::from(" | "),
+                            Span::from(self.config.paired_device.rename.to_string()).bold(),
+                            Span::from(" Rename"),
+                            Span::from(" | "),
+                            Span::from("⇄").bold(),
+                            Span::from(" Nav"),
+                        ])]
+                    } else {
+                        vec![
+                            Line::from(vec![
+                                Span::from("󱁐  or ↵ ").bold(),
+                                Span::from(" Dis/Connect"),
+                                Span::from(" | "),
+                                Span::from("s").bold(),
+                                Span::from("  Scan on/off"),
+                                Span::from(" | "),
+                                Span::from(self.config.paired_device.unpair.to_string()).bold(),
+                                Span::from("  Unpair"),
+                            ]),
+                            Line::from(vec![
+                                Span::from(self.config.paired_device.toggle_trust.to_string())
+                                    .bold(),
+                                Span::from(" Un/Trust"),
+                                Span::from(" | "),
+                                Span::from(self.config.paired_device.rename.to_string()).bold(),
+                                Span::from(" Rename"),
+                                Span::from(" | "),
+                                Span::from("k,").bold(),
+                                Span::from("  Up"),
+                                Span::from(" | "),
+                                Span::from("j,").bold(),
+                                Span::from("  Down"),
+                                Span::from(" | "),
+                                Span::from("⇄").bold(),
+                                Span::from(" Nav"),
+                            ]),
+                        ]
+                    }
+                }
+                FocusedBlock::NewDevices => vec![Line::from(vec![
                     Span::from("k,").bold(),
                     Span::from("  Up"),
                     Span::from(" | "),
@@ -714,8 +748,8 @@ impl App {
                     Span::from(" | "),
                     Span::from("⇄").bold(),
                     Span::from(" Nav"),
-                ]),
-                FocusedBlock::Adapter => Line::from(vec![
+                ])],
+                FocusedBlock::Adapter => vec![Line::from(vec![
                     Span::from("s").bold(),
                     Span::from("  Scan on/off"),
                     Span::from(" | "),
@@ -730,15 +764,23 @@ impl App {
                     Span::from(" | "),
                     Span::from("⇄").bold(),
                     Span::from(" Nav"),
-                ]),
+                ])],
                 FocusedBlock::SetDeviceAliasBox => {
-                    Line::from(vec![Span::from("󱊷 ").bold(), Span::from(" Discard")])
+                    vec![Line::from(vec![
+                        Span::from("󱊷 ").bold(),
+                        Span::from(" Discard"),
+                    ])]
                 }
                 FocusedBlock::PassKeyConfirmation => {
-                    Line::from(vec![Span::from("󱊷 ").bold(), Span::from(" Discard")])
+                    vec![Line::from(vec![
+                        Span::from("󱊷 ").bold(),
+                        Span::from(" Discard"),
+                    ])]
                 }
             };
-            frame.render_widget(help.centered().blue(), help_block);
+
+            let help = Paragraph::new(help).centered().blue();
+            frame.render_widget(help, help_block);
 
             // Pairing confirmation
 
