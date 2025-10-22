@@ -1,3 +1,9 @@
+## v0.7.1 - 2025-10-22
+
+- Make helper banner responsive
+- Fix display issue on light theme terminal
+- Update the layout to center the centent
+
 ## v0.7 - 2025-10-21
 
 - Use help banner instead of the popup
