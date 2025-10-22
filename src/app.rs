@@ -255,7 +255,7 @@ impl App {
                 self.focused_block = FocusedBlock::PairedDevices;
             }
 
-            let adapter_block_height = self.controllers.len() as u16 + 6;
+            let adapter_block_height = self.controllers.len() as u16 + 4;
 
             let paired_devices_block_height = selected_controller.paired_devices.len() as u16 + 4;
 
@@ -576,6 +576,7 @@ impl App {
 
             //New devices
 
+            let mut max_name_width = 20;
             if render_new_devices {
                 let rows: Vec<Row> = selected_controller
                     .new_devices
@@ -585,6 +586,9 @@ impl App {
                             if let Some(icon) = &d.icon {
                                 format!("{} {}", icon, &d.alias)
                             } else {
+                                if d.alias.len() > max_name_width {
+                                    max_name_width = d.alias.len();
+                                }
                                 d.alias.to_owned()
                             }
                         }])
@@ -592,7 +596,10 @@ impl App {
                     .collect();
                 let rows_len = rows.len();
 
-                let widths = [Constraint::Length(25), Constraint::Length(20)];
+                let widths = [
+                    Constraint::Length(20),
+                    Constraint::Length(max_name_width.try_into().unwrap()),
+                ];
 
                 let new_devices_table = Table::new(rows, widths)
                     .header({
