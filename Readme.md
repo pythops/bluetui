@@ -108,6 +108,8 @@ This will produce an executable file at `target/release/bluetui` that you can co
 Keybindings can be customized in the config file `$HOME/.config/bluetui/config.toml`
 
 ```toml
+layout = "SpaceAround"
+
 toggle_scanning = "s"
 
 [adapter]

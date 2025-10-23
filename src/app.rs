@@ -362,7 +362,7 @@ impl App {
                             }
                         }),
                 )
-                .flex(ratatui::layout::Flex::SpaceAround)
+                .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::Adapter {
                     Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
@@ -545,7 +545,7 @@ impl App {
                             }
                         }),
                 )
-                .flex(ratatui::layout::Flex::SpaceAround)
+                .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
                     Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
@@ -648,7 +648,7 @@ impl App {
                                 }
                             }),
                     )
-                    .flex(ratatui::layout::Flex::SpaceAround)
+                    .flex(self.config.layout)
                     .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
                         Style::default().bg(Color::DarkGray).fg(Color::White)
                     } else {
