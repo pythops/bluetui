@@ -1,10 +1,14 @@
+use ratatui::layout::Flex;
 use toml;
 
 use dirs;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    #[serde(default = "default_layout", deserialize_with = "deserialize_layout")]
+    pub layout: Flex,
+
     #[serde(default = "default_toggle_scanning")]
     pub toggle_scanning: char,
 
@@ -57,6 +61,29 @@ impl Default for PairedDevice {
             rename: 'e',
         }
     }
+}
+
+fn deserialize_layout<'de, D>(deserializer: D) -> Result<Flex, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+
+    match s.as_str() {
+        "Legacy" => Ok(Flex::Legacy),
+        "Start" => Ok(Flex::Start),
+        "End" => Ok(Flex::End),
+        "SpaceAround" => Ok(Flex::SpaceAround),
+        "SpaceBetween" => Ok(Flex::SpaceBetween),
+        _ => {
+            eprintln!("wrong config: unknown layout variant {}", s);
+            std::process::exit(1);
+        }
+    }
+}
+
+fn default_layout() -> Flex {
+    Flex::SpaceAround
 }
 
 fn default_set_new_name() -> char {
