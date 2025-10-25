@@ -392,16 +392,8 @@ impl App {
             }
 
             //Paired devices
-            let mut paired_devices_sorted = selected_controller.paired_devices.clone();
-            paired_devices_sorted.sort_by(|a, b| {
-                use std::cmp::Ordering;
-                match (a.is_favorite, b.is_favorite) {
-                    (true, false) => Ordering::Less,
-                    (false, true) => Ordering::Greater,
-                    _ => Ordering::Equal,
-                }
-            });
-            let rows: Vec<Row> = paired_devices_sorted
+            let rows: Vec<Row> = selected_controller
+                .paired_devices
                 .iter()
                 .map(|d| {
                     Row::new(vec![
@@ -888,7 +880,17 @@ impl App {
                 controller.is_powered = refreshed_controller.is_powered;
                 controller.is_pairable = refreshed_controller.is_pairable;
                 controller.is_discoverable = refreshed_controller.is_discoverable;
-                controller.paired_devices = refreshed_controller.paired_devices;
+
+                let mut paired_devices_sorted = refreshed_controller.paired_devices;
+                paired_devices_sorted.sort_by(|a, b| {
+                    use std::cmp::Ordering;
+                    match (a.is_favorite, b.is_favorite) {
+                        (true, false) => Ordering::Less,
+                        (false, true) => Ordering::Greater,
+                        _ => Ordering::Equal,
+                    }
+                });
+                controller.paired_devices = paired_devices_sorted;
                 controller.new_devices = refreshed_controller.new_devices;
             } else {
                 // Add new detected adapters
