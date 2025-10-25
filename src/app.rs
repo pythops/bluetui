@@ -405,6 +405,11 @@ impl App {
                 .iter()
                 .map(|d| {
                     Row::new(vec![
+                        if d.is_favorite {
+                            "★".to_string()
+                        } else {
+                            " ".to_string()
+                        },
                         {
                             if let Some(icon) = &d.icon {
                                 format!("{} {}", icon, &d.alias)
@@ -470,6 +475,7 @@ impl App {
                 .any(|device| device.battery_percentage.is_some());
 
             let mut widths = vec![
+                Constraint::Max(1),
                 Constraint::Max(25),
                 Constraint::Length(7),
                 Constraint::Length(9),
@@ -484,6 +490,7 @@ impl App {
                     if show_battery_column {
                         if self.focused_block == FocusedBlock::PairedDevices {
                             Row::new(vec![
+                                Cell::from("★").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -493,6 +500,7 @@ impl App {
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
+                                Cell::from("★"),
                                 Cell::from("Name"),
                                 Cell::from("Trusted"),
                                 Cell::from("Connected"),
@@ -502,6 +510,7 @@ impl App {
                         }
                     } else if self.focused_block == FocusedBlock::PairedDevices {
                         Row::new(vec![
+                            Cell::from("★").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Connected").style(Style::default().fg(Color::Yellow)),

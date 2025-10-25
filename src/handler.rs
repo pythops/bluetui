@@ -558,7 +558,16 @@ pub async fn handle_key_events(
                                         if let Some(index) = app.paired_devices_state.selected() {
                                             match controller.paired_devices.get_mut(index) {
                                                 Some(device) => {
-                                                    device.is_favorite = !device.is_favorite;
+                                                    device.toggle_favorite().await?;
+                                                    Notification::send(
+                                                        if device.is_favorite {
+                                                            format!("Device `{}` unfavorited", device.alias)
+                                                        } else {
+                                                            format!("Device `{}` favorited", device.alias)
+                                                        },
+                                                        NotificationLevel::Info,
+                                                        sender.clone(),
+                                                    )?;
                                                 }
                                                 None => {
                                                     Notification::send(
