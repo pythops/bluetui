@@ -19,6 +19,7 @@
       system: let
         overlays = [(import rust-overlay)];
         pkgs = import nixpkgs {inherit system overlays;};
+        bluetui = pkgs.callPackage ./package.nix {};
       in {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
@@ -28,28 +29,13 @@
             self.packages.${system}.default
           ];
         };
-        packages = rec {
+        packages = {
           default = bluetui;
-          bluetui = let
-            cargo = (pkgs.lib.importTOML ./Cargo.toml).package;
-          in
-            pkgs.rustPlatform.buildRustPackage {
-              pname = cargo.name;
-              version = cargo.version;
-              src = ./.;
-              cargoLock.lockFile = ./Cargo.lock;
-
-              buildInputs = with pkgs; [dbus];
-              nativeBuildInputs = with pkgs; [pkg-config];
-
-              meta = {
-                description = cargo.description;
-                homepage = cargo.homepage;
-                license = pkgs.lib.licenses.gpl3Only;
-                maintainers = with pkgs.lib.maintainers; [samuel-martineau];
-              };
-            };
+          inherit bluetui;
         };
+        legacyPackages = pkgs.extend(final: prev: {
+          bluetui = final.callPackage ./package.nix {};
+        });
       }
     );
 }
