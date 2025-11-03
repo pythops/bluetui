@@ -54,8 +54,9 @@ impl Device {
             "computer" => Some(String::from("")),
             "input-keyboard" => Some(String::from("󰌌")),
             "input-mouse" => Some(String::from("󰍽")),
+            "input-gaming" => Some(String::from("󰊴")),
             "phone" => Some(String::from("󰏲")),
-            _ => None,
+            _ => Some(String::from(" ")),
         }
     }
 }
