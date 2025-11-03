@@ -2,7 +2,7 @@ use std::sync::mpsc::channel;
 use std::sync::{Arc, atomic::AtomicBool};
 
 use ratatui::Frame;
-use ratatui::layout::{Alignment, Constraint, Direction, Layout};
+use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Style};
 use ratatui::text::{Span, Text};
 use ratatui::widgets::{Block, BorderType, Borders, Clear};
@@ -40,7 +40,7 @@ impl PairingConfirmation {
         }
     }
 
-    pub fn render(&mut self, frame: &mut Frame) {
+    pub fn render(&mut self, frame: &mut Frame, area: Rect) {
         if self.message.is_none() {
             let msg = self.confirmation_message_receiver.recv().unwrap();
             self.message = Some(msg);
@@ -53,7 +53,7 @@ impl PairingConfirmation {
                 Constraint::Length(5),
                 Constraint::Fill(1),
             ])
-            .split(frame.area());
+            .split(area);
 
         let block = Layout::default()
             .direction(Direction::Horizontal)

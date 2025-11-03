@@ -24,7 +24,7 @@ pub enum NotificationLevel {
 }
 
 impl Notification {
-    pub fn render(&self, index: usize, frame: &mut Frame) {
+    pub fn render(&self, index: usize, frame: &mut Frame, area: Rect) {
         let (color, title) = match self.level {
             NotificationLevel::Info => (Color::Green, "Info"),
             NotificationLevel::Warning => (Color::Yellow, "Warning"),
@@ -51,12 +51,7 @@ impl Notification {
                     .border_style(Style::default().fg(color)),
             );
 
-        let area = notification_rect(
-            index as u16,
-            notification_height,
-            notification_width,
-            frame.area(),
-        );
+        let area = notification_rect(index as u16, notification_height, notification_width, area);
 
         frame.render_widget(Clear, area);
         frame.render_widget(block, area);

@@ -1,21 +1,12 @@
 pub mod app;
-
-pub mod event;
-
-pub mod ui;
-
-pub mod tui;
-
-pub mod handler;
-
 pub mod bluetooth;
-
-pub mod notification;
-
-pub mod spinner;
-
+pub mod cli;
 pub mod config;
-
-pub mod rfkill;
-
 pub mod confirmation;
+pub mod event;
+pub mod handler;
+pub mod notification;
+pub mod rfkill;
+pub mod spinner;
+pub mod tui;
+pub mod ui;

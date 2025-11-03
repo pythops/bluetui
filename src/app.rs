@@ -5,7 +5,7 @@ use bluer::{
 use futures::FutureExt;
 use ratatui::{
     Frame,
-    layout::{Alignment, Constraint, Direction, Layout, Margin},
+    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Modifier, Style, Stylize},
     text::{Line, Span},
     widgets::{
@@ -17,7 +17,7 @@ use tui_input::Input;
 
 use crate::{
     bluetooth::{Controller, request_confirmation},
-    config::Config,
+    config::{Config, Width},
     confirmation::PairingConfirmation,
     notification::Notification,
     spinner::Spinner,
@@ -139,6 +139,24 @@ impl App {
         }
     }
 
+    pub fn area(&self, frame: &Frame) -> Rect {
+        match self.config.width {
+            Width::Size(v) => {
+                if v < frame.area().width {
+                    let area = Layout::default()
+                        .direction(Direction::Horizontal)
+                        .constraints([Constraint::Length(v), Constraint::Fill(1)])
+                        .split(frame.area());
+
+                    area[0]
+                } else {
+                    frame.area()
+                }
+            }
+            _ => frame.area(),
+        }
+    }
+
     pub fn render_set_alias(&mut self, frame: &mut Frame) {
         let area = Layout::default()
             .direction(Direction::Vertical)
@@ -147,7 +165,7 @@ impl App {
                 Constraint::Length(6),
                 Constraint::Fill(1),
             ])
-            .split(frame.area());
+            .split(self.area(frame));
 
         let area = Layout::default()
             .direction(Direction::Horizontal)
@@ -278,7 +296,7 @@ impl App {
                         ]
                     })
                     .margin(1)
-                    .split(frame.area());
+                    .split(self.area(frame));
                 (chunks[0], chunks[1], chunks[2], chunks[3])
             };
 
@@ -362,7 +380,7 @@ impl App {
                             }
                         }),
                 )
-                .flex(ratatui::layout::Flex::SpaceAround)
+                .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::Adapter {
                     Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
@@ -545,7 +563,7 @@ impl App {
                             }
                         }),
                 )
-                .flex(ratatui::layout::Flex::SpaceAround)
+                .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
                     Style::default().bg(Color::DarkGray).fg(Color::White)
                 } else {
@@ -648,7 +666,7 @@ impl App {
                                 }
                             }),
                     )
-                    .flex(ratatui::layout::Flex::SpaceAround)
+                    .flex(self.config.layout)
                     .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
                         Style::default().bg(Color::DarkGray).fg(Color::White)
                     } else {
@@ -682,7 +700,7 @@ impl App {
             // Help
             let help = match self.focused_block {
                 FocusedBlock::PairedDevices => {
-                    if frame.area().width > 103 {
+                    if self.area(frame).width > 103 {
                         vec![Line::from(vec![
                             Span::from("k,").bold(),
                             Span::from("  Up"),
@@ -793,7 +811,7 @@ impl App {
 
             if self.pairing_confirmation.display.load(Ordering::Relaxed) {
                 self.focused_block = FocusedBlock::PassKeyConfirmation;
-                self.pairing_confirmation.render(frame);
+                self.pairing_confirmation.render(frame, self.area(frame));
                 return;
             }
 
