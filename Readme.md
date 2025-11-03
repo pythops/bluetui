@@ -112,7 +112,7 @@ Keybindings can be customized in the default config file location `$HOME/.config
 layout = "SpaceAround"
 
 # Window width
-# Pissible values: "auto" or a positive integer
+# Possible values: "auto" or a positive integer
 width = "auto"
 
 toggle_scanning = "s"
