@@ -28,6 +28,7 @@ async fn main() -> AppResult<()> {
     rfkill::check()?;
 
     let config = Arc::new(Config::new(config_file_path));
+
     let mut app = App::new(config.clone()).await?;
     let backend = CrosstermBackend::new(io::stdout());
     let terminal = Terminal::new(backend)?;

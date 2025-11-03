@@ -5,7 +5,7 @@ use bluer::{
 use futures::FutureExt;
 use ratatui::{
     Frame,
-    layout::{Alignment, Constraint, Direction, Layout, Margin},
+    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Modifier, Style, Stylize},
     text::{Line, Span},
     widgets::{
@@ -17,7 +17,7 @@ use tui_input::Input;
 
 use crate::{
     bluetooth::{Controller, request_confirmation},
-    config::Config,
+    config::{Config, Width},
     confirmation::PairingConfirmation,
     notification::Notification,
     spinner::Spinner,
@@ -139,6 +139,24 @@ impl App {
         }
     }
 
+    pub fn area(&self, frame: &Frame) -> Rect {
+        match self.config.width {
+            Width::Size(v) => {
+                if v < frame.area().width {
+                    let area = Layout::default()
+                        .direction(Direction::Horizontal)
+                        .constraints([Constraint::Length(v), Constraint::Fill(1)])
+                        .split(frame.area());
+
+                    area[0]
+                } else {
+                    frame.area()
+                }
+            }
+            _ => frame.area(),
+        }
+    }
+
     pub fn render_set_alias(&mut self, frame: &mut Frame) {
         let area = Layout::default()
             .direction(Direction::Vertical)
@@ -147,7 +165,7 @@ impl App {
                 Constraint::Length(6),
                 Constraint::Fill(1),
             ])
-            .split(frame.area());
+            .split(self.area(frame));
 
         let area = Layout::default()
             .direction(Direction::Horizontal)
@@ -245,6 +263,22 @@ impl App {
     }
 
     pub fn render(&mut self, frame: &mut Frame) {
+        let area = match self.config.width {
+            Width::Size(v) => {
+                if v < frame.area().width {
+                    let area = Layout::default()
+                        .direction(Direction::Horizontal)
+                        .constraints([Constraint::Length(v), Constraint::Fill(1)])
+                        .split(frame.area());
+
+                    area[0]
+                } else {
+                    frame.area()
+                }
+            }
+            _ => frame.area(),
+        };
+
         if let Some(selected_controller_index) = self.controller_state.selected() {
             let selected_controller = &self.controllers[selected_controller_index];
             // Layout
@@ -278,7 +312,7 @@ impl App {
                         ]
                     })
                     .margin(1)
-                    .split(frame.area());
+                    .split(area);
                 (chunks[0], chunks[1], chunks[2], chunks[3])
             };
 
@@ -793,7 +827,7 @@ impl App {
 
             if self.pairing_confirmation.display.load(Ordering::Relaxed) {
                 self.focused_block = FocusedBlock::PassKeyConfirmation;
-                self.pairing_confirmation.render(frame);
+                self.pairing_confirmation.render(frame, area);
                 return;
             }
 

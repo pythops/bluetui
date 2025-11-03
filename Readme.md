@@ -108,7 +108,12 @@ This will produce an executable file at `target/release/bluetui` that you can co
 Keybindings can be customized in the default config file location `$HOME/.config/bluetui/config.toml` or from a custom path with `-c`
 
 ```toml
+# Possible values: "Legacy", "Start", "End", "Center", "SpaceAround", "SpaceBetween"
 layout = "SpaceAround"
+
+# Window width
+# Pissible values: "auto" or a positive integer
+width = "auto"
 
 toggle_scanning = "s"
 

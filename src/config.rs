@@ -1,15 +1,22 @@
-use std::path::PathBuf;
+use core::fmt;
+use std::{path::PathBuf, process::exit};
 
 use ratatui::layout::Flex;
 use toml;
 
 use dirs;
-use serde::{Deserialize, Deserializer};
+use serde::{
+    Deserialize, Deserializer,
+    de::{self, Unexpected, Visitor},
+};
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
     #[serde(default = "default_layout", deserialize_with = "deserialize_layout")]
     pub layout: Flex,
+
+    #[serde(default = "Width::default")]
+    pub width: Width,
 
     #[serde(default = "default_toggle_scanning")]
     pub toggle_scanning: char,
@@ -19,6 +26,70 @@ pub struct Config {
 
     #[serde(default)]
     pub paired_device: PairedDevice,
+}
+
+#[derive(Debug)]
+pub enum Width {
+    Auto,
+    Size(u16),
+}
+
+impl Default for Width {
+    fn default() -> Self {
+        Self::Auto
+    }
+}
+
+struct WidthVisitor;
+
+impl<'de> Visitor<'de> for WidthVisitor {
+    type Value = Width;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("the string \"auto\" or a positive integer (u16)")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        match value {
+            "auto" => Ok(Width::Auto),
+            _ => value
+                .parse::<u16>()
+                .map(Width::Size)
+                .map_err(|_| de::Error::invalid_value(Unexpected::Str(value), &self)),
+        }
+    }
+
+    fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        match u16::try_from(value) {
+            Ok(v) => Ok(Width::Size(v)),
+            Err(_) => Err(de::Error::invalid_value(Unexpected::Unsigned(value), &self)),
+        }
+    }
+
+    fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        match u16::try_from(value) {
+            Ok(v) => Ok(Width::Size(v)),
+            Err(_) => Err(de::Error::invalid_value(Unexpected::Signed(value), &self)),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Width {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_any(WidthVisitor)
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -130,7 +201,13 @@ impl Config {
         );
 
         let config = std::fs::read_to_string(conf_path).unwrap_or_default();
-        let app_config: Config = toml::from_str(&config).unwrap();
+        let app_config: Config = match toml::from_str(&config) {
+            Ok(c) => c,
+            Err(e) => {
+                eprintln!("{}", e);
+                exit(1);
+            }
+        };
 
         app_config
     }
