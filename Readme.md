@@ -105,7 +105,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 ## Custom keybindings
 
-Keybindings can be customized in the config file `$HOME/.config/bluetui/config.toml`
+Keybindings can be customized in the default config file location `$HOME/.config/bluetui/config.toml` or from a custom path with `-c`
 
 ```toml
 layout = "SpaceAround"
