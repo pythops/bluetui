@@ -1,24 +1,33 @@
 use bluetui::{
     app::{App, AppResult},
+    cli,
     config::Config,
     event::{Event, EventHandler},
     handler::handle_key_events,
     rfkill,
     tui::Tui,
 };
-use clap::{Command, crate_version};
 use ratatui::{Terminal, backend::CrosstermBackend};
-use std::{io, sync::Arc};
+use std::{io, path::PathBuf, process::exit, sync::Arc};
 
 #[tokio::main]
 async fn main() -> AppResult<()> {
-    Command::new("bluetui")
-        .version(crate_version!())
-        .get_matches();
+    let args = cli::cli().get_matches();
+
+    let config_file_path = if let Some(config) = args.get_one::<PathBuf>("config") {
+        if config.exists() {
+            Some(config.to_owned())
+        } else {
+            eprintln!("Config file not found");
+            exit(1);
+        }
+    } else {
+        None
+    };
 
     rfkill::check()?;
 
-    let config = Arc::new(Config::new());
+    let config = Arc::new(Config::new(config_file_path));
     let mut app = App::new(config.clone()).await?;
     let backend = CrosstermBackend::new(io::stdout());
     let terminal = Terminal::new(backend)?;

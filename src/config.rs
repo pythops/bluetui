@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use ratatui::layout::Flex;
 use toml;
 
@@ -73,10 +75,14 @@ where
         "Legacy" => Ok(Flex::Legacy),
         "Start" => Ok(Flex::Start),
         "End" => Ok(Flex::End),
+        "Center" => Ok(Flex::Center),
         "SpaceAround" => Ok(Flex::SpaceAround),
         "SpaceBetween" => Ok(Flex::SpaceBetween),
         _ => {
-            eprintln!("wrong config: unknown layout variant {}", s);
+            eprintln!("Wrong config: unknown layout variant {}", s);
+            eprintln!(
+                "The possible values are: Legacy, Start, End, Center, SpaceAround, SpaceBetween"
+            );
             std::process::exit(1);
         }
     }
@@ -115,21 +121,17 @@ fn default_toggle_device_trust() -> char {
 }
 
 impl Config {
-    pub fn new() -> Self {
-        let conf_path = dirs::config_dir()
-            .unwrap()
-            .join("bluetui")
-            .join("config.toml");
+    pub fn new(config_file_path: Option<PathBuf>) -> Self {
+        let conf_path = config_file_path.unwrap_or(
+            dirs::config_dir()
+                .unwrap()
+                .join("bluetui")
+                .join("config.toml"),
+        );
 
         let config = std::fs::read_to_string(conf_path).unwrap_or_default();
         let app_config: Config = toml::from_str(&config).unwrap();
 
         app_config
-    }
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self::new()
     }
 }
