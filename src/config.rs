@@ -28,16 +28,11 @@ pub struct Config {
     pub paired_device: PairedDevice,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum Width {
+    #[default]
     Auto,
     Size(u16),
-}
-
-impl Default for Width {
-    fn default() -> Self {
-        Self::Auto
-    }
 }
 
 struct WidthVisitor;
