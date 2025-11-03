@@ -1,3 +1,9 @@
+## v0.7.2 - 2025-11-03
+
+- Align icons
+- Ability to customize the layout
+- Ability to set the width for the window
+
 ## v0.7.1 - 2025-10-22
 
 - Make helper banner responsive
