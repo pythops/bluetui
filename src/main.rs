@@ -32,7 +32,7 @@ async fn main() -> AppResult<()> {
     let mut app = App::new(config.clone()).await?;
     let backend = CrosstermBackend::new(io::stdout());
     let terminal = Terminal::new(backend)?;
-    let events = EventHandler::new(1_000);
+    let events = EventHandler::new(2_000);
     let mut tui = Tui::new(terminal, events);
     tui.init()?;
 
