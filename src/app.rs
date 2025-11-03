@@ -263,22 +263,6 @@ impl App {
     }
 
     pub fn render(&mut self, frame: &mut Frame) {
-        let area = match self.config.width {
-            Width::Size(v) => {
-                if v < frame.area().width {
-                    let area = Layout::default()
-                        .direction(Direction::Horizontal)
-                        .constraints([Constraint::Length(v), Constraint::Fill(1)])
-                        .split(frame.area());
-
-                    area[0]
-                } else {
-                    frame.area()
-                }
-            }
-            _ => frame.area(),
-        };
-
         if let Some(selected_controller_index) = self.controller_state.selected() {
             let selected_controller = &self.controllers[selected_controller_index];
             // Layout
@@ -312,7 +296,7 @@ impl App {
                         ]
                     })
                     .margin(1)
-                    .split(area);
+                    .split(self.area(frame));
                 (chunks[0], chunks[1], chunks[2], chunks[3])
             };
 
@@ -716,7 +700,7 @@ impl App {
             // Help
             let help = match self.focused_block {
                 FocusedBlock::PairedDevices => {
-                    if frame.area().width > 103 {
+                    if self.area(frame).width > 103 {
                         vec![Line::from(vec![
                             Span::from("k,").bold(),
                             Span::from("  Up"),
@@ -827,7 +811,7 @@ impl App {
 
             if self.pairing_confirmation.display.load(Ordering::Relaxed) {
                 self.focused_block = FocusedBlock::PassKeyConfirmation;
-                self.pairing_confirmation.render(frame, area);
+                self.pairing_confirmation.render(frame, self.area(frame));
                 return;
             }
 
