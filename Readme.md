@@ -67,17 +67,15 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 ### Global
 
-`Tab`: Switch between different sections.
+`Tab` or `l`: Scroll down between different sections.
+
+`shift+Tab` or `h`: Scroll up between different sections.
 
 `j` or `Down` : Scroll down.
 
 `k` or `Up`: Scroll up.
 
 `s`: Start/Stop scanning.
-
-`?`: Show help.
-
-`esc`: Dismiss the help pop-up.
 
 `ctrl+c` or `q`: Quit the app.
 
