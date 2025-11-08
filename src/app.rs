@@ -785,7 +785,7 @@ impl App {
                     Span::from(" Power on/off"),
                     Span::from(" | "),
                     Span::from(self.config.adapter.toggle_discovery.to_string()).bold(),
-                    Span::from(" Discory on/off"),
+                    Span::from(" Discovery on/off"),
                     Span::from(" | "),
                     Span::from("⇄").bold(),
                     Span::from(" Nav"),
