@@ -8,7 +8,7 @@
 
 - Make helper banner responsive
 - Fix display issue on light theme terminal
-- Update the layout to center the centent
+- Update the layout to center the content
 
 ## v0.7 - 2025-10-21
 
