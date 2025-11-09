@@ -52,6 +52,9 @@ async fn main() -> AppResult<()> {
             Event::Notification(notification) => {
                 app.notifications.push(notification);
             }
+            Event::NewPairedDevice => {
+                app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
+            }
             _ => {}
         }
     }

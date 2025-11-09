@@ -99,6 +99,40 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                         NotificationLevel::Info,
                                         sender.clone(),
                                     );
+
+                                    let _ = sender.send(Event::NewPairedDevice);
+                                    match device.set_trusted(true).await {
+                                        Ok(_) => {
+                                            let _ = Notification::send(
+                                                "Device trusted".to_string(),
+                                                NotificationLevel::Info,
+                                                sender.clone(),
+                                            );
+                                        }
+                                        Err(e) => {
+                                            let _ = Notification::send(
+                                                e.to_string(),
+                                                NotificationLevel::Error,
+                                                sender.clone(),
+                                            );
+                                        }
+                                    };
+                                    match device.connect().await {
+                                        Ok(_) => {
+                                            let _ = Notification::send(
+                                                "Device connected".to_string(),
+                                                NotificationLevel::Info,
+                                                sender.clone(),
+                                            );
+                                        }
+                                        Err(e) => {
+                                            let _ = Notification::send(
+                                                e.to_string(),
+                                                NotificationLevel::Error,
+                                                sender.clone(),
+                                            );
+                                        }
+                                    };
                                 }
                                 Err(e) => {
                                     let _ = Notification::send(
