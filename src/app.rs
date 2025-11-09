@@ -38,12 +38,6 @@ pub enum FocusedBlock {
     SetDeviceAliasBox,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum ColorMode {
-    Dark,
-    Light,
-}
-
 #[derive(Debug)]
 pub struct App {
     pub running: bool,
@@ -57,19 +51,12 @@ pub struct App {
     pub new_devices_state: TableState,
     pub focused_block: FocusedBlock,
     pub pairing_confirmation: PairingConfirmation,
-    pub color_mode: ColorMode,
     pub new_alias: Input,
     pub config: Arc<Config>,
 }
 
 impl App {
     pub async fn new(config: Arc<Config>) -> AppResult<Self> {
-        let color_mode = match terminal_light::luma() {
-            Ok(luma) if luma > 0.6 => ColorMode::Light,
-            Ok(_) => ColorMode::Dark,
-            Err(_) => ColorMode::Dark,
-        };
-
         let session = Arc::new(bluer::Session::new().await?);
 
         let pairing_confirmation = PairingConfirmation::new();
@@ -116,7 +103,6 @@ impl App {
             new_devices_state: TableState::default(),
             focused_block: FocusedBlock::PairedDevices,
             pairing_confirmation,
-            color_mode,
             new_alias: Input::default(),
             config,
         })
@@ -520,18 +506,9 @@ impl App {
                         .bottom_margin(1)
                     } else {
                         Row::new(vec![
-                            Cell::from("Name").style(match self.color_mode {
-                                ColorMode::Dark => Style::default().fg(Color::White),
-                                ColorMode::Light => Style::default().fg(Color::Black),
-                            }),
-                            Cell::from("Trusted").style(match self.color_mode {
-                                ColorMode::Dark => Style::default().fg(Color::White),
-                                ColorMode::Light => Style::default().fg(Color::Black),
-                            }),
-                            Cell::from("Connected").style(match self.color_mode {
-                                ColorMode::Dark => Style::default().fg(Color::White),
-                                ColorMode::Light => Style::default().fg(Color::Black),
-                            }),
+                            Cell::from("Name"),
+                            Cell::from("Trusted"),
+                            Cell::from("Connected"),
                         ])
                         .style(Style::new().bold())
                         .bottom_margin(1)
