@@ -8,6 +8,7 @@ use bluer::{
 
 use bluer::Device as BTDevice;
 
+use clap::crate_name;
 use tokio::sync::oneshot;
 
 use crate::app::AppResult;
@@ -35,6 +36,7 @@ pub struct Device {
     pub is_trusted: bool,
     pub is_connected: bool,
     pub battery_percentage: Option<u8>,
+    pub is_favorite: bool,
 }
 
 impl Device {
@@ -58,6 +60,53 @@ impl Device {
             "phone" => Some(String::from("󰏲")),
             _ => Some(String::from(" ")),
         }
+    }
+
+    pub async fn get_if_favorite(addr: Address) -> bool {
+        let state_dir = dirs::state_dir().expect("Could not find state directory.");
+        let favorite_addrs_file = state_dir.join(crate_name!()).join("favorite_addrs.txt");
+        if !favorite_addrs_file.exists() {
+            return false;
+        }
+        let contents = tokio::fs::read_to_string(favorite_addrs_file).await;
+        if let Ok(contents) = contents {
+            for line in contents.lines() {
+                if line.trim() == addr.to_string() {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    pub async fn toggle_favorite(&self) -> AppResult<()> {
+        let state_dir = dirs::state_dir().expect("Could not find state directory.");
+        let favorite_addrs_dir = state_dir.join(crate_name!());
+        if !favorite_addrs_dir.exists() {
+            tokio::fs::create_dir_all(&favorite_addrs_dir).await?;
+        }
+        let favorite_addrs_file = favorite_addrs_dir.join("favorite_addrs.txt");
+
+        let mut favorite_addrs: Vec<String> = Vec::new();
+        if favorite_addrs_file.exists() {
+            let contents = tokio::fs::read_to_string(&favorite_addrs_file).await?;
+            for line in contents.lines() {
+                favorite_addrs.push(line.trim().to_string());
+            }
+        }
+
+        if self.is_favorite {
+            // remove from favorites
+            favorite_addrs.retain(|addr| addr != &self.addr.to_string());
+        } else {
+            // add to favorites
+            favorite_addrs.push(self.addr.to_string());
+        }
+
+        let new_contents = favorite_addrs.join("\n");
+        tokio::fs::write(&favorite_addrs_file, new_contents).await?;
+
+        Ok(())
     }
 }
 
@@ -112,6 +161,7 @@ impl Controller {
             let is_trusted = device.is_trusted().await?;
             let is_connected = device.is_connected().await?;
             let battery_percentage = device.battery_percentage().await?;
+            let is_favorite = Device::get_if_favorite(addr).await;
 
             let dev = Device {
                 device,
@@ -122,6 +172,7 @@ impl Controller {
                 is_trusted,
                 is_connected,
                 battery_percentage,
+                is_favorite,
             };
 
             if dev.is_paired {

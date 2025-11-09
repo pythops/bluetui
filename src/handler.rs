@@ -539,6 +539,43 @@ pub async fn handle_key_events(
                                     app.focused_block = FocusedBlock::SetDeviceAliasBox;
                                 }
 
+                                // Favorite / Unfavorite
+                                KeyCode::Char(c) if c == config.paired_device.toggle_favorite => {
+                                    if let Some(selected_controller) =
+                                        app.controller_state.selected()
+                                    {
+                                        let controller = app
+                                            .controllers
+                                            .get_mut(selected_controller)
+                                            .expect("Selected controller should be valid");
+
+                                        if let Some(index) = app.paired_devices_state.selected() {
+                                            match controller.paired_devices.get_mut(index) {
+                                                Some(device) => {
+                                                    device.toggle_favorite().await?;
+                                                    Notification::send(
+                                                        if device.is_favorite {
+                                                            format!("Device `{}` unfavorited", device.alias)
+                                                        } else {
+                                                            format!("Device `{}` favorited", device.alias)
+                                                        },
+                                                        NotificationLevel::Info,
+                                                        sender.clone(),
+                                                    )?;
+                                                }
+                                                None => {
+                                                    Notification::send(
+                                                        "Selected device should be valid"
+                                                            .to_string(),
+                                                        NotificationLevel::Error,
+                                                        sender.clone(),
+                                                    )?;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
                                 _ => {}
                             }
                         }

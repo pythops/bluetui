@@ -401,6 +401,11 @@ impl App {
                 .iter()
                 .map(|d| {
                     Row::new(vec![
+                        if d.is_favorite {
+                            "★".to_string()
+                        } else {
+                            " ".to_string()
+                        },
                         {
                             if let Some(icon) = &d.icon {
                                 format!("{} {}", icon, &d.alias)
@@ -466,6 +471,7 @@ impl App {
                 .any(|device| device.battery_percentage.is_some());
 
             let mut widths = vec![
+                Constraint::Max(1),
                 Constraint::Max(25),
                 Constraint::Length(7),
                 Constraint::Length(9),
@@ -480,6 +486,7 @@ impl App {
                     if show_battery_column {
                         if self.focused_block == FocusedBlock::PairedDevices {
                             Row::new(vec![
+                                Cell::from("★").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -489,6 +496,7 @@ impl App {
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
+                                Cell::from("★"),
                                 Cell::from("Name"),
                                 Cell::from("Trusted"),
                                 Cell::from("Connected"),
@@ -498,6 +506,7 @@ impl App {
                         }
                     } else if self.focused_block == FocusedBlock::PairedDevices {
                         Row::new(vec![
+                            Cell::from("★").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -866,7 +875,17 @@ impl App {
                 controller.is_powered = refreshed_controller.is_powered;
                 controller.is_pairable = refreshed_controller.is_pairable;
                 controller.is_discoverable = refreshed_controller.is_discoverable;
-                controller.paired_devices = refreshed_controller.paired_devices;
+
+                let mut paired_devices_sorted = refreshed_controller.paired_devices;
+                paired_devices_sorted.sort_by(|a, b| {
+                    use std::cmp::Ordering;
+                    match (a.is_favorite, b.is_favorite) {
+                        (true, false) => Ordering::Less,
+                        (false, true) => Ordering::Greater,
+                        _ => Ordering::Equal,
+                    }
+                });
+                controller.paired_devices = paired_devices_sorted;
                 controller.new_devices = refreshed_controller.new_devices;
             } else {
                 // Add new detected adapters
