@@ -237,6 +237,19 @@ pub async fn handle_key_events(
                 }
             }
         }
+        FocusedBlock::EnterPasskey => {
+            if let Some(req) = &mut app.requests.enter_passkey {
+                match key_event.code {
+                    KeyCode::Esc => {
+                        req.cancel(&app.auth_agent).await?;
+                    }
+
+                    _ => {
+                        req.handle_key_events(key_event, &app.auth_agent).await?;
+                    }
+                }
+            }
+        }
 
         _ => {
             match key_event.code {

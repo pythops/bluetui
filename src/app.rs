@@ -44,6 +44,7 @@ pub enum FocusedBlock {
     SetDeviceAliasBox,
     RequestConfirmation,
     EnterPinCode,
+    EnterPasskey,
 }
 
 #[derive(Debug)]
@@ -785,7 +786,7 @@ impl App {
                         Span::from(" Nav"),
                     ])]
                 }
-                FocusedBlock::EnterPinCode => {
+                FocusedBlock::EnterPinCode | FocusedBlock::EnterPasskey => {
                     vec![Line::from(vec![
                         Span::from("󱊷 ").bold(),
                         Span::from(" Discard"),

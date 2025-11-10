@@ -77,6 +77,16 @@ async fn main() -> AppResult<()> {
                 app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
             }
 
+            Event::RequestEnterPasskey(request) => {
+                app.requests.init_enter_passkey(request);
+                app.focused_block = bluetui::app::FocusedBlock::EnterPasskey;
+            }
+
+            Event::PasskeySumitted => {
+                app.requests.enter_passkey = None;
+                app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
+            }
+
             _ => {}
         }
     }

@@ -7,7 +7,9 @@ use tokio::sync::mpsc;
 use crate::{
     app::AppResult,
     notification::Notification,
-    requests::{confirmation::Confirmation, enter_pin_code::EnterPinCode},
+    requests::{
+        confirmation::Confirmation, enter_passkey::EnterPasskey, enter_pin_code::EnterPinCode,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -22,6 +24,8 @@ pub enum Event {
     ConfirmationSubmitted,
     RequestEnterPinCode(EnterPinCode),
     PinCodeSumitted,
+    RequestEnterPasskey(EnterPasskey),
+    PasskeySumitted,
 }
 
 #[allow(dead_code)]

@@ -2,11 +2,13 @@ use async_channel::{Receiver, Sender};
 use std::sync::{Arc, atomic::AtomicBool};
 use tokio::sync::mpsc::UnboundedSender;
 
-use bluer::agent::{ReqError, ReqResult, RequestConfirmation, RequestPinCode};
+use bluer::agent::{ReqError, ReqResult, RequestConfirmation, RequestPasskey, RequestPinCode};
 
 use crate::{
     event::Event,
-    requests::{confirmation::Confirmation, enter_pin_code::EnterPinCode},
+    requests::{
+        confirmation::Confirmation, enter_passkey::EnterPasskey, enter_pin_code::EnterPinCode,
+    },
 };
 
 #[derive(Debug, Clone)]
@@ -16,8 +18,8 @@ pub struct AuthAgent {
     pub rx_cancel: Receiver<()>,
     pub tx_pin_code: Sender<String>,
     pub rx_pin_code: Receiver<String>,
-    pub tx_passkey: Sender<String>,
-    pub rx_passkey: Receiver<String>,
+    pub tx_passkey: Sender<u32>,
+    pub rx_passkey: Receiver<u32>,
     pub tx_request_confirmation: Sender<bool>,
     pub rx_request_confirmation: Receiver<bool>,
     pub request_passkey: Arc<AtomicBool>,
@@ -107,6 +109,35 @@ pub async fn request_pin_code(request: RequestPinCode, agent: AuthAgent) -> ReqR
 
     tokio::select! {
     r = agent.rx_pin_code.recv() =>  {
+                match r {
+                    Ok(v) => Ok(v),
+                    Err(_) => Err(ReqError::Canceled)
+                }
+
+        }
+
+    _ = agent.rx_cancel.recv() => {
+                Err(ReqError::Canceled)
+        }
+
+    }
+}
+
+pub async fn request_passkey(request: RequestPasskey, agent: AuthAgent) -> ReqResult<u32> {
+    agent
+        .request_passkey
+        .store(true, std::sync::atomic::Ordering::Relaxed);
+
+    agent
+        .event_sender
+        .send(Event::RequestEnterPasskey(EnterPasskey::new(
+            request.adapter,
+            request.device,
+        )))
+        .unwrap();
+
+    tokio::select! {
+    r = agent.rx_passkey.recv() =>  {
                 match r {
                     Ok(v) => Ok(v),
                     Err(_) => Err(ReqError::Canceled)
