@@ -1,5 +1,5 @@
 use crate::{
-    agent::{request_confirmation, request_pin_code},
+    agent::{request_confirmation, request_passkey, request_pin_code},
     event::Event,
 };
 use bluer::{
@@ -80,6 +80,10 @@ impl App {
             request_pin_code: Some(Box::new({
                 let auth_agent = auth_agent.clone();
                 move |request| request_pin_code(request, auth_agent.clone()).boxed()
+            })),
+            request_passkey: Some(Box::new({
+                let auth_agent = auth_agent.clone();
+                move |request| request_passkey(request, auth_agent.clone()).boxed()
             })),
             ..Default::default()
         };
