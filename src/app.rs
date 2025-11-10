@@ -811,7 +811,7 @@ impl App {
 
             // Set alias popup
             if self.focused_block == FocusedBlock::SetDeviceAliasBox {
-                self.render_set_alias(frame)
+                self.render_set_alias(frame);
             }
 
             // Request Confirmation
