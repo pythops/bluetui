@@ -1,3 +1,7 @@
+use crate::{
+    agent::{request_confirmation, request_pin_code},
+    event::Event,
+};
 use bluer::{
     Session,
     agent::{Agent, AgentHandle},
@@ -15,11 +19,14 @@ use ratatui::{
 };
 use tui_input::Input;
 
+use tokio::sync::mpsc::UnboundedSender;
+
 use crate::{
-    bluetooth::{Controller, request_confirmation},
+    agent::AuthAgent,
+    bluetooth::Controller,
     config::{Config, Width},
-    confirmation::PairingConfirmation,
     notification::Notification,
+    requests::Requests,
     spinner::Spinner,
 };
 use std::{
@@ -34,8 +41,9 @@ pub enum FocusedBlock {
     Adapter,
     PairedDevices,
     NewDevices,
-    PassKeyConfirmation,
     SetDeviceAliasBox,
+    RequestConfirmation,
+    EnterPinCode,
 }
 
 #[derive(Debug)]
@@ -50,33 +58,27 @@ pub struct App {
     pub paired_devices_state: TableState,
     pub new_devices_state: TableState,
     pub focused_block: FocusedBlock,
-    pub pairing_confirmation: PairingConfirmation,
     pub new_alias: Input,
     pub config: Arc<Config>,
+    pub requests: Requests,
+    pub auth_agent: AuthAgent,
 }
 
 impl App {
-    pub async fn new(config: Arc<Config>) -> AppResult<Self> {
+    pub async fn new(config: Arc<Config>, sender: UnboundedSender<Event>) -> AppResult<Self> {
         let session = Arc::new(bluer::Session::new().await?);
 
-        let pairing_confirmation = PairingConfirmation::new();
-
-        let user_confirmation_receiver = pairing_confirmation.user_confirmation_receiver.clone();
-
-        let confirmation_message_sender = pairing_confirmation.confirmation_message_sender.clone();
-
-        let confirmation_display = pairing_confirmation.display.clone();
+        let auth_agent = AuthAgent::new(sender.clone());
 
         let agent = Agent {
             request_default: false,
-            request_confirmation: Some(Box::new(move |req| {
-                request_confirmation(
-                    req,
-                    confirmation_display.clone(),
-                    user_confirmation_receiver.clone(),
-                    confirmation_message_sender.clone(),
-                )
-                .boxed()
+            request_confirmation: Some(Box::new({
+                let auth_agent = auth_agent.clone();
+                move |request| request_confirmation(request, auth_agent.clone()).boxed()
+            })),
+            request_pin_code: Some(Box::new({
+                let auth_agent = auth_agent.clone();
+                move |request| request_pin_code(request, auth_agent.clone()).boxed()
             })),
             ..Default::default()
         };
@@ -102,9 +104,10 @@ impl App {
             paired_devices_state: TableState::default(),
             new_devices_state: TableState::default(),
             focused_block: FocusedBlock::PairedDevices,
-            pairing_confirmation,
             new_alias: Input::default(),
             config,
+            requests: Requests::default(),
+            auth_agent,
         })
     }
 
@@ -773,10 +776,25 @@ impl App {
                         Span::from(" Discard"),
                     ])]
                 }
-                FocusedBlock::PassKeyConfirmation => {
+                FocusedBlock::RequestConfirmation => {
                     vec![Line::from(vec![
                         Span::from("󱊷 ").bold(),
                         Span::from(" Discard"),
+                        Span::from(" | "),
+                        Span::from("⇄").bold(),
+                        Span::from(" Nav"),
+                    ])]
+                }
+                FocusedBlock::EnterPinCode => {
+                    vec![Line::from(vec![
+                        Span::from("󱊷 ").bold(),
+                        Span::from(" Discard"),
+                        Span::from(" | "),
+                        Span::from("⇄").bold(),
+                        Span::from(" Nav"),
+                        Span::from(" | "),
+                        Span::from("↵ ").bold(),
+                        Span::from(" Submit"),
                     ])]
                 }
             };
@@ -786,15 +804,24 @@ impl App {
 
             // Pairing confirmation
 
-            if self.pairing_confirmation.display.load(Ordering::Relaxed) {
-                self.focused_block = FocusedBlock::PassKeyConfirmation;
-                self.pairing_confirmation.render(frame, self.area(frame));
-                return;
-            }
-
             // Set alias popup
             if self.focused_block == FocusedBlock::SetDeviceAliasBox {
                 self.render_set_alias(frame)
+            }
+
+            // Request Confirmation
+            if self.auth_agent.request_confirmation.load(Ordering::Relaxed)
+                && let Some(req) = &self.requests.confirmation
+            {
+                req.render(frame);
+            }
+
+            // Request to enter pin code
+
+            if self.auth_agent.request_pin_code.load(Ordering::Relaxed)
+                && let Some(req) = &self.requests.enter_pin_code
+            {
+                req.render(frame);
             }
         }
     }
@@ -811,12 +838,6 @@ impl App {
     }
 
     pub async fn refresh(&mut self) -> AppResult<()> {
-        if !self.pairing_confirmation.display.load(Ordering::Relaxed)
-            & self.pairing_confirmation.message.is_some()
-        {
-            self.pairing_confirmation.message = None;
-        }
-
         let refreshed_controllers = Controller::get_all(self.session.clone()).await?;
 
         let names = {

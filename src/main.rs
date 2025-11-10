@@ -29,12 +29,14 @@ async fn main() -> AppResult<()> {
 
     let config = Arc::new(Config::new(config_file_path));
 
-    let mut app = App::new(config.clone()).await?;
     let backend = CrosstermBackend::new(io::stdout());
     let terminal = Terminal::new(backend)?;
-    let events = EventHandler::new(2_000);
+    let events = EventHandler::new(1_000);
     let mut tui = Tui::new(terminal, events);
+
     tui.init()?;
+
+    let mut app = App::new(config.clone(), tui.events.sender.clone()).await?;
 
     while app.running {
         tui.draw(&mut app)?;
@@ -55,6 +57,26 @@ async fn main() -> AppResult<()> {
             Event::NewPairedDevice => {
                 app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
             }
+            Event::RequestConfirmation(request) => {
+                app.requests.init_confirmation(request);
+                app.focused_block = bluetui::app::FocusedBlock::RequestConfirmation;
+            }
+
+            Event::ConfirmationSubmitted => {
+                app.requests.confirmation = None;
+                app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
+            }
+
+            Event::RequestEnterPinCode(request) => {
+                app.requests.init_enter_pin_code(request);
+                app.focused_block = bluetui::app::FocusedBlock::EnterPinCode;
+            }
+
+            Event::PinCodeSumitted => {
+                app.requests.enter_pin_code = None;
+                app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
+            }
+
             _ => {}
         }
     }

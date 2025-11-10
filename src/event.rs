@@ -4,7 +4,11 @@ use crossterm::event::{Event as CrosstermEvent, KeyEvent, MouseEvent};
 use futures::{FutureExt, StreamExt};
 use tokio::sync::mpsc;
 
-use crate::{app::AppResult, notification::Notification};
+use crate::{
+    app::AppResult,
+    notification::Notification,
+    requests::{confirmation::Confirmation, enter_pin_code::EnterPinCode},
+};
 
 #[derive(Clone, Debug)]
 pub enum Event {
@@ -14,6 +18,10 @@ pub enum Event {
     Resize(u16, u16),
     Notification(Notification),
     NewPairedDevice,
+    RequestConfirmation(Confirmation),
+    ConfirmationSubmitted,
+    RequestEnterPinCode(EnterPinCode),
+    PinCodeSumitted,
 }
 
 #[allow(dead_code)]
