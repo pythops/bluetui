@@ -828,6 +828,13 @@ impl App {
             {
                 req.render(frame);
             }
+
+            // Request passkey
+            if self.auth_agent.request_passkey.load(Ordering::Relaxed)
+                && let Some(req) = &self.requests.enter_passkey
+            {
+                req.render(frame);
+            }
         }
     }
 
