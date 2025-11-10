@@ -130,7 +130,7 @@ impl EnterPinCode {
             .direction(Direction::Horizontal)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Max(80),
+                Constraint::Max(70),
                 Constraint::Fill(1),
             ])
             .split(layout[1])[1];
@@ -157,14 +157,7 @@ impl EnterPinCode {
 
         let input_block = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints(
-                [
-                    Constraint::Fill(1),
-                    Constraint::Fill(1),
-                    Constraint::Fill(1),
-                ]
-                .as_ref(),
-            )
+            .constraints([Constraint::Max(5), Constraint::Fill(1), Constraint::Max(5)].as_ref())
             .flex(ratatui::layout::Flex::Center)
             .split(input_block)[1];
 
@@ -186,13 +179,13 @@ impl EnterPinCode {
                 Span::from("  "),
                 Span::from(pad_string(
                     format!(" {}", self.pin_code.field.value()).as_str(),
-                    30,
+                    60,
                 ))
                 .bg(Color::DarkGray),
             ]),
             Line::from(vec![Span::from(pad_string(" ", 10)), {
                 if let Some(error) = &self.pin_code.error {
-                    Span::from(error)
+                    Span::from(pad_string(error, 60))
                 } else {
                     Span::from("")
                 }
