@@ -172,7 +172,7 @@ pub async fn display_passkey(request: DisplayPasskey, agent: AuthAgent) -> ReqRe
                 request.adapter,
                 request.device,
                 request.passkey,
-                request.entered,
+                request.entered.to_string(),
             ),
         ))
         .unwrap();

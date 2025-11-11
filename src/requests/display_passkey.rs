@@ -15,11 +15,11 @@ pub struct DisplayPasskey {
     pub adapter: String,
     pub device: Address,
     pub passkey: u32,
-    pub entered: u16,
+    pub entered: String,
 }
 
 impl DisplayPasskey {
-    pub fn new(adapter: String, device: Address, passkey: u32, entered: u16) -> Self {
+    pub fn new(adapter: String, device: Address, passkey: u32, entered: String) -> Self {
         Self {
             adapter,
             device,
