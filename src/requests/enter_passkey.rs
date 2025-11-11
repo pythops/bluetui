@@ -55,9 +55,6 @@ impl EnterPasskey {
             .tx_passkey
             .send(self.passkey.field.value().parse::<u32>().unwrap())
             .await?;
-        agent
-            .request_passkey
-            .store(false, std::sync::atomic::Ordering::Relaxed);
 
         agent.event_sender.send(Event::PasskeySumitted)?;
         Ok(())
@@ -65,9 +62,6 @@ impl EnterPasskey {
 
     pub async fn cancel(&mut self, agent: &AuthAgent) -> AppResult<()> {
         agent.tx_cancel.send(()).await?;
-        agent
-            .request_passkey
-            .store(false, std::sync::atomic::Ordering::Relaxed);
         agent.event_sender.send(Event::PasskeySumitted)?;
         Ok(())
     }

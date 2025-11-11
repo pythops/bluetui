@@ -709,24 +709,18 @@ impl App {
             }
 
             // Request Confirmation
-            if self.auth_agent.request_confirmation.load(Ordering::Relaxed)
-                && let Some(req) = &self.requests.confirmation
-            {
+            if let Some(req) = &self.requests.confirmation {
                 req.render(frame);
             }
 
             // Request to enter pin code
 
-            if self.auth_agent.request_pin_code.load(Ordering::Relaxed)
-                && let Some(req) = &self.requests.enter_pin_code
-            {
+            if let Some(req) = &self.requests.enter_pin_code {
                 req.render(frame);
             }
 
             // Request passkey
-            if self.auth_agent.request_passkey.load(Ordering::Relaxed)
-                && let Some(req) = &self.requests.enter_passkey
-            {
+            if let Some(req) = &self.requests.enter_passkey {
                 req.render(frame);
             }
 

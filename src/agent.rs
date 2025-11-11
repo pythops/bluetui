@@ -1,5 +1,4 @@
 use async_channel::{Receiver, Sender};
-use std::sync::{Arc, atomic::AtomicBool};
 use tokio::sync::mpsc::UnboundedSender;
 
 use bluer::agent::{
@@ -29,12 +28,6 @@ pub struct AuthAgent {
     pub rx_passkey: Receiver<u32>,
     pub tx_request_confirmation: Sender<bool>,
     pub rx_request_confirmation: Receiver<bool>,
-    pub request_passkey: Arc<AtomicBool>,
-    pub request_pin_code: Arc<AtomicBool>,
-    pub request_confirmation: Arc<AtomicBool>,
-    pub request_authorization: Arc<AtomicBool>,
-    pub request_display_pin: Arc<AtomicBool>,
-    pub request_display_passkey: Arc<AtomicBool>,
 }
 
 impl AuthAgent {
@@ -62,21 +55,11 @@ impl AuthAgent {
             rx_passkey,
             tx_request_confirmation,
             rx_request_confirmation,
-            request_passkey: Arc::new(AtomicBool::new(false)),
-            request_pin_code: Arc::new(AtomicBool::new(false)),
-            request_confirmation: Arc::new(AtomicBool::new(false)),
-            request_authorization: Arc::new(AtomicBool::new(false)),
-            request_display_pin: Arc::new(AtomicBool::new(false)),
-            request_display_passkey: Arc::new(AtomicBool::new(false)),
         }
     }
 }
 
 pub async fn request_confirmation(request: RequestConfirmation, agent: AuthAgent) -> ReqResult<()> {
-    agent
-        .request_confirmation
-        .store(true, std::sync::atomic::Ordering::Relaxed);
-
     agent
         .event_sender
         .send(Event::RequestConfirmation(Confirmation::new(
@@ -111,10 +94,6 @@ pub async fn request_confirmation(request: RequestConfirmation, agent: AuthAgent
 
 pub async fn request_pin_code(request: RequestPinCode, agent: AuthAgent) -> ReqResult<String> {
     agent
-        .request_pin_code
-        .store(true, std::sync::atomic::Ordering::Relaxed);
-
-    agent
         .event_sender
         .send(Event::RequestEnterPinCode(EnterPinCode::new(
             request.adapter,
@@ -139,10 +118,6 @@ pub async fn request_pin_code(request: RequestPinCode, agent: AuthAgent) -> ReqR
 }
 
 pub async fn request_passkey(request: RequestPasskey, agent: AuthAgent) -> ReqResult<u32> {
-    agent
-        .request_passkey
-        .store(true, std::sync::atomic::Ordering::Relaxed);
-
     agent
         .event_sender
         .send(Event::RequestEnterPasskey(EnterPasskey::new(

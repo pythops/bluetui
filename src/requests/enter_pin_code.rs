@@ -55,9 +55,6 @@ impl EnterPinCode {
             .tx_pin_code
             .send(self.pin_code.field.value().to_string())
             .await?;
-        agent
-            .request_pin_code
-            .store(false, std::sync::atomic::Ordering::Relaxed);
 
         agent.event_sender.send(Event::PinCodeSumitted)?;
         Ok(())
@@ -65,9 +62,6 @@ impl EnterPinCode {
 
     pub async fn cancel(&mut self, agent: &AuthAgent) -> AppResult<()> {
         agent.tx_cancel.send(()).await?;
-        agent
-            .request_pin_code
-            .store(false, std::sync::atomic::Ordering::Relaxed);
         agent.event_sender.send(Event::PinCodeSumitted)?;
         Ok(())
     }

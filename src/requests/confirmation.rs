@@ -31,9 +31,6 @@ impl Confirmation {
     pub async fn submit(&mut self, agent: &AuthAgent) -> AppResult<()> {
         agent.tx_request_confirmation.send(self.confirmed).await?;
         agent
-            .request_confirmation
-            .store(false, std::sync::atomic::Ordering::Relaxed);
-        agent
             .event_sender
             .send(crate::event::Event::ConfirmationSubmitted)?;
         Ok(())
@@ -41,9 +38,6 @@ impl Confirmation {
 
     pub async fn cancel(&mut self, agent: &AuthAgent) -> AppResult<()> {
         agent.tx_cancel.send(()).await?;
-        agent
-            .request_confirmation
-            .store(false, std::sync::atomic::Ordering::Relaxed);
         agent
             .event_sender
             .send(crate::event::Event::ConfirmationSubmitted)?;

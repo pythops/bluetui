@@ -119,6 +119,9 @@ impl Help {
             }
             FocusedBlock::RequestConfirmation => {
                 vec![Line::from(vec![
+                    Span::from("↵ ").bold(),
+                    Span::from(" Ok"),
+                    Span::from(" | "),
                     Span::from("󱊷 ").bold(),
                     Span::from(" Discard"),
                     Span::from(" | "),
