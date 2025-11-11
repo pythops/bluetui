@@ -41,7 +41,7 @@ impl DisplayPasskey {
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Length(10),
+                Constraint::Length(12),
                 Constraint::Fill(1),
             ])
             .margin(2)
@@ -58,6 +58,7 @@ impl DisplayPasskey {
             .split(block)[1];
 
         let message = vec![
+            Line::from(format!("The Passkey: {}", self.passkey)),
             Line::from(format!("Entered passkey for the device {} ", self.device)).centered(),
             Line::from(""),
             Line::from(self.entered.to_string())
