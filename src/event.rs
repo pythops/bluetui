@@ -8,7 +8,9 @@ use crate::{
     app::AppResult,
     notification::Notification,
     requests::{
-        confirmation::Confirmation, enter_passkey::EnterPasskey, enter_pin_code::EnterPinCode,
+        confirmation::Confirmation, display_passkey::DisplayPasskey,
+        display_pin_code::DisplayPinCode, enter_passkey::EnterPasskey,
+        enter_pin_code::EnterPinCode,
     },
 };
 
@@ -25,7 +27,11 @@ pub enum Event {
     RequestEnterPinCode(EnterPinCode),
     PinCodeSumitted,
     RequestEnterPasskey(EnterPasskey),
+    RequestDisplayPinCode(DisplayPinCode),
+    DisplayPinCodeSeen,
     PasskeySumitted,
+    RequestDisplayPasskey(DisplayPasskey),
+    DisplayPasskeySeen,
 }
 
 #[allow(dead_code)]

@@ -5,6 +5,7 @@ pub mod cli;
 pub mod config;
 pub mod event;
 pub mod handler;
+mod help;
 pub mod notification;
 pub mod requests;
 pub mod rfkill;

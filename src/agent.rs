@@ -2,7 +2,10 @@ use async_channel::{Receiver, Sender};
 use std::sync::{Arc, atomic::AtomicBool};
 use tokio::sync::mpsc::UnboundedSender;
 
-use bluer::agent::{ReqError, ReqResult, RequestConfirmation, RequestPasskey, RequestPinCode};
+use bluer::agent::{
+    DisplayPasskey, DisplayPinCode, ReqError, ReqResult, RequestConfirmation, RequestPasskey,
+    RequestPinCode,
+};
 
 use crate::{
     event::Event,
@@ -18,6 +21,10 @@ pub struct AuthAgent {
     pub rx_cancel: Receiver<()>,
     pub tx_pin_code: Sender<String>,
     pub rx_pin_code: Receiver<String>,
+    pub tx_display_pin_code: Sender<()>,
+    pub rx_display_pin_code: Receiver<()>,
+    pub tx_display_passkey: Sender<()>,
+    pub rx_display_passkey: Receiver<()>,
     pub tx_passkey: Sender<u32>,
     pub rx_passkey: Receiver<u32>,
     pub tx_request_confirmation: Sender<bool>,
@@ -33,7 +40,11 @@ pub struct AuthAgent {
 impl AuthAgent {
     pub fn new(sender: UnboundedSender<Event>) -> Self {
         let (tx_passkey, rx_passkey) = async_channel::unbounded();
+        let (tx_display_passkey, rx_display_passkey) = async_channel::unbounded();
+
         let (tx_pin_code, rx_pin_code) = async_channel::unbounded();
+        let (tx_display_pin_code, rx_display_pin_code) = async_channel::unbounded();
+
         let (tx_request_confirmation, rx_request_confirmation) = async_channel::unbounded();
         let (tx_cancel, rx_cancel) = async_channel::unbounded();
 
@@ -43,6 +54,10 @@ impl AuthAgent {
             rx_cancel,
             tx_pin_code,
             rx_pin_code,
+            tx_display_pin_code,
+            rx_display_pin_code,
+            tx_display_passkey,
+            rx_display_passkey,
             tx_passkey,
             rx_passkey,
             tx_request_confirmation,
@@ -138,16 +153,62 @@ pub async fn request_passkey(request: RequestPasskey, agent: AuthAgent) -> ReqRe
 
     tokio::select! {
     r = agent.rx_passkey.recv() =>  {
-                match r {
-                    Ok(v) => Ok(v),
-                    Err(_) => Err(ReqError::Canceled)
-                }
-
+            match r {
+                Ok(v) => Ok(v),
+                Err(_) => Err(ReqError::Canceled)
+            }
         }
 
     _ = agent.rx_cancel.recv() => {
                 Err(ReqError::Canceled)
         }
 
+    }
+}
+
+pub async fn display_pin_code(request: DisplayPinCode, agent: AuthAgent) -> ReqResult<()> {
+    agent
+        .event_sender
+        .send(Event::RequestDisplayPinCode(
+            crate::requests::display_pin_code::DisplayPinCode::new(
+                request.adapter,
+                request.device,
+                request.pincode,
+            ),
+        ))
+        .unwrap();
+
+    tokio::select! {
+    _ = agent.rx_display_pin_code.recv() => {
+            Ok(())
+        }
+
+    _ = agent.rx_cancel.recv() => {
+            Err(ReqError::Canceled)
+        }
+    }
+}
+
+pub async fn display_passkey(request: DisplayPasskey, agent: AuthAgent) -> ReqResult<()> {
+    agent
+        .event_sender
+        .send(Event::RequestDisplayPasskey(
+            crate::requests::display_passkey::DisplayPasskey::new(
+                request.adapter,
+                request.device,
+                request.passkey,
+                request.entered,
+            ),
+        ))
+        .unwrap();
+
+    tokio::select! {
+    _ = agent.rx_display_passkey.recv() => {
+            Ok(())
+        }
+
+    _ = agent.rx_cancel.recv() => {
+            Err(ReqError::Canceled)
+        }
     }
 }

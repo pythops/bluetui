@@ -6,6 +6,7 @@ use crate::app::{App, AppResult};
 use crate::config::Config;
 use crate::event::Event;
 use crate::notification::{Notification, NotificationLevel};
+use bluer::Address;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use futures::StreamExt;
 use tokio::sync::mpsc::UnboundedSender;
@@ -248,6 +249,20 @@ pub async fn handle_key_events(
                         req.handle_key_events(key_event, &app.auth_agent).await?;
                     }
                 }
+            }
+        }
+        FocusedBlock::DisplayPinCode => {
+            if let Some(req) = &mut app.requests.display_pin_code
+                && let KeyCode::Esc | KeyCode::Enter = key_event.code
+            {
+                req.submit(&app.auth_agent).await?;
+            }
+        }
+        FocusedBlock::DisplayPasskey => {
+            if let Some(req) = &mut app.requests.display_passkey
+                && let KeyCode::Esc | KeyCode::Enter = key_event.code
+            {
+                req.submit(&app.auth_agent).await?;
             }
         }
 

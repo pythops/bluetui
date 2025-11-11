@@ -87,7 +87,25 @@ async fn main() -> AppResult<()> {
                 app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
             }
 
-            _ => {}
+            Event::RequestDisplayPinCode(request) => {
+                app.requests.init_display_pin_code(request);
+                app.focused_block = bluetui::app::FocusedBlock::DisplayPinCode;
+            }
+            Event::DisplayPinCodeSeen => {
+                app.requests.display_pin_code = None;
+                app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
+            }
+
+            Event::RequestDisplayPasskey(request) => {
+                app.requests.init_display_passkey(request);
+                app.focused_block = bluetui::app::FocusedBlock::DisplayPasskey;
+            }
+            Event::DisplayPasskeySeen => {
+                app.requests.display_passkey = None;
+                app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
+            }
+
+            Event::Mouse(_) | Event::Resize(_, _) => {}
         }
     }
 
