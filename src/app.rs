@@ -1,5 +1,7 @@
 use crate::{
-    agent::{request_confirmation, request_passkey, request_pin_code},
+    agent::{
+        display_passkey, display_pin_code, request_confirmation, request_passkey, request_pin_code,
+    },
     event::Event,
     help::Help,
 };
@@ -30,12 +32,9 @@ use crate::{
     requests::Requests,
     spinner::Spinner,
 };
-use std::{
-    error,
-    sync::{Arc, atomic::Ordering},
-};
+use std::sync::{Arc, atomic::Ordering};
 
-pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
+pub type AppResult<T> = anyhow::Result<T>;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FocusedBlock {
@@ -87,6 +86,14 @@ impl App {
             request_passkey: Some(Box::new({
                 let auth_agent = auth_agent.clone();
                 move |request| request_passkey(request, auth_agent.clone()).boxed()
+            })),
+            display_pin_code: Some(Box::new({
+                let auth_agent = auth_agent.clone();
+                move |request| display_pin_code(request, auth_agent.clone()).boxed()
+            })),
+            display_passkey: Some(Box::new({
+                let auth_agent = auth_agent.clone();
+                move |request| display_passkey(request, auth_agent.clone()).boxed()
             })),
             ..Default::default()
         };

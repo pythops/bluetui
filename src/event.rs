@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use std::time::Duration;
 
 use crossterm::event::{Event as CrosstermEvent, KeyEvent, MouseEvent};
@@ -92,6 +93,6 @@ impl EventHandler {
         self.receiver
             .recv()
             .await
-            .ok_or(Box::new(std::io::Error::other("This is an IO error")))
+            .ok_or(anyhow!("This is an IO error"))
     }
 }
