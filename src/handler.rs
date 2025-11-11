@@ -6,7 +6,6 @@ use crate::app::{App, AppResult};
 use crate::config::Config;
 use crate::event::Event;
 use crate::notification::{Notification, NotificationLevel};
-use bluer::Address;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use futures::StreamExt;
 use tokio::sync::mpsc::UnboundedSender;
