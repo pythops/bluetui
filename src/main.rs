@@ -98,7 +98,7 @@ async fn main() -> AppResult<()> {
 
             Event::RequestDisplayPasskey(request) => {
                 if let Some(req) = &mut app.requests.display_passkey {
-                    req.entered.push_str(&request.entered);
+                    req.entered = request.entered;
                 } else {
                     app.requests.init_display_passkey(request);
                     app.focused_block = bluetui::app::FocusedBlock::DisplayPasskey;

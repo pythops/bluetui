@@ -165,17 +165,14 @@ pub async fn display_pin_code(request: DisplayPinCode, agent: AuthAgent) -> ReqR
 }
 
 pub async fn display_passkey(request: DisplayPasskey, agent: AuthAgent) -> ReqResult<()> {
-    agent
-        .event_sender
-        .send(Event::RequestDisplayPasskey(
-            crate::requests::display_passkey::DisplayPasskey::new(
-                request.adapter,
-                request.device,
-                request.passkey,
-                request.entered.to_string(),
-            ),
-        ))
-        .unwrap();
+    let _ = agent.event_sender.send(Event::RequestDisplayPasskey(
+        crate::requests::display_passkey::DisplayPasskey::new(
+            request.adapter,
+            request.device,
+            request.passkey,
+            request.entered,
+        ),
+    ));
 
     tokio::select! {
     _ = agent.rx_display_passkey.recv() => {
@@ -183,6 +180,11 @@ pub async fn display_passkey(request: DisplayPasskey, agent: AuthAgent) -> ReqRe
         }
 
     _ = agent.rx_cancel.recv() => {
+            Err(ReqError::Canceled)
+        }
+
+    _ = request.cancel => {
+            let _ = agent.event_sender.send(Event::DisplayPasskeySeen);
             Err(ReqError::Canceled)
         }
     }

@@ -2,7 +2,7 @@ use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Margin},
     style::{Color, Style, Stylize},
-    text::Line,
+    text::{Line, Span},
     widgets::{Block, BorderType, Borders, Clear, Paragraph},
 };
 
@@ -15,11 +15,11 @@ pub struct DisplayPasskey {
     pub adapter: String,
     pub device: Address,
     pub passkey: u32,
-    pub entered: String,
+    pub entered: u16,
 }
 
 impl DisplayPasskey {
-    pub fn new(adapter: String, device: Address, passkey: u32, entered: String) -> Self {
+    pub fn new(adapter: String, device: Address, passkey: u32, entered: u16) -> Self {
         Self {
             adapter,
             device,
@@ -51,20 +51,33 @@ impl DisplayPasskey {
             .direction(Direction::Horizontal)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Max(60),
+                Constraint::Max(70),
                 Constraint::Fill(1),
             ])
             .margin(1)
             .split(block)[1];
 
         let message = vec![
-            Line::from(format!("The Passkey: {}", self.passkey)),
-            Line::from(format!("Entered passkey for the device {} ", self.device)).centered(),
+            Line::from(format!("Authentication for the device {}", self.device)).centered(),
             Line::from(""),
-            Line::from(self.entered.to_string())
-                .centered()
-                .bold()
-                .bg(Color::DarkGray),
+            Line::from(vec![
+                Span::from("Enter the following passkey on the remote device: "),
+                Span::styled(self.passkey.to_string(), Style::new().bold()),
+            ])
+            .centered(),
+            Line::from(""),
+            Line::from({
+                match self.entered {
+                    0 => ". - . - . - . - . - .",
+                    1 => "* - . - . - . - . - .",
+                    2 => "* - * - . - . - . - .",
+                    3 => "* - * - * - . - . - .",
+                    4 => "* - * - * - * - . - .",
+                    5 => "* - * - * - * - * - .",
+                    _ => "* - * - * - * - * - *",
+                }
+            })
+            .centered(),
         ];
 
         let message = Paragraph::new(message).centered();
