@@ -36,6 +36,14 @@ impl DisplayPasskey {
         Ok(())
     }
 
+    pub async fn cancel(&mut self, agent: &AuthAgent) -> AppResult<()> {
+        agent.tx_display_passkey.send(()).await?;
+        agent
+            .event_sender
+            .send(crate::event::Event::DisplayPasskeySeen)?;
+        Ok(())
+    }
+
     pub fn render(&self, frame: &mut Frame) {
         let block = Layout::default()
             .direction(Direction::Vertical)
