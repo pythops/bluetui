@@ -141,10 +141,16 @@ impl Help {
                     Span::from(" Submit"),
                 ])]
             }
-            FocusedBlock::DisplayPinCode | FocusedBlock::DisplayPasskey => {
+            FocusedBlock::DisplayPinCode => {
                 vec![Line::from(vec![
                     Span::from(" 󱊷  or ↵ ").bold(),
                     Span::from(" Ok"),
+                ])]
+            }
+            FocusedBlock::DisplayPasskey => {
+                vec![Line::from(vec![
+                    Span::from(" 󱊷  ").bold(),
+                    Span::from(" Discard"),
                 ])]
             }
         };

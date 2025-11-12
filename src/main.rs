@@ -54,7 +54,13 @@ async fn main() -> AppResult<()> {
             Event::Notification(notification) => {
                 app.notifications.push(notification);
             }
-            Event::NewPairedDevice => {
+            Event::NewPairedDevice(address) => {
+                if let Some(req) = &app.requests.display_passkey
+                    && req.device == address
+                {
+                    app.requests.display_passkey = None;
+                }
+
                 app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
             }
             Event::RequestConfirmation(request) => {
@@ -91,24 +97,20 @@ async fn main() -> AppResult<()> {
                 app.requests.init_display_pin_code(request);
                 app.focused_block = bluetui::app::FocusedBlock::DisplayPinCode;
             }
+
             Event::DisplayPinCodeSeen => {
                 app.requests.display_pin_code = None;
                 app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
             }
 
             Event::RequestDisplayPasskey(request) => {
-                // if let Some(req) = &mut app.requests.display_passkey {
-                //     if request.device == req.device {
-                //         req.entered = request.entered;
-                //     }
-                // } else {
                 app.requests.init_display_passkey(request);
                 app.focused_block = bluetui::app::FocusedBlock::DisplayPasskey;
-                // }
             }
-            Event::DisplayPasskeySeen => {
-                // app.requests.display_passkey = None;
-                // app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
+
+            Event::DisplayPasskeyCanceled => {
+                app.requests.display_passkey = None;
+                app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
             }
 
             Event::Mouse(_) | Event::Resize(_, _) => {}

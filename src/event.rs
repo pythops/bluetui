@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use bluer::Address;
 use std::time::Duration;
 
 use crossterm::event::{Event as CrosstermEvent, KeyEvent, MouseEvent};
@@ -22,7 +23,7 @@ pub enum Event {
     Mouse(MouseEvent),
     Resize(u16, u16),
     Notification(Notification),
-    NewPairedDevice,
+    NewPairedDevice(Address),
     RequestConfirmation(Confirmation),
     ConfirmationSubmitted,
     RequestEnterPinCode(EnterPinCode),
@@ -32,7 +33,7 @@ pub enum Event {
     DisplayPinCodeSeen,
     PasskeySumitted,
     RequestDisplayPasskey(DisplayPasskey),
-    DisplayPasskeySeen,
+    DisplayPasskeyCanceled,
 }
 
 #[allow(dead_code)]

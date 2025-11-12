@@ -100,7 +100,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                         sender.clone(),
                                     );
 
-                                    let _ = sender.send(Event::NewPairedDevice);
+                                    let _ = sender.send(Event::NewPairedDevice(device.address()));
                                     match device.set_trusted(true).await {
                                         Ok(_) => {
                                             let _ = Notification::send(
@@ -258,16 +258,10 @@ pub async fn handle_key_events(
             }
         }
         FocusedBlock::DisplayPasskey => {
-            if let Some(req) = &mut app.requests.display_passkey {
-                match key_event.code {
-                    KeyCode::Enter => {
-                        req.submit(&app.auth_agent).await?;
-                    }
-                    KeyCode::Esc => {
-                        req.cancel(&app.auth_agent).await?;
-                    }
-                    _ => {}
-                }
+            if let Some(req) = &mut app.requests.display_passkey
+                && key_event.code == KeyCode::Esc
+            {
+                req.cancel(&app.auth_agent).await?;
             }
         }
 

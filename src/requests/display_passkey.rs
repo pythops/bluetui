@@ -28,19 +28,11 @@ impl DisplayPasskey {
         }
     }
 
-    pub async fn submit(&mut self, agent: &AuthAgent) -> AppResult<()> {
-        agent.tx_display_passkey.send(()).await?;
-        agent
-            .event_sender
-            .send(crate::event::Event::DisplayPasskeySeen)?;
-        Ok(())
-    }
-
     pub async fn cancel(&mut self, agent: &AuthAgent) -> AppResult<()> {
-        agent.tx_display_passkey.send(()).await?;
+        agent.tx_cancel.send(()).await?;
         agent
             .event_sender
-            .send(crate::event::Event::DisplayPasskeySeen)?;
+            .send(crate::event::Event::DisplayPasskeyCanceled)?;
         Ok(())
     }
 
