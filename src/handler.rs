@@ -100,7 +100,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                         sender.clone(),
                                     );
 
-                                    let _ = sender.send(Event::NewPairedDevice);
+                                    let _ = sender.send(Event::NewPairedDevice(device.address()));
                                     match device.set_trusted(true).await {
                                         Ok(_) => {
                                             let _ = Notification::send(
@@ -140,6 +140,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                         NotificationLevel::Error,
                                         sender.clone(),
                                     );
+                                    let _ = sender.send(Event::FailedPairing(device.address()));
                                 }
                             }
                         });
@@ -205,6 +206,66 @@ pub async fn handle_key_events(
                     .handle_event(&crossterm::event::Event::Key(key_event));
             }
         },
+        FocusedBlock::RequestConfirmation => match key_event.code {
+            KeyCode::Tab => {
+                if let Some(confirmation) = &mut app.requests.confirmation {
+                    confirmation.toggle_select();
+                }
+            }
+            KeyCode::Esc => {
+                if let Some(confirmation) = &mut app.requests.confirmation {
+                    confirmation.cancel(&app.auth_agent).await?;
+                }
+            }
+            KeyCode::Enter => {
+                if let Some(confirmation) = &mut app.requests.confirmation {
+                    confirmation.submit(&app.auth_agent).await?;
+                }
+            }
+
+            _ => {}
+        },
+        FocusedBlock::EnterPinCode => {
+            if let Some(req) = &mut app.requests.enter_pin_code {
+                match key_event.code {
+                    KeyCode::Esc => {
+                        req.cancel(&app.auth_agent).await?;
+                    }
+
+                    _ => {
+                        req.handle_key_events(key_event, &app.auth_agent).await?;
+                    }
+                }
+            }
+        }
+        FocusedBlock::EnterPasskey => {
+            if let Some(req) = &mut app.requests.enter_passkey {
+                match key_event.code {
+                    KeyCode::Esc => {
+                        req.cancel(&app.auth_agent).await?;
+                    }
+
+                    _ => {
+                        req.handle_key_events(key_event, &app.auth_agent).await?;
+                    }
+                }
+            }
+        }
+        FocusedBlock::DisplayPinCode => {
+            if let Some(req) = &mut app.requests.display_pin_code
+                && let KeyCode::Esc | KeyCode::Enter = key_event.code
+            {
+                req.submit(&app.auth_agent).await?;
+            }
+        }
+        FocusedBlock::DisplayPasskey => {
+            if let Some(req) = &mut app.requests.display_passkey
+                && key_event.code == KeyCode::Esc
+            {
+                req.cancel(&app.auth_agent).await?;
+            }
+        }
+
         _ => {
             match key_event.code {
                 // Exit the app
@@ -750,33 +811,6 @@ pub async fn handle_key_events(
                                 _ => {}
                             }
                         }
-
-                        FocusedBlock::PassKeyConfirmation => match key_event.code {
-                            KeyCode::Left | KeyCode::Char('h') => {
-                                if !app.pairing_confirmation.confirmed {
-                                    app.pairing_confirmation.confirmed = true;
-                                }
-                            }
-                            KeyCode::Right | KeyCode::Char('l') => {
-                                if app.pairing_confirmation.confirmed {
-                                    app.pairing_confirmation.confirmed = false;
-                                }
-                            }
-
-                            KeyCode::Enter => {
-                                app.pairing_confirmation
-                                    .user_confirmation_sender
-                                    .send(app.pairing_confirmation.confirmed)
-                                    .await?;
-                                app.pairing_confirmation
-                                    .display
-                                    .store(false, Ordering::Relaxed);
-                                app.focused_block = FocusedBlock::PairedDevices;
-                                app.pairing_confirmation.message = None;
-                            }
-
-                            _ => {}
-                        },
 
                         _ => {}
                     }

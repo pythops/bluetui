@@ -1,14 +1,8 @@
-use std::sync::{Arc, atomic::AtomicBool, mpsc::Sender};
+use std::sync::{Arc, atomic::AtomicBool};
 
-use async_channel::Receiver;
-use bluer::{
-    Adapter, Address, Session,
-    agent::{ReqError, ReqResult, RequestConfirmation},
-};
+use bluer::{Adapter, Address, Session};
 
 use bluer::Device as BTDevice;
-
-use tokio::sync::oneshot;
 
 use crate::app::AppResult;
 
@@ -43,7 +37,7 @@ impl Device {
         Ok(())
     }
 
-    // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+    // https://specifications.freedesktop.org/icon-naming/latest/
     pub fn get_icon(name: &str) -> Option<String> {
         match name {
             "audio-card" => Some(String::from("󰓃")),
@@ -148,39 +142,4 @@ impl Controller {
 fn is_mac_addr(s: &str) -> bool {
     let s: String = s.chars().filter(|&c| c != '-').collect();
     s.len() == 12 && s.chars().all(|c| c.is_ascii_hexdigit())
-}
-
-pub async fn request_confirmation(
-    req: RequestConfirmation,
-    display_confirmation_popup: Arc<AtomicBool>,
-    rx: Receiver<bool>,
-    sender: Sender<String>,
-) -> ReqResult<()> {
-    display_confirmation_popup.store(true, std::sync::atomic::Ordering::Relaxed);
-
-    sender
-        .send(format!(
-            "Is passkey \"{:06}\" correct for device {} on {}?",
-            req.passkey, &req.device, &req.adapter
-        ))
-        .unwrap();
-
-    // request cancel
-    let (_done_tx, done_rx) = oneshot::channel::<()>();
-    tokio::spawn(async move {
-        if done_rx.await.is_err() {
-            display_confirmation_popup.store(false, std::sync::atomic::Ordering::Relaxed);
-        }
-    });
-    match rx.recv().await {
-        Ok(v) => {
-            // false: reject the confirmation
-            if !v {
-                return Err(ReqError::Rejected);
-            }
-        }
-        Err(_) => return Err(ReqError::Rejected),
-    }
-
-    Ok(())
 }
