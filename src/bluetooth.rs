@@ -37,7 +37,7 @@ impl Device {
         Ok(())
     }
 
-    // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+    // https://specifications.freedesktop.org/icon-naming/latest/
     pub fn get_icon(name: &str) -> Option<String> {
         match name {
             "audio-card" => Some(String::from("󰓃")),
