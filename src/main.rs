@@ -97,32 +97,18 @@ async fn main() -> AppResult<()> {
             }
 
             Event::RequestDisplayPasskey(request) => {
-                if let Some(req) = &mut app.requests.display_passkey {
-                    if request.device == req.device {
-                        req.entered = request.entered;
-                    }
-                } else {
-                    app.requests.init_display_passkey(request);
-                    app.focused_block = bluetui::app::FocusedBlock::DisplayPasskey;
-                }
+                // if let Some(req) = &mut app.requests.display_passkey {
+                //     if request.device == req.device {
+                //         req.entered = request.entered;
+                //     }
+                // } else {
+                app.requests.init_display_passkey(request);
+                app.focused_block = bluetui::app::FocusedBlock::DisplayPasskey;
+                // }
             }
             Event::DisplayPasskeySeen => {
-                if let Some(req) = &mut app.requests.display_passkey {
-                    if let Some(selected_controller) = app.controller_state.selected() {
-                        let controller = &app.controllers[selected_controller];
-                        match controller.adapter.device(req.device) {
-                            Ok(device) => match device.is_paired().await {
-                                Ok(true) => {
-                                    app.requests.display_passkey = None;
-                                    app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
-                                }
-                                Ok(false) => {}
-                                Err(_) => {}
-                            },
-                            Err(_) => {}
-                        }
-                    }
-                }
+                app.requests.display_passkey = None;
+                app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
                 //TODO: handle when the user cancel
             }
 
