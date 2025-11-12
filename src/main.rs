@@ -111,7 +111,7 @@ async fn main() -> AppResult<()> {
                     if let Some(selected_controller) = app.controller_state.selected() {
                         let controller = &app.controllers[selected_controller];
                         match controller.adapter.device(req.device) {
-                            Ok(device) => match device.is_connected().await {
+                            Ok(device) => match device.is_paired().await {
                                 Ok(true) => {
                                     app.requests.display_passkey = None;
                                     app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
