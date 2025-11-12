@@ -98,7 +98,9 @@ async fn main() -> AppResult<()> {
 
             Event::RequestDisplayPasskey(request) => {
                 if let Some(req) = &mut app.requests.display_passkey {
-                    req.entered = request.entered;
+                    if request.device == req.device {
+                        req.entered = request.entered;
+                    }
                 } else {
                     app.requests.init_display_passkey(request);
                     app.focused_block = bluetui::app::FocusedBlock::DisplayPasskey;
@@ -106,9 +108,19 @@ async fn main() -> AppResult<()> {
             }
             Event::DisplayPasskeySeen => {
                 if let Some(req) = &mut app.requests.display_passkey {
-                    if req.entered > 6 {
-                        app.requests.display_passkey = None;
-                        app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
+                    if let Some(selected_controller) = app.controller_state.selected() {
+                        let controller = &app.controllers[selected_controller];
+                        match controller.adapter.device(req.device) {
+                            Ok(device) => match device.is_connected().await {
+                                Ok(true) => {
+                                    app.requests.display_passkey = None;
+                                    app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
+                                }
+                                Ok(false) => {}
+                                Err(_) => {}
+                            },
+                            Err(_) => {}
+                        }
                     }
                 }
                 //TODO: handle when the user cancel
