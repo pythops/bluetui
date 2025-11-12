@@ -107,9 +107,8 @@ async fn main() -> AppResult<()> {
                 // }
             }
             Event::DisplayPasskeySeen => {
-                app.requests.display_passkey = None;
-                app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
-                //TODO: handle when the user cancel
+                // app.requests.display_passkey = None;
+                // app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
             }
 
             Event::Mouse(_) | Event::Resize(_, _) => {}
