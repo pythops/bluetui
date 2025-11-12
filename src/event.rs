@@ -24,6 +24,7 @@ pub enum Event {
     Resize(u16, u16),
     Notification(Notification),
     NewPairedDevice(Address),
+    FailedPairing(Address),
     RequestConfirmation(Confirmation),
     ConfirmationSubmitted,
     RequestEnterPinCode(EnterPinCode),

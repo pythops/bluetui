@@ -140,6 +140,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                         NotificationLevel::Error,
                                         sender.clone(),
                                     );
+                                    let _ = sender.send(Event::FailedPairing(device.address()));
                                 }
                             }
                         });

@@ -113,6 +113,16 @@ async fn main() -> AppResult<()> {
                 app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
             }
 
+            Event::FailedPairing(address) => {
+                if let Some(req) = &app.requests.display_passkey
+                    && req.device == address
+                {
+                    app.requests.display_passkey = None;
+                }
+
+                app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
+            }
+
             Event::Mouse(_) | Event::Resize(_, _) => {}
         }
     }
