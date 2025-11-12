@@ -26,6 +26,9 @@ pub struct Config {
 
     #[serde(default)]
     pub paired_device: PairedDevice,
+
+    #[serde(default)]
+    pub fonts: bool,
 }
 
 #[derive(Debug, Default)]

@@ -403,7 +403,7 @@ impl App {
                     Row::new(vec![
                         {
                             if let Some(icon) = &d.icon {
-                                format!("{} {}", icon, &d.alias)
+                                format!("{} {}", if self.config.fonts {icon} else {""}, &d.alias)
                             } else {
                                 d.alias.to_owned()
                             }
@@ -414,34 +414,34 @@ impl App {
                             if let Some(battery_percentage) = d.battery_percentage {
                                 match battery_percentage {
                                     n if n >= 90 => {
-                                        format!("{battery_percentage}% 󰥈 ")
+                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥈"} else {""})
                                     }
                                     n if (80..90).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥅 ")
+                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥅"} else {""})
                                     }
                                     n if (70..80).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥄 ")
+                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥄"} else {""})
                                     }
                                     n if (60..70).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥃 ")
+                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥃"} else {""})
                                     }
                                     n if (50..60).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥂 ")
+                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥂"} else {""})
                                     }
                                     n if (40..50).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥁 ")
+                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥁"} else {""})
                                     }
                                     n if (30..40).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥀 ")
+                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥀"} else {""})
                                     }
                                     n if (20..30).contains(&n) => {
-                                        format!("{battery_percentage}% 󰤿 ")
+                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰤿"} else {""})
                                     }
                                     n if (10..20).contains(&n) => {
-                                        format!("{battery_percentage}% 󰤾 ")
+                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰤾"} else {""})
                                     }
                                     _ => {
-                                        format!("{battery_percentage}% 󰤾 ")
+                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰤾"} else {""})
                                     }
                                 }
                             } else {
@@ -579,7 +579,7 @@ impl App {
                     .map(|d| {
                         Row::new(vec![d.addr.to_string(), {
                             if let Some(icon) = &d.icon {
-                                format!("{} {}", icon, &d.alias)
+                                format!("{} {}", if self.config.fonts {icon} else {""}, &d.alias)
                             } else {
                                 if d.alias.len() > max_name_width {
                                     max_name_width = d.alias.len();
@@ -691,7 +691,7 @@ impl App {
                             Span::from(self.config.paired_device.unpair.to_string()).bold(),
                             Span::from("  Unpair"),
                             Span::from(" | "),
-                            Span::from("󱁐  or ↵ ").bold(),
+                            Span::from(if self.config.fonts {"󱁐  or ↵ "} else {" ↵ "}).bold(),
                             Span::from(" Dis/Connect"),
                             Span::from(" | "),
                             Span::from(self.config.paired_device.toggle_trust.to_string()).bold(),
@@ -706,7 +706,7 @@ impl App {
                     } else {
                         vec![
                             Line::from(vec![
-                                Span::from("󱁐  or ↵ ").bold(),
+                                Span::from(if self.config.fonts {"󱁐  or ↵ "} else {" ↵ "}).bold(),
                                 Span::from(" Dis/Connect"),
                                 Span::from(" | "),
                                 Span::from("s").bold(),
@@ -742,7 +742,7 @@ impl App {
                     Span::from("j,").bold(),
                     Span::from("  Down"),
                     Span::from(" | "),
-                    Span::from("󱁐  or ↵ ").bold(),
+                    Span::from(if self.config.fonts {"󱁐  or ↵ "} else {" ↵ "}).bold(),
                     Span::from(" Pair"),
                     Span::from(" | "),
                     Span::from("s").bold(),
