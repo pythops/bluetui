@@ -106,7 +106,7 @@ async fn main() -> AppResult<()> {
             }
             Event::DisplayPasskeySeen => {
                 if let Some(req) = &mut app.requests.display_passkey {
-                    if req.entered > 5 {
+                    if req.entered > 6 {
                         app.requests.display_passkey = None;
                         app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
                     }
