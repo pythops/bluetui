@@ -23,6 +23,8 @@ toml = "0.9"
 serde = { version = "1", features = ["derive"] }
 clap = { version = "4", features = ["derive", "cargo"] }
 tui-input = "0.12"
+tui-big-text = "0.7"
+anyhow = "1"
 
 [profile.release]
 strip = true

@@ -1,11 +1,13 @@
+pub mod agent;
 pub mod app;
 pub mod bluetooth;
 pub mod cli;
 pub mod config;
-pub mod confirmation;
 pub mod event;
 pub mod handler;
+mod help;
 pub mod notification;
+pub mod requests;
 pub mod rfkill;
 pub mod spinner;
 pub mod tui;

@@ -1,3 +1,10 @@
+use crate::{
+    agent::{
+        display_passkey, display_pin_code, request_confirmation, request_passkey, request_pin_code,
+    },
+    event::Event,
+    help::Help,
+};
 use bluer::{
     Session,
     agent::{Agent, AgentHandle},
@@ -15,27 +22,31 @@ use ratatui::{
 };
 use tui_input::Input;
 
+use tokio::sync::mpsc::UnboundedSender;
+
 use crate::{
-    bluetooth::{Controller, request_confirmation},
+    agent::AuthAgent,
+    bluetooth::Controller,
     config::{Config, Width},
-    confirmation::PairingConfirmation,
     notification::Notification,
+    requests::Requests,
     spinner::Spinner,
 };
-use std::{
-    error,
-    sync::{Arc, atomic::Ordering},
-};
+use std::sync::{Arc, atomic::Ordering};
 
-pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
+pub type AppResult<T> = anyhow::Result<T>;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FocusedBlock {
     Adapter,
     PairedDevices,
     NewDevices,
-    PassKeyConfirmation,
     SetDeviceAliasBox,
+    RequestConfirmation,
+    EnterPinCode,
+    EnterPasskey,
+    DisplayPinCode,
+    DisplayPasskey,
 }
 
 #[derive(Debug)]
@@ -50,33 +61,39 @@ pub struct App {
     pub paired_devices_state: TableState,
     pub new_devices_state: TableState,
     pub focused_block: FocusedBlock,
-    pub pairing_confirmation: PairingConfirmation,
     pub new_alias: Input,
     pub config: Arc<Config>,
+    pub requests: Requests,
+    pub auth_agent: AuthAgent,
 }
 
 impl App {
-    pub async fn new(config: Arc<Config>) -> AppResult<Self> {
+    pub async fn new(config: Arc<Config>, sender: UnboundedSender<Event>) -> AppResult<Self> {
         let session = Arc::new(bluer::Session::new().await?);
 
-        let pairing_confirmation = PairingConfirmation::new();
-
-        let user_confirmation_receiver = pairing_confirmation.user_confirmation_receiver.clone();
-
-        let confirmation_message_sender = pairing_confirmation.confirmation_message_sender.clone();
-
-        let confirmation_display = pairing_confirmation.display.clone();
+        let auth_agent = AuthAgent::new(sender.clone());
 
         let agent = Agent {
             request_default: false,
-            request_confirmation: Some(Box::new(move |req| {
-                request_confirmation(
-                    req,
-                    confirmation_display.clone(),
-                    user_confirmation_receiver.clone(),
-                    confirmation_message_sender.clone(),
-                )
-                .boxed()
+            request_confirmation: Some(Box::new({
+                let auth_agent = auth_agent.clone();
+                move |request| request_confirmation(request, auth_agent.clone()).boxed()
+            })),
+            request_pin_code: Some(Box::new({
+                let auth_agent = auth_agent.clone();
+                move |request| request_pin_code(request, auth_agent.clone()).boxed()
+            })),
+            request_passkey: Some(Box::new({
+                let auth_agent = auth_agent.clone();
+                move |request| request_passkey(request, auth_agent.clone()).boxed()
+            })),
+            display_pin_code: Some(Box::new({
+                let auth_agent = auth_agent.clone();
+                move |request| display_pin_code(request, auth_agent.clone()).boxed()
+            })),
+            display_passkey: Some(Box::new({
+                let auth_agent = auth_agent.clone();
+                move |request| display_passkey(request, auth_agent.clone()).boxed()
             })),
             ..Default::default()
         };
@@ -102,9 +119,10 @@ impl App {
             paired_devices_state: TableState::default(),
             new_devices_state: TableState::default(),
             focused_block: FocusedBlock::PairedDevices,
-            pairing_confirmation,
             new_alias: Input::default(),
             config,
+            requests: Requests::default(),
+            auth_agent,
         })
     }
 
@@ -675,126 +693,45 @@ impl App {
             }
 
             // Help
-            let help = match self.focused_block {
-                FocusedBlock::PairedDevices => {
-                    if self.area(frame).width > 103 {
-                        vec![Line::from(vec![
-                            Span::from("k,").bold(),
-                            Span::from("  Up"),
-                            Span::from(" | "),
-                            Span::from("j,").bold(),
-                            Span::from("  Down"),
-                            Span::from(" | "),
-                            Span::from("s").bold(),
-                            Span::from("  Scan on/off"),
-                            Span::from(" | "),
-                            Span::from(self.config.paired_device.unpair.to_string()).bold(),
-                            Span::from("  Unpair"),
-                            Span::from(" | "),
-                            Span::from("󱁐  or ↵ ").bold(),
-                            Span::from(" Dis/Connect"),
-                            Span::from(" | "),
-                            Span::from(self.config.paired_device.toggle_trust.to_string()).bold(),
-                            Span::from(" Un/Trust"),
-                            Span::from(" | "),
-                            Span::from(self.config.paired_device.rename.to_string()).bold(),
-                            Span::from(" Rename"),
-                            Span::from(" | "),
-                            Span::from("⇄").bold(),
-                            Span::from(" Nav"),
-                        ])]
-                    } else {
-                        vec![
-                            Line::from(vec![
-                                Span::from("󱁐  or ↵ ").bold(),
-                                Span::from(" Dis/Connect"),
-                                Span::from(" | "),
-                                Span::from("s").bold(),
-                                Span::from("  Scan on/off"),
-                                Span::from(" | "),
-                                Span::from(self.config.paired_device.unpair.to_string()).bold(),
-                                Span::from("  Unpair"),
-                            ]),
-                            Line::from(vec![
-                                Span::from(self.config.paired_device.toggle_trust.to_string())
-                                    .bold(),
-                                Span::from(" Un/Trust"),
-                                Span::from(" | "),
-                                Span::from(self.config.paired_device.rename.to_string()).bold(),
-                                Span::from(" Rename"),
-                                Span::from(" | "),
-                                Span::from("k,").bold(),
-                                Span::from("  Up"),
-                                Span::from(" | "),
-                                Span::from("j,").bold(),
-                                Span::from("  Down"),
-                                Span::from(" | "),
-                                Span::from("⇄").bold(),
-                                Span::from(" Nav"),
-                            ]),
-                        ]
-                    }
-                }
-                FocusedBlock::NewDevices => vec![Line::from(vec![
-                    Span::from("k,").bold(),
-                    Span::from("  Up"),
-                    Span::from(" | "),
-                    Span::from("j,").bold(),
-                    Span::from("  Down"),
-                    Span::from(" | "),
-                    Span::from("󱁐  or ↵ ").bold(),
-                    Span::from(" Pair"),
-                    Span::from(" | "),
-                    Span::from("s").bold(),
-                    Span::from("  Scan on/off"),
-                    Span::from(" | "),
-                    Span::from("⇄").bold(),
-                    Span::from(" Nav"),
-                ])],
-                FocusedBlock::Adapter => vec![Line::from(vec![
-                    Span::from("s").bold(),
-                    Span::from("  Scan on/off"),
-                    Span::from(" | "),
-                    Span::from(self.config.adapter.toggle_pairing.to_string()).bold(),
-                    Span::from(" Pairing on/off"),
-                    Span::from(" | "),
-                    Span::from(self.config.adapter.toggle_power.to_string()).bold(),
-                    Span::from(" Power on/off"),
-                    Span::from(" | "),
-                    Span::from(self.config.adapter.toggle_discovery.to_string()).bold(),
-                    Span::from(" Discovery on/off"),
-                    Span::from(" | "),
-                    Span::from("⇄").bold(),
-                    Span::from(" Nav"),
-                ])],
-                FocusedBlock::SetDeviceAliasBox => {
-                    vec![Line::from(vec![
-                        Span::from("󱊷 ").bold(),
-                        Span::from(" Discard"),
-                    ])]
-                }
-                FocusedBlock::PassKeyConfirmation => {
-                    vec![Line::from(vec![
-                        Span::from("󱊷 ").bold(),
-                        Span::from(" Discard"),
-                    ])]
-                }
-            };
-
-            let help = Paragraph::new(help).centered().blue();
-            frame.render_widget(help, help_block);
+            Help::render(
+                frame,
+                self.area(frame),
+                self.focused_block,
+                help_block,
+                self.config.clone(),
+            );
 
             // Pairing confirmation
 
-            if self.pairing_confirmation.display.load(Ordering::Relaxed) {
-                self.focused_block = FocusedBlock::PassKeyConfirmation;
-                self.pairing_confirmation.render(frame, self.area(frame));
-                return;
-            }
-
             // Set alias popup
             if self.focused_block == FocusedBlock::SetDeviceAliasBox {
-                self.render_set_alias(frame)
+                self.render_set_alias(frame);
+            }
+
+            // Request Confirmation
+            if let Some(req) = &self.requests.confirmation {
+                req.render(frame);
+            }
+
+            // Request to enter pin code
+
+            if let Some(req) = &self.requests.enter_pin_code {
+                req.render(frame);
+            }
+
+            // Request passkey
+            if let Some(req) = &self.requests.enter_passkey {
+                req.render(frame);
+            }
+
+            // Display Pin Code
+            if let Some(req) = &self.requests.display_pin_code {
+                req.render(frame);
+            }
+
+            // Display Passkey
+            if let Some(req) = &self.requests.display_passkey {
+                req.render(frame);
             }
         }
     }
@@ -811,12 +748,6 @@ impl App {
     }
 
     pub async fn refresh(&mut self) -> AppResult<()> {
-        if !self.pairing_confirmation.display.load(Ordering::Relaxed)
-            & self.pairing_confirmation.message.is_some()
-        {
-            self.pairing_confirmation.message = None;
-        }
-
         let refreshed_controllers = Controller::get_all(self.session.clone()).await?;
 
         let names = {

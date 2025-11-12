@@ -1,10 +1,20 @@
+use anyhow::anyhow;
+use bluer::Address;
 use std::time::Duration;
 
 use crossterm::event::{Event as CrosstermEvent, KeyEvent, MouseEvent};
 use futures::{FutureExt, StreamExt};
 use tokio::sync::mpsc;
 
-use crate::{app::AppResult, notification::Notification};
+use crate::{
+    app::AppResult,
+    notification::Notification,
+    requests::{
+        confirmation::Confirmation, display_passkey::DisplayPasskey,
+        display_pin_code::DisplayPinCode, enter_passkey::EnterPasskey,
+        enter_pin_code::EnterPinCode,
+    },
+};
 
 #[derive(Clone, Debug)]
 pub enum Event {
@@ -13,7 +23,18 @@ pub enum Event {
     Mouse(MouseEvent),
     Resize(u16, u16),
     Notification(Notification),
-    NewPairedDevice,
+    NewPairedDevice(Address),
+    FailedPairing(Address),
+    RequestConfirmation(Confirmation),
+    ConfirmationSubmitted,
+    RequestEnterPinCode(EnterPinCode),
+    PinCodeSumitted,
+    RequestEnterPasskey(EnterPasskey),
+    RequestDisplayPinCode(DisplayPinCode),
+    DisplayPinCodeSeen,
+    PasskeySumitted,
+    RequestDisplayPasskey(DisplayPasskey),
+    DisplayPasskeyCanceled,
 }
 
 #[allow(dead_code)]
@@ -74,6 +95,6 @@ impl EventHandler {
         self.receiver
             .recv()
             .await
-            .ok_or(Box::new(std::io::Error::other("This is an IO error")))
+            .ok_or(anyhow!("This is an IO error"))
     }
 }
