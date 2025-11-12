@@ -179,8 +179,9 @@ pub async fn display_passkey(request: DisplayPasskey, agent: AuthAgent) -> ReqRe
             Ok(())
         }
 
-    _ = agent.rx_cancel.recv() => {
-            Err(ReqError::Canceled)
+    _ = request.cancel => {
+            let _ = agent.event_sender.send(Event::DisplayPasskeySeen);
+            Ok(())
         }
 
     }
