@@ -23,7 +23,7 @@ pub struct Controller {
 pub struct Device {
     device: BTDevice,
     pub addr: Address,
-    pub icon: Option<String>,
+    pub icon: String,
     pub alias: String,
     pub is_paired: bool,
     pub is_trusted: bool,
@@ -38,19 +38,19 @@ impl Device {
     }
 
     // https://specifications.freedesktop.org/icon-naming/latest/
-    pub fn get_icon(name: &str) -> Option<String> {
+    pub fn get_icon(name: &str) -> String {
         match name {
-            "audio-card" => Some(String::from("󰓃")),
-            "audio-input-microphone" => Some(String::from("")),
-            "audio-headphones" | "audio-headset" => Some(String::from("󰋋")),
-            "battery" => Some(String::from("󰂀")),
-            "camera-photo" => Some(String::from("󰻛")),
-            "computer" => Some(String::from("")),
-            "input-keyboard" => Some(String::from("󰌌")),
-            "input-mouse" => Some(String::from("󰍽")),
-            "input-gaming" => Some(String::from("󰊴")),
-            "phone" => Some(String::from("󰏲")),
-            _ => Some(String::from(" ")),
+            "audio-card" => String::from("󰓃 "),
+            "audio-input-microphone" => String::from(" "),
+            "audio-headphones" | "audio-headset" => String::from("󰋋 "),
+            "battery" => String::from("󰂀 "),
+            "camera-photo" => String::from("󰻛 "),
+            "computer" => String::from(" "),
+            "input-keyboard" => String::from("󰌌 "),
+            "input-mouse" => String::from("󰍽 "),
+            "input-gaming" => String::from("󰊴 "),
+            "phone" => String::from("󰏲 "),
+            _ => String::from("󰾰 "),
         }
     }
 }

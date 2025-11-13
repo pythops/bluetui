@@ -1,5 +1,5 @@
 [build]
 pre-build = [
-  "dpkg --add-architecture $CROSS_DEB_ARCH",
-  "apt update && apt install -y libdbus-1-dev:$CROSS_DEB_ARCH pkg-config:$CROSS_DEB_ARCH ",
+    "dpkg --add-architecture $CROSS_DEB_ARCH",
+    "apt update && apt install -y libdbus-1-dev:$CROSS_DEB_ARCH pkg-config:$CROSS_DEB_ARCH ",
 ]

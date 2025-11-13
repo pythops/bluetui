@@ -1,6 +1,6 @@
 use ratatui::{
     Frame,
-    layout::{Constraint, Direction, Layout, Margin},
+    layout::{Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Style, Stylize},
     text::Line,
     widgets::{Block, BorderType, Borders, Clear, Paragraph},
@@ -34,7 +34,7 @@ impl DisplayPinCode {
         Ok(())
     }
 
-    pub fn render(&self, frame: &mut Frame) {
+    pub fn render(&self, frame: &mut Frame, area: Rect) {
         let block = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -43,7 +43,7 @@ impl DisplayPinCode {
                 Constraint::Fill(1),
             ])
             .margin(2)
-            .split(frame.area())[1];
+            .split(area)[1];
 
         let block = Layout::default()
             .direction(Direction::Horizontal)
