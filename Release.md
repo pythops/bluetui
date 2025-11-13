@@ -1,3 +1,10 @@
+## v0.8.0 - 2025-11-13
+
+- Implement the rest of the auth methods
+- Add default icon to the devices that do not have one
+- Layout adjustements
+- Connect and trust automatically the new pair devices
+
 ## v0.7.2 - 2025-11-03
 
 - Align icons
