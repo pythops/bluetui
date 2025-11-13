@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
 use ratatui::{
+    Frame,
     layout::Rect,
     style::Stylize,
     text::{Line, Span},
     widgets::Paragraph,
-    Frame,
 };
 
 use crate::{app::FocusedBlock, config::Config};

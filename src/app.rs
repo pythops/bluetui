@@ -416,41 +416,75 @@ impl App {
                 .iter()
                 .map(|d| {
                     Row::new(vec![
-                        format!("{} {}", if self.config.fonts {&d.icon} else {""}, &d.alias),
+                        format!(
+                            "{} {}",
+                            if self.config.fonts { &d.icon } else { "" },
+                            &d.alias
+                        ),
                         d.is_trusted.to_string(),
                         d.is_connected.to_string(),
                         {
                             if let Some(battery_percentage) = d.battery_percentage {
                                 match battery_percentage {
                                     n if n >= 90 => {
-                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥈"} else {""})
+                                        format!(
+                                            "{battery_percentage}% {}",
+                                            if self.config.fonts { "󰥈" } else { "" }
+                                        )
                                     }
                                     n if (80..90).contains(&n) => {
-                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥅"} else {""})
+                                        format!(
+                                            "{battery_percentage}% {}",
+                                            if self.config.fonts { "󰥅" } else { "" }
+                                        )
                                     }
                                     n if (70..80).contains(&n) => {
-                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥄"} else {""})
+                                        format!(
+                                            "{battery_percentage}% {}",
+                                            if self.config.fonts { "󰥄" } else { "" }
+                                        )
                                     }
                                     n if (60..70).contains(&n) => {
-                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥃"} else {""})
+                                        format!(
+                                            "{battery_percentage}% {}",
+                                            if self.config.fonts { "󰥃" } else { "" }
+                                        )
                                     }
                                     n if (50..60).contains(&n) => {
-                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥂"} else {""})
+                                        format!(
+                                            "{battery_percentage}% {}",
+                                            if self.config.fonts { "󰥂" } else { "" }
+                                        )
                                     }
                                     n if (40..50).contains(&n) => {
-                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥁"} else {""})
+                                        format!(
+                                            "{battery_percentage}% {}",
+                                            if self.config.fonts { "󰥁" } else { "" }
+                                        )
                                     }
                                     n if (30..40).contains(&n) => {
-                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰥀"} else {""})
+                                        format!(
+                                            "{battery_percentage}% {}",
+                                            if self.config.fonts { "󰥀" } else { "" }
+                                        )
                                     }
                                     n if (20..30).contains(&n) => {
-                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰤿"} else {""})
+                                        format!(
+                                            "{battery_percentage}% {}",
+                                            if self.config.fonts { "󰤿" } else { "" }
+                                        )
                                     }
                                     n if (10..20).contains(&n) => {
-                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰤾"} else {""})
+                                        format!(
+                                            "{battery_percentage}% {}",
+                                            if self.config.fonts { "󰤾" } else { "" }
+                                        )
                                     }
                                     _ => {
-                                        format!("{battery_percentage}% {}", if self.config.fonts {"󰤾"} else {""})
+                                        format!(
+                                            "{battery_percentage}% {}",
+                                            if self.config.fonts { "󰤾" } else { "" }
+                                        )
                                     }
                                 }
                             } else {
@@ -587,7 +621,11 @@ impl App {
                     .map(|d| {
                         Row::new(vec![
                             d.addr.to_string(),
-                            format!("{} {}", if self.config.fonts {&d.icon} else {""}, &d.alias),
+                            format!(
+                                "{} {}",
+                                if self.config.fonts { &d.icon } else { "" },
+                                &d.alias
+                            ),
                         ])
                     })
                     .collect();
