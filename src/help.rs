@@ -36,7 +36,7 @@ impl Help {
                         Span::from(config.paired_device.unpair.to_string()).bold(),
                         Span::from("  Unpair"),
                         Span::from(" | "),
-                        Span::from("󱁐  or ↵ ").bold(),
+                        Span::from(format!("{}↵ ", if config.fonts {"󱁐  or "} else {""})).bold(),
                         Span::from(" Dis/Connect"),
                         Span::from(" | "),
                         Span::from(config.paired_device.toggle_trust.to_string()).bold(),
@@ -51,7 +51,7 @@ impl Help {
                 } else {
                     vec![
                         Line::from(vec![
-                            Span::from("󱁐  or ↵ ").bold(),
+                            Span::from(format!("{}↵ ", if config.fonts {"󱁐  or "} else {""})).bold(),
                             Span::from(" Dis/Connect"),
                             Span::from(" | "),
                             Span::from("s").bold(),
