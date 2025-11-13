@@ -86,7 +86,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                 Ok(device) => match device.alias().await {
                     Ok(device_name) => {
                         let _ = Notification::send(
-                            format!("Start pairing with the device\n `{device_name}`",),
+                            format!("Start pairing with the device {device_name}",),
                             NotificationLevel::Info,
                             sender.clone(),
                         );
@@ -286,10 +286,10 @@ pub async fn handle_key_events(
                     FocusedBlock::PairedDevices => {
                         if let Some(selected_controller) = app.controller_state.selected() {
                             let controller = &app.controllers[selected_controller];
-                            if controller.new_devices.is_empty() {
-                                app.focused_block = FocusedBlock::Adapter;
-                            } else {
+                            if controller.is_scanning.load(Ordering::Relaxed) {
                                 app.focused_block = FocusedBlock::NewDevices;
+                            } else {
+                                app.focused_block = FocusedBlock::Adapter;
                             }
                         }
                     }
@@ -304,10 +304,10 @@ pub async fn handle_key_events(
                     FocusedBlock::Adapter => {
                         if let Some(selected_controller) = app.controller_state.selected() {
                             let controller = &app.controllers[selected_controller];
-                            if controller.new_devices.is_empty() {
-                                app.focused_block = FocusedBlock::PairedDevices;
-                            } else {
+                            if controller.is_scanning.load(Ordering::Relaxed) {
                                 app.focused_block = FocusedBlock::NewDevices;
+                            } else {
+                                app.focused_block = FocusedBlock::PairedDevices;
                             }
                             app.reset_devices_state();
                         }

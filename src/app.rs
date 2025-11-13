@@ -161,28 +161,26 @@ impl App {
         }
     }
 
-    pub fn render_set_alias(&mut self, frame: &mut Frame) {
-        let area = Layout::default()
+    pub fn render_set_alias(&mut self, frame: &mut Frame, area: Rect) {
+        let block = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Fill(1),
                 Constraint::Length(6),
                 Constraint::Fill(1),
             ])
-            .split(self.area(frame));
+            .split(area);
 
-        let area = Layout::default()
+        let block = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Min(80),
+                Constraint::Max(70),
                 Constraint::Fill(1),
             ])
-            .split(area[1]);
+            .split(block[1])[1];
 
-        let area = area[1];
-
-        let (text_area, alias_area) = {
+        let (text_block, alias_block) = {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints(
@@ -194,7 +192,7 @@ impl App {
                     ]
                     .as_ref(),
                 )
-                .split(area);
+                .split(block);
 
             let area1 = Layout::default()
                 .direction(Direction::Horizontal)
@@ -223,14 +221,14 @@ impl App {
             (area1[1], area2[1])
         };
 
-        frame.render_widget(Clear, area);
+        frame.render_widget(Clear, block);
         frame.render_widget(
             Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Thick)
                 .style(Style::default().green())
                 .border_style(Style::default().fg(Color::Green)),
-            area,
+            block,
         );
 
         if let Some(selected_controller) = self.controller_state.selected() {
@@ -260,8 +258,8 @@ impl App {
                             .padding(Padding::horizontal(2)),
                     );
 
-                frame.render_widget(msg, text_area);
-                frame.render_widget(alias, alias_area);
+                frame.render_widget(msg, text_block);
+                frame.render_widget(alias, alias_block);
             }
         }
     }
@@ -270,8 +268,7 @@ impl App {
         if let Some(selected_controller_index) = self.controller_state.selected() {
             let selected_controller = &self.controllers[selected_controller_index];
             // Layout
-            let render_new_devices = !selected_controller.new_devices.is_empty()
-                | selected_controller.is_scanning.load(Ordering::Relaxed);
+            let render_new_devices = selected_controller.is_scanning.load(Ordering::Relaxed);
 
             if !render_new_devices && self.focused_block == FocusedBlock::NewDevices {
                 self.focused_block = FocusedBlock::PairedDevices;
@@ -692,10 +689,13 @@ impl App {
                 }
             }
 
+            //
+            let area = self.area(frame);
+
             // Help
             Help::render(
                 frame,
-                self.area(frame),
+                area,
                 self.focused_block,
                 help_block,
                 self.config.clone(),
@@ -705,33 +705,33 @@ impl App {
 
             // Set alias popup
             if self.focused_block == FocusedBlock::SetDeviceAliasBox {
-                self.render_set_alias(frame);
+                self.render_set_alias(frame, area);
             }
 
             // Request Confirmation
             if let Some(req) = &self.requests.confirmation {
-                req.render(frame);
+                req.render(frame, area);
             }
 
             // Request to enter pin code
 
             if let Some(req) = &self.requests.enter_pin_code {
-                req.render(frame);
+                req.render(frame, area);
             }
 
             // Request passkey
             if let Some(req) = &self.requests.enter_passkey {
-                req.render(frame);
+                req.render(frame, area);
             }
 
             // Display Pin Code
             if let Some(req) = &self.requests.display_pin_code {
-                req.render(frame);
+                req.render(frame, area);
             }
 
             // Display Passkey
             if let Some(req) = &self.requests.display_passkey {
-                req.render(frame);
+                req.render(frame, area);
             }
         }
     }

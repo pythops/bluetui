@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 
 use ratatui::{
     Frame,
-    layout::{Constraint, Direction, Layout},
+    layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, Clear, List},
@@ -116,7 +116,7 @@ impl EnterPasskey {
         Ok(())
     }
 
-    pub fn render(&self, frame: &mut Frame) {
+    pub fn render(&self, frame: &mut Frame, area: Rect) {
         let layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -124,7 +124,7 @@ impl EnterPasskey {
                 Constraint::Length(8),
                 Constraint::Fill(1),
             ])
-            .split(frame.area());
+            .split(area);
 
         let block = Layout::default()
             .direction(Direction::Horizontal)

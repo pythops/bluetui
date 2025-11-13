@@ -101,7 +101,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `Space or Enter`: Pair the device.
 
-## Custom keybindings
+## Config
 
 Keybindings can be customized in the default config file location `$HOME/.config/bluetui/config.toml` or from a custom path with `-c`
 

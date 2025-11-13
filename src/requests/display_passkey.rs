@@ -1,6 +1,6 @@
 use ratatui::{
     Frame,
-    layout::{Constraint, Direction, Layout, Margin},
+    layout::{Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span},
     widgets::{Block, BorderType, Borders, Clear, Paragraph},
@@ -36,7 +36,7 @@ impl DisplayPasskey {
         Ok(())
     }
 
-    pub fn render(&self, frame: &mut Frame) {
+    pub fn render(&self, frame: &mut Frame, area: Rect) {
         let block = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -45,7 +45,7 @@ impl DisplayPasskey {
                 Constraint::Fill(1),
             ])
             .margin(2)
-            .split(frame.area())[1];
+            .split(area)[1];
 
         let block = Layout::default()
             .direction(Direction::Horizontal)
@@ -60,24 +60,14 @@ impl DisplayPasskey {
         let message = vec![
             Line::from(format!("Authentication for the device {}", self.device)).centered(),
             Line::from(""),
-            Line::from(vec![
-                Span::from("Enter the following passkey on the remote device: "),
-                Span::styled(self.passkey.to_string(), Style::new().bold()),
-            ])
+            Line::from(vec![Span::from(
+                "Enter the following passkey on the remote device",
+            )])
             .centered(),
             Line::from(""),
-            Line::from({
-                match self.entered {
-                    0 => ". - . - . - . - . - .",
-                    1 => "* - . - . - . - . - .",
-                    2 => "* - * - . - . - . - .",
-                    3 => "* - * - * - . - . - .",
-                    4 => "* - * - * - * - . - .",
-                    5 => "* - * - * - * - * - .",
-                    _ => "* - * - * - * - * - *",
-                }
-            })
-            .centered(),
+            Line::from(self.passkey.to_string())
+                .bold()
+                .bg(Color::DarkGray),
         ];
 
         let message = Paragraph::new(message).centered();

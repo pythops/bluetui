@@ -95,26 +95,53 @@ impl Help {
                 Span::from("⇄").bold(),
                 Span::from(" Nav"),
             ])],
-            FocusedBlock::Adapter => vec![Line::from(vec![
-                Span::from("s").bold(),
-                Span::from("  Scan on/off"),
-                Span::from(" | "),
-                Span::from(config.adapter.toggle_pairing.to_string()).bold(),
-                Span::from(" Pairing on/off"),
-                Span::from(" | "),
-                Span::from(config.adapter.toggle_power.to_string()).bold(),
-                Span::from(" Power on/off"),
-                Span::from(" | "),
-                Span::from(config.adapter.toggle_discovery.to_string()).bold(),
-                Span::from(" Discovery on/off"),
-                Span::from(" | "),
-                Span::from("⇄").bold(),
-                Span::from(" Nav"),
-            ])],
+            FocusedBlock::Adapter => {
+                if area.width > 80 {
+                    vec![Line::from(vec![
+                        Span::from("s").bold(),
+                        Span::from("  Scan on/off"),
+                        Span::from(" | "),
+                        Span::from(config.adapter.toggle_pairing.to_string()).bold(),
+                        Span::from(" Pairing on/off"),
+                        Span::from(" | "),
+                        Span::from(config.adapter.toggle_power.to_string()).bold(),
+                        Span::from(" Power on/off"),
+                        Span::from(" | "),
+                        Span::from(config.adapter.toggle_discovery.to_string()).bold(),
+                        Span::from(" Discovery on/off"),
+                        Span::from(" | "),
+                        Span::from("⇄").bold(),
+                        Span::from(" Nav"),
+                    ])]
+                } else {
+                    vec![
+                        Line::from(vec![
+                            Span::from("s").bold(),
+                            Span::from("  Scan on/off"),
+                            Span::from(" | "),
+                            Span::from(config.adapter.toggle_pairing.to_string()).bold(),
+                            Span::from(" Pairing on/off"),
+                        ]),
+                        Line::from(vec![
+                            Span::from(config.adapter.toggle_power.to_string()).bold(),
+                            Span::from(" Power on/off"),
+                            Span::from(" | "),
+                            Span::from(config.adapter.toggle_discovery.to_string()).bold(),
+                            Span::from(" Discovery on/off"),
+                            Span::from(" | "),
+                            Span::from("⇄").bold(),
+                            Span::from(" Nav"),
+                        ]),
+                    ]
+                }
+            }
             FocusedBlock::SetDeviceAliasBox => {
                 vec![Line::from(vec![
                     Span::from("󱊷 ").bold(),
                     Span::from(" Discard"),
+                    Span::from(" | "),
+                    Span::from("↵ ").bold(),
+                    Span::from(" Apply"),
                 ])]
             }
             FocusedBlock::RequestConfirmation => {

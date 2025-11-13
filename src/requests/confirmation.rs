@@ -1,7 +1,7 @@
 use ratatui::{
     Frame,
-    layout::{Constraint, Direction, Layout},
-    style::{Color, Style},
+    layout::{Constraint, Direction, Layout, Rect},
+    style::{Color, Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, Clear},
 };
@@ -48,34 +48,34 @@ impl Confirmation {
         self.confirmed = !self.confirmed;
     }
 
-    pub fn render(&self, frame: &mut Frame) {
-        let layout = Layout::default()
+    pub fn render(&self, frame: &mut Frame, area: Rect) {
+        let block = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Length(5),
+                Constraint::Length(8),
                 Constraint::Fill(1),
             ])
-            .split(frame.area());
+            .split(area);
 
         let block = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([
                 Constraint::Fill(1),
-                Constraint::Max(80),
+                Constraint::Max(70),
                 Constraint::Fill(1),
             ])
-            .split(layout[1])[1];
+            .split(block[1])[1];
 
-        let (message_area, choices_area) = {
+        let (message_block, choices_block) = {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints(
                     [
                         Constraint::Length(1),
+                        Constraint::Length(3),
                         Constraint::Length(1),
-                        Constraint::Length(1),
-                        Constraint::Length(1),
+                        Constraint::Length(2),
                         Constraint::Length(1),
                     ]
                     .as_ref(),
@@ -85,24 +85,39 @@ impl Confirmation {
             (chunks[1], chunks[3])
         };
 
-        let message = Text::from(format!(
-            "Is Passkey {:06} correct for the device {}  ?",
-            self.passkey, self.device,
-        ))
-        .centered();
+        let message = Text::from(vec![
+            Line::from(vec![
+                Span::from("Authentication required for the device "),
+                Span::from(self.device.to_string()),
+            ])
+            .centered(),
+            Line::from(""),
+            Line::from(vec![
+                Span::from("Confirm Passkey "),
+                Span::styled(
+                    format!("{:06}", self.passkey),
+                    Style::new().bg(Color::DarkGray).bold(),
+                ),
+            ])
+            .centered(),
+        ]);
 
         let choice = {
             if self.confirmed {
                 Line::from(vec![
-                    Span::from("[No]").style(Style::default()),
+                    Span::from("No").style(Style::default()),
                     Span::from("        "),
-                    Span::from("[Yes]").style(Style::default().bg(Color::DarkGray)),
+                    Span::from("Yes")
+                        .style(Style::default().bg(Color::Blue))
+                        .bold(),
                 ])
             } else {
                 Line::from(vec![
-                    Span::from("[No]").style(Style::default().bg(Color::DarkGray)),
+                    Span::from("No")
+                        .style(Style::default().bg(Color::Blue))
+                        .bold(),
                     Span::from("        "),
-                    Span::from("[Yes]").style(Style::default()),
+                    Span::from("Yes").style(Style::default()),
                 ])
             }
         };
@@ -116,7 +131,7 @@ impl Confirmation {
                 .border_style(Style::default().fg(Color::Green)),
             block,
         );
-        frame.render_widget(message, message_area);
-        frame.render_widget(choice.centered(), choices_area);
+        frame.render_widget(message, message_block);
+        frame.render_widget(choice.centered(), choices_block);
     }
 }
