@@ -6,8 +6,8 @@ use toml;
 
 use dirs;
 use serde::{
-    Deserialize, Deserializer,
     de::{self, Unexpected, Visitor},
+    Deserialize, Deserializer,
 };
 
 #[derive(Deserialize, Debug)]
