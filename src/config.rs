@@ -26,6 +26,9 @@ pub struct Config {
 
     #[serde(default)]
     pub paired_device: PairedDevice,
+
+    #[serde(default = "default_true")]
+    pub fonts: bool,
 }
 
 #[derive(Debug, Default)]
@@ -184,6 +187,10 @@ fn default_unpair_device() -> char {
 
 fn default_toggle_device_trust() -> char {
     't'
+}
+
+fn default_true() -> bool {
+    true
 }
 
 impl Config {
