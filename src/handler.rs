@@ -26,14 +26,14 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                                     match device.disconnect().await {
                                         Ok(_) => {
                                             let _ = Notification::send(
-                                                "Device disconnected".to_string(),
+                                                "Device disconnected".into(),
                                                 NotificationLevel::Info,
                                                 sender.clone(),
                                             );
                                         }
                                         Err(e) => {
                                             let _ = Notification::send(
-                                                e.to_string(),
+                                                e.into(),
                                                 NotificationLevel::Error,
                                                 sender.clone(),
                                             );
@@ -43,14 +43,14 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                                     match device.connect().await {
                                         Ok(_) => {
                                             let _ = Notification::send(
-                                                "Device connected".to_string(),
+                                                "Device connected".into(),
                                                 NotificationLevel::Info,
                                                 sender.clone(),
                                             );
                                         }
                                         Err(e) => {
                                             let _ = Notification::send(
-                                                e.to_string(),
+                                                e.into(),
                                                 NotificationLevel::Error,
                                                 sender.clone(),
                                             );
@@ -60,7 +60,7 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                             }
                             Err(e) => {
                                 let _ = Notification::send(
-                                    e.to_string(),
+                                    e.into(),
                                     NotificationLevel::Error,
                                     sender.clone(),
                                 );
@@ -69,8 +69,7 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                     });
                 }
                 Err(e) => {
-                    let _ =
-                        Notification::send(e.to_string(), NotificationLevel::Error, sender.clone());
+                    let _ = Notification::send(e.into(), NotificationLevel::Error, sender.clone());
                 }
             }
         }
@@ -86,7 +85,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                 Ok(device) => match device.alias().await {
                     Ok(device_name) => {
                         let _ = Notification::send(
-                            format!("Start pairing with the device {device_name}",),
+                            format!("Start pairing with the device {device_name}").into(),
                             NotificationLevel::Info,
                             sender.clone(),
                         );
@@ -95,7 +94,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                             match device.pair().await {
                                 Ok(_) => {
                                     let _ = Notification::send(
-                                        "Device paired".to_string(),
+                                        "Device paired".into(),
                                         NotificationLevel::Info,
                                         sender.clone(),
                                     );
@@ -104,14 +103,14 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                     match device.set_trusted(true).await {
                                         Ok(_) => {
                                             let _ = Notification::send(
-                                                "Device trusted".to_string(),
+                                                "Device trusted".into(),
                                                 NotificationLevel::Info,
                                                 sender.clone(),
                                             );
                                         }
                                         Err(e) => {
                                             let _ = Notification::send(
-                                                e.to_string(),
+                                                e.into(),
                                                 NotificationLevel::Error,
                                                 sender.clone(),
                                             );
@@ -120,14 +119,14 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                     match device.connect().await {
                                         Ok(_) => {
                                             let _ = Notification::send(
-                                                "Device connected".to_string(),
+                                                "Device connected".into(),
                                                 NotificationLevel::Info,
                                                 sender.clone(),
                                             );
                                         }
                                         Err(e) => {
                                             let _ = Notification::send(
-                                                e.to_string(),
+                                                e.into(),
                                                 NotificationLevel::Error,
                                                 sender.clone(),
                                             );
@@ -136,7 +135,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                 }
                                 Err(e) => {
                                     let _ = Notification::send(
-                                        e.to_string(),
+                                        e.into(),
                                         NotificationLevel::Error,
                                         sender.clone(),
                                     );
@@ -146,16 +145,12 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                         });
                     }
                     Err(e) => {
-                        let _ = Notification::send(
-                            e.to_string(),
-                            NotificationLevel::Error,
-                            sender.clone(),
-                        );
+                        let _ =
+                            Notification::send(e.into(), NotificationLevel::Error, sender.clone());
                     }
                 },
                 Err(e) => {
-                    let _ =
-                        Notification::send(e.to_string(), NotificationLevel::Error, sender.clone());
+                    let _ = Notification::send(e.into(), NotificationLevel::Error, sender.clone());
                 }
             }
         }
@@ -175,20 +170,16 @@ pub async fn handle_key_events(
                     let controller = &app.controllers[selected_controller];
                     if let Some(index) = app.paired_devices_state.selected() {
                         let device = &controller.paired_devices[index];
-                        match device.set_alias(app.new_alias.value().to_string()).await {
+                        match device.set_alias(app.new_alias.value().into()).await {
                             Ok(_) => {
                                 Notification::send(
-                                    "Set New Alias".to_string(),
+                                    "Set New Alias".into(),
                                     NotificationLevel::Info,
                                     sender,
                                 )?;
                             }
                             Err(e) => {
-                                Notification::send(
-                                    e.to_string(),
-                                    NotificationLevel::Error,
-                                    sender,
-                                )?;
+                                Notification::send(e.into(), NotificationLevel::Error, sender)?;
                             }
                         }
                         app.focused_block = FocusedBlock::PairedDevices;
@@ -439,7 +430,7 @@ pub async fn handle_key_events(
                                 .store(false, std::sync::atomic::Ordering::Relaxed);
 
                             Notification::send(
-                                "Scanning stopped".to_string(),
+                                "Scanning stopped".into(),
                                 NotificationLevel::Info,
                                 sender,
                             )?;
@@ -454,7 +445,7 @@ pub async fn handle_key_events(
                             let is_scanning = controller.is_scanning.clone();
                             tokio::spawn(async move {
                                 let _ = Notification::send(
-                                    "Scanning started".to_string(),
+                                    "Scanning started".into(),
                                     NotificationLevel::Info,
                                     sender.clone(),
                                 );
@@ -469,7 +460,7 @@ pub async fn handle_key_events(
                                     }
                                     Err(e) => {
                                         let _ = Notification::send(
-                                            e.to_string(),
+                                            e.into(),
                                             NotificationLevel::Error,
                                             sender.clone(),
                                         );
@@ -495,14 +486,14 @@ pub async fn handle_key_events(
                                             match controller.adapter.remove_device(addr).await {
                                                 Ok(_) => {
                                                     let _ = Notification::send(
-                                                        "Device unpaired".to_string(),
+                                                        "Device unpaired".into(),
                                                         NotificationLevel::Info,
                                                         sender.clone(),
                                                     );
                                                 }
                                                 Err(e) => {
                                                     let _ = Notification::send(
-                                                        e.to_string(),
+                                                        e.into(),
                                                         NotificationLevel::Error,
                                                         sender.clone(),
                                                     );
@@ -537,14 +528,14 @@ pub async fn handle_key_events(
                                                                         Ok(_) => {
                                                                             let _ = Notification::send(
                                                                         "Device untrusted"
-                                                                            .to_string(),
+                                                                            .into(),
                                                                         NotificationLevel::Info,
                                                                         sender.clone(),
                                                                     );
                                                                         }
                                                                         Err(e) => {
                                                                             let _ = Notification::send(
-                                                                        e.to_string(),
+                                                                        e.into(),
                                                                         NotificationLevel::Error,
                                                                         sender.clone(),
                                                                     );
@@ -558,7 +549,7 @@ pub async fn handle_key_events(
                                                                         Ok(_) => {
                                                                             let _ = Notification::send(
                                                                         "Device trusted"
-                                                                            .to_string(),
+                                                                            .into(),
                                                                         NotificationLevel::Info,
                                                                         sender.clone(),
                                                                     );
@@ -566,7 +557,7 @@ pub async fn handle_key_events(
 
                                                                         Err(e) => {
                                                                             let _ = Notification::send(
-                                                                        e.to_string(),
+                                                                        e.into(),
                                                                         NotificationLevel::Error,
                                                                         sender.clone(),
                                                                     );
@@ -576,7 +567,7 @@ pub async fn handle_key_events(
                                                             }
                                                             Err(e) => {
                                                                 let _ = Notification::send(
-                                                                    e.to_string(),
+                                                                    e.into(),
                                                                     NotificationLevel::Error,
                                                                     sender.clone(),
                                                                 );
@@ -586,7 +577,7 @@ pub async fn handle_key_events(
                                                 }
                                                 Err(e) => {
                                                     let _ = Notification::send(
-                                                        e.to_string(),
+                                                        e.into(),
                                                         NotificationLevel::Error,
                                                         sender.clone(),
                                                     );
@@ -622,15 +613,14 @@ pub async fn handle_key_events(
                                                             {
                                                                 Ok(_) => {
                                                                     let _ = Notification::send(
-                                                                        "Adapter unpairable"
-                                                                            .to_string(),
+                                                                        "Adapter unpairable".into(),
                                                                         NotificationLevel::Info,
                                                                         sender.clone(),
                                                                     );
                                                                 }
                                                                 Err(e) => {
                                                                     let _ = Notification::send(
-                                                                        e.to_string(),
+                                                                        e.into(),
                                                                         NotificationLevel::Error,
                                                                         sender.clone(),
                                                                     );
@@ -640,15 +630,14 @@ pub async fn handle_key_events(
                                                             match adapter.set_pairable(true).await {
                                                                 Ok(_) => {
                                                                     let _ = Notification::send(
-                                                                        "Adapter pairable"
-                                                                            .to_string(),
+                                                                        "Adapter pairable".into(),
                                                                         NotificationLevel::Info,
                                                                         sender.clone(),
                                                                     );
                                                                 }
                                                                 Err(e) => {
                                                                     let _ = Notification::send(
-                                                                        e.to_string(),
+                                                                        e.into(),
                                                                         NotificationLevel::Error,
                                                                         sender.clone(),
                                                                     );
@@ -658,7 +647,7 @@ pub async fn handle_key_events(
                                                     }
                                                     Err(e) => {
                                                         let _ = Notification::send(
-                                                            e.to_string(),
+                                                            e.into(),
                                                             NotificationLevel::Error,
                                                             sender.clone(),
                                                         );
@@ -685,14 +674,14 @@ pub async fn handle_key_events(
                                                                 Ok(_) => {
                                                                     let _ = Notification::send(
                                                                         "Adapter powered off"
-                                                                            .to_string(),
+                                                                            .into(),
                                                                         NotificationLevel::Info,
                                                                         sender.clone(),
                                                                     );
                                                                 }
                                                                 Err(e) => {
                                                                     let _ = Notification::send(
-                                                                        e.to_string(),
+                                                                        e.into(),
                                                                         NotificationLevel::Error,
                                                                         sender.clone(),
                                                                     );
@@ -702,15 +691,14 @@ pub async fn handle_key_events(
                                                             match adapter.set_powered(true).await {
                                                                 Ok(_) => {
                                                                     let _ = Notification::send(
-                                                                        "Adapter powered on"
-                                                                            .to_string(),
+                                                                        "Adapter powered on".into(),
                                                                         NotificationLevel::Info,
                                                                         sender.clone(),
                                                                     );
                                                                 }
                                                                 Err(e) => {
                                                                     let _ = Notification::send(
-                                                                        e.to_string(),
+                                                                        e.into(),
                                                                         NotificationLevel::Error,
                                                                         sender.clone(),
                                                                     );
@@ -720,7 +708,7 @@ pub async fn handle_key_events(
                                                     }
                                                     Err(e) => {
                                                         let _ = Notification::send(
-                                                            e.to_string(),
+                                                            e.into(),
                                                             NotificationLevel::Error,
                                                             sender.clone(),
                                                         );
@@ -750,14 +738,14 @@ pub async fn handle_key_events(
                                                                 Ok(_) => {
                                                                     let _ = Notification::send(
                                                                         "Adapter undiscoverable"
-                                                                            .to_string(),
+                                                                            .into(),
                                                                         NotificationLevel::Info,
                                                                         sender.clone(),
                                                                     );
                                                                 }
                                                                 Err(e) => {
                                                                     let _ = Notification::send(
-                                                                        e.to_string(),
+                                                                        e.into(),
                                                                         NotificationLevel::Error,
                                                                         sender.clone(),
                                                                     );
@@ -771,14 +759,14 @@ pub async fn handle_key_events(
                                                                 Ok(_) => {
                                                                     let _ = Notification::send(
                                                                         "Adapter discoverable"
-                                                                            .to_string(),
+                                                                            .into(),
                                                                         NotificationLevel::Info,
                                                                         sender.clone(),
                                                                     );
                                                                 }
                                                                 Err(e) => {
                                                                     let _ = Notification::send(
-                                                                        e.to_string(),
+                                                                        e.into(),
                                                                         NotificationLevel::Error,
                                                                         sender.clone(),
                                                                     );
@@ -788,7 +776,7 @@ pub async fn handle_key_events(
                                                     }
                                                     Err(e) => {
                                                         let _ = Notification::send(
-                                                            e.to_string(),
+                                                            e.into(),
                                                             NotificationLevel::Error,
                                                             sender.clone(),
                                                         );

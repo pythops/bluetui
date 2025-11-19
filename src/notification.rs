@@ -7,11 +7,11 @@ use ratatui::{
 };
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::{app::AppResult, event::Event};
+use crate::{app::AppResult, event::Event, string_ref::StringRef};
 
 #[derive(Debug, Clone)]
 pub struct Notification {
-    pub message: String,
+    pub message: StringRef,
     pub level: NotificationLevel,
     pub ttl: u16,
 }
@@ -57,7 +57,7 @@ impl Notification {
         frame.render_widget(block, area);
     }
     pub fn send(
-        message: String,
+        message: StringRef,
         level: NotificationLevel,
         sender: UnboundedSender<Event>,
     ) -> AppResult<()> {
