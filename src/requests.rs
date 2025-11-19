@@ -1,3 +1,5 @@
+use std::{borrow::Cow, fmt::Write};
+
 use crate::requests::{
     confirmation::Confirmation, display_passkey::DisplayPasskey, display_pin_code::DisplayPinCode,
     enter_passkey::EnterPasskey, enter_pin_code::EnterPinCode,
@@ -36,11 +38,24 @@ impl Requests {
     }
 }
 
-fn pad_string(input: &str, length: usize) -> String {
+fn pad_str<'a>(input: &'a str, length: usize) -> Cow<'a, str> {
     let current_length = input.chars().count();
     if current_length >= length {
-        input.to_string()
+        Cow::Borrowed(input)
     } else {
-        format!("{:<width$}", input, width = length)
+        let mut s = String::with_capacity(length);
+        write!(&mut s, "{:<width$}", input, width = length).unwrap();
+        Cow::Owned(s)
+    }
+}
+
+fn pad_string(input: String, length: usize) -> String {
+    let current_length = input.chars().count();
+    if current_length >= length {
+        input
+    } else {
+        let mut s = String::with_capacity(length);
+        write!(&mut s, "{:<width$}", input, width = length).unwrap();
+        s
     }
 }

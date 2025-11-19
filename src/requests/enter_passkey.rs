@@ -11,7 +11,12 @@ use ratatui::{
 use bluer::Address;
 use tui_input::{Input, backend::crossterm::EventHandler};
 
-use crate::{agent::AuthAgent, app::AppResult, event::Event, requests::pad_string};
+use crate::{
+    agent::AuthAgent,
+    app::AppResult,
+    event::Event,
+    requests::{pad_str, pad_string},
+};
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum FocusedSection {
@@ -177,15 +182,12 @@ impl EnterPasskey {
                     }
                 },
                 Span::from("  "),
-                Span::from(pad_string(
-                    format!(" {}", self.passkey.field.value()).as_str(),
-                    60,
-                ))
-                .bg(Color::DarkGray),
+                Span::from(pad_string(format!(" {}", self.passkey.field.value()), 60))
+                    .bg(Color::DarkGray),
             ]),
-            Line::from(vec![Span::from(pad_string(" ", 9)), {
+            Line::from(vec![Span::from(pad_str(" ", 9)), {
                 if let Some(error) = &self.passkey.error {
-                    Span::from(pad_string(error, 60))
+                    Span::from(pad_str(error, 60))
                 } else {
                     Span::from("")
                 }
