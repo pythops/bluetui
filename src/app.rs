@@ -737,30 +737,27 @@ impl App {
     pub async fn refresh(&mut self) -> AppResult<()> {
         let refreshed_controllers = Controller::get_all(self.session.clone()).await?;
 
-        let names = {
-            let mut names: Vec<String> = Vec::new();
+        // Remove unplugged adapters in a single pass
+        let mut adapter_removed = false;
+        self.controllers.retain(|controller| {
+            let should_retain = refreshed_controllers
+                .iter()
+                .any(|c| c.name == controller.name);
 
-            for controller in self.controllers.iter() {
-                if !refreshed_controllers
-                    .iter()
-                    .any(|c| c.name == controller.name)
-                {
-                    names.push(controller.name.clone());
-                }
+            if !should_retain {
+                adapter_removed = true;
             }
 
-            names
-        };
+            should_retain
+        });
 
-        // Remove unplugged adapters
-        for name in names {
-            self.controllers.retain(|c| c.name != name);
-
+        // Update selection after removal
+        if adapter_removed {
             if !self.controllers.is_empty() {
                 let i = match self.controller_state.selected() {
                     Some(i) => {
                         if i > 0 {
-                            i - 1
+                            (i - 1).min(self.controllers.len() - 1)
                         } else {
                             0
                         }

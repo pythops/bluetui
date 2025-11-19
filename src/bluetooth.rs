@@ -23,7 +23,7 @@ pub struct Controller {
 pub struct Device {
     device: BTDevice,
     pub addr: Address,
-    pub icon: String,
+    pub icon: &'static str,
     pub alias: String,
     pub is_paired: bool,
     pub is_trusted: bool,
@@ -38,19 +38,19 @@ impl Device {
     }
 
     // https://specifications.freedesktop.org/icon-naming/latest/
-    pub fn get_icon(name: &str) -> String {
+    pub fn get_icon(name: &str) -> &'static str {
         match name {
-            "audio-card" => String::from("󰓃 "),
-            "audio-input-microphone" => String::from(" "),
-            "audio-headphones" | "audio-headset" => String::from("󰋋 "),
-            "battery" => String::from("󰂀 "),
-            "camera-photo" => String::from("󰻛 "),
-            "computer" => String::from(" "),
-            "input-keyboard" => String::from("󰌌 "),
-            "input-mouse" => String::from("󰍽 "),
-            "input-gaming" => String::from("󰊴 "),
-            "phone" => String::from("󰏲 "),
-            _ => String::from("󰾰 "),
+            "audio-card" => "󰓃 ",
+            "audio-input-microphone" => " ",
+            "audio-headphones" | "audio-headset" => "󰋋 ",
+            "battery" => "󰂀 ",
+            "camera-photo" => "󰻛 ",
+            "computer" => " ",
+            "input-keyboard" => "󰌌 ",
+            "input-mouse" => "󰍽 ",
+            "input-gaming" => "󰊴 ",
+            "phone" => "󰏲 ",
+            _ => "󰾰 ",
         }
     }
 }
