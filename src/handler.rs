@@ -268,6 +268,10 @@ pub async fn handle_key_events(
                     app.quit();
                 }
 
+                KeyCode::Esc if app.config.esc_quit => {
+                    app.quit();
+                }
+
                 // Switch focus
                 KeyCode::Tab | KeyCode::Char('l') => match app.focused_block {
                     FocusedBlock::Adapter => {
