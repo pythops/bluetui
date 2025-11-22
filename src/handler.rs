@@ -264,7 +264,11 @@ pub async fn handle_key_events(
                     app.quit();
                 }
 
-                KeyCode::Char('q') | KeyCode::Esc => {
+                KeyCode::Char('q') => {
+                    app.quit();
+                }
+
+                KeyCode::Esc if app.config.esc_quit => {
                     app.quit();
                 }
 

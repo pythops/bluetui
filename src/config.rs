@@ -21,6 +21,9 @@ pub struct Config {
     #[serde(default = "default_toggle_scanning")]
     pub toggle_scanning: char,
 
+    #[serde(default = "default_esc_quit")]
+    pub esc_quit: bool,
+
     #[serde(default)]
     pub adapter: Adapter,
 
@@ -164,6 +167,10 @@ fn default_set_new_name() -> char {
 
 fn default_toggle_scanning() -> char {
     's'
+}
+
+fn default_esc_quit() -> bool {
+    false
 }
 
 fn default_toggle_adapter_pairing() -> char {
