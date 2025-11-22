@@ -77,7 +77,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `s`: Start/Stop scanning.
 
-`ctrl+c` or `q`: Quit the app.
+`ctrl+c` or `q` or `<Esc>`: Quit the app.
 
 ### Adapters
 
