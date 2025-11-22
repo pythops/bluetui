@@ -796,7 +796,8 @@ impl App {
                     if new_paired_count == 0 {
                         self.paired_devices_state.select(None);
                     } else if selected_index >= new_paired_count && new_paired_count > 0 {
-                        self.paired_devices_state.select(Some(new_paired_count.saturating_sub(1)));
+                        self.paired_devices_state
+                            .select(Some(new_paired_count.saturating_sub(1)));
                     }
                 }
             } else {
