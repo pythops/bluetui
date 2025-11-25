@@ -416,10 +416,14 @@ impl App {
                 .iter()
                 .map(|d| {
                     Row::new(vec![
-                        format!("{} {}", &d.icon, &d.alias),
-                        d.is_trusted.to_string(),
-                        d.is_connected.to_string(),
-                        {
+                        Cell::from(format!("{} {}", &d.icon, &d.alias)),
+                        Cell::from(if d.is_trusted { "\u{2714} Trusted".to_string() } else { "\u{2718} Untrusted".to_string() }),
+                        if d.is_connected {
+                            Cell::from("\u{2714} Connected").style(Style::default().fg(Color::Green))
+                        } else {
+                            Cell::from("\u{2718} Disconnected").style(Style::default().fg(Color::Red))
+                        },
+                        Cell::from({
                             if let Some(battery_percentage) = d.battery_percentage {
                                 match battery_percentage {
                                     n if n >= 90 => {
@@ -456,7 +460,7 @@ impl App {
                             } else {
                                 String::new()
                             }
-                        },
+                        }),
                     ])
                 })
                 .collect();
@@ -476,8 +480,8 @@ impl App {
 
             let mut widths = vec![
                 Constraint::Max(25),
-                Constraint::Length(7),
-                Constraint::Length(9),
+                Constraint::Length(11),
+                Constraint::Length(14),
             ];
 
             if show_battery_column {
@@ -551,7 +555,7 @@ impl App {
                 )
                 .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
-                    Style::default().bg(Color::DarkGray).fg(Color::White)
+                    Style::default().bg(Color::DarkGray)
                 } else {
                     Style::default()
                 });
