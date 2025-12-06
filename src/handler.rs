@@ -591,6 +591,27 @@ pub async fn handle_key_events(
                                     }
                                 }
 
+                                // Favorite / Unfavorite
+                                KeyCode::Char(c) if c == config.paired_device.toggle_favorite => {
+                                    if let Some(selected_controller) =
+                                        app.controller_state.selected()
+                                    {
+                                        let controller = &app.controllers[selected_controller];
+                                        if let Some(index) = app.paired_devices_state.selected() {
+                                            let addr = controller.paired_devices[index].addr;
+                                            if let Some(pos) = app
+                                                .favorite_devices
+                                                .iter()
+                                                .position(|favorite| *favorite == addr)
+                                            {
+                                                app.favorite_devices.swap_remove(pos);
+                                            } else {
+                                                app.favorite_devices.push(addr);
+                                            }
+                                        }
+                                    }
+                                }
+
                                 KeyCode::Char(c) if c == config.paired_device.rename => {
                                     app.focused_block = FocusedBlock::SetDeviceAliasBox;
                                 }

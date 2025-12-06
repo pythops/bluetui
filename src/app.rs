@@ -5,10 +5,12 @@ use crate::{
     event::Event,
     help::Help,
 };
+use anyhow::Context;
 use bluer::{
-    Session,
+    Address, Session,
     agent::{Agent, AgentHandle},
 };
+use clap::crate_name;
 use futures::FutureExt;
 use ratatui::{
     Frame,
@@ -22,7 +24,11 @@ use ratatui::{
 };
 use tui_input::Input;
 
-use tokio::sync::mpsc::UnboundedSender;
+use tokio::{
+    fs::File,
+    io::{AsyncBufReadExt, BufReader},
+    sync::mpsc::UnboundedSender,
+};
 
 use crate::{
     agent::AuthAgent,
@@ -32,7 +38,10 @@ use crate::{
     requests::Requests,
     spinner::Spinner,
 };
-use std::sync::{Arc, atomic::Ordering};
+use std::{
+    str::FromStr,
+    sync::{Arc, atomic::Ordering},
+};
 
 pub type AppResult<T> = anyhow::Result<T>;
 
@@ -59,12 +68,58 @@ pub struct App {
     pub controllers: Vec<Controller>,
     pub controller_state: TableState,
     pub paired_devices_state: TableState,
+    pub favorite_devices: Vec<Address>,
     pub new_devices_state: TableState,
     pub focused_block: FocusedBlock,
     pub new_alias: Input,
     pub config: Arc<Config>,
     pub requests: Requests,
     pub auth_agent: AuthAgent,
+}
+
+async fn read_favorite_devices_from_disk() -> AppResult<Vec<Address>> {
+    let data_dir = dirs::data_dir()
+        .context("unable to find data_dir")?
+        .join(crate_name!());
+
+    let file = File::open(data_dir.join("favorites.txt"))
+        .await
+        .context("unable to open favorites file")?;
+
+    let mut lines = BufReader::new(file).lines();
+
+    let mut favorite_devices = Vec::new();
+
+    while let Some(line) = lines.next_line().await? {
+        if let Ok(addr) = Address::from_str(&line) {
+            favorite_devices.push(addr);
+        }
+    }
+
+    Ok(favorite_devices)
+}
+
+fn save_favorite_devices_to_disk(favorite_devices: &[Address]) -> AppResult<()> {
+    let data_dir = dirs::data_dir()
+        .context("unable to find data_dir")?
+        .join(crate_name!());
+
+    let file_path = data_dir.join("favorites.txt");
+
+    let contents = favorite_devices
+        .iter()
+        .map(Address::to_string)
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    if !data_dir.exists() {
+        std::fs::create_dir_all(data_dir)
+            .context("unable to create parent dir(s) to favorites file")?;
+    }
+
+    std::fs::write(file_path, contents).context("error writing favorites file")?;
+
+    Ok(())
 }
 
 impl App {
@@ -98,8 +153,11 @@ impl App {
             ..Default::default()
         };
 
+        let favorite_devices = read_favorite_devices_from_disk().await.unwrap_or_default();
+
         let handle = session.register_agent(agent).await?;
-        let controllers: Vec<Controller> = Controller::get_all(session.clone()).await?;
+        let controllers: Vec<Controller> =
+            Controller::get_all(session.clone(), &favorite_devices).await?;
 
         let mut controller_state = TableState::default();
         if controllers.is_empty() {
@@ -117,6 +175,7 @@ impl App {
             controllers,
             controller_state,
             paired_devices_state: TableState::default(),
+            favorite_devices,
             new_devices_state: TableState::default(),
             focused_block: FocusedBlock::PairedDevices,
             new_alias: Input::default(),
@@ -411,11 +470,17 @@ impl App {
             }
 
             //Paired devices
+            const STAR_SYMBOL: char = '\u{2605}';
             let rows: Vec<Row> = selected_controller
                 .paired_devices
                 .iter()
                 .map(|d| {
                     Row::new(vec![
+                        if d.is_favorite {
+                            STAR_SYMBOL.to_string()
+                        } else {
+                            "".to_string()
+                        },
                         format!("{} {}", &d.icon, &d.alias),
                         d.is_trusted.to_string(),
                         d.is_connected.to_string(),
@@ -475,6 +540,7 @@ impl App {
                 .any(|device| device.battery_percentage.is_some());
 
             let mut widths = vec![
+                Constraint::Length(1),
                 Constraint::Max(25),
                 Constraint::Length(7),
                 Constraint::Length(9),
@@ -489,6 +555,8 @@ impl App {
                     if show_battery_column {
                         if self.focused_block == FocusedBlock::PairedDevices {
                             Row::new(vec![
+                                Cell::from(STAR_SYMBOL.to_string())
+                                    .style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -498,6 +566,7 @@ impl App {
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
+                                Cell::from(STAR_SYMBOL.to_string()),
                                 Cell::from("Name"),
                                 Cell::from("Trusted"),
                                 Cell::from("Connected"),
@@ -507,6 +576,8 @@ impl App {
                         }
                     } else if self.focused_block == FocusedBlock::PairedDevices {
                         Row::new(vec![
+                            Cell::from(STAR_SYMBOL.to_string())
+                                .style(Style::default().fg(Color::Yellow)),
                             Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -515,6 +586,7 @@ impl App {
                         .bottom_margin(1)
                     } else {
                         Row::new(vec![
+                            Cell::from(STAR_SYMBOL.to_string()),
                             Cell::from("Name"),
                             Cell::from("Trusted"),
                             Cell::from("Connected"),
@@ -735,7 +807,8 @@ impl App {
     }
 
     pub async fn refresh(&mut self) -> AppResult<()> {
-        let refreshed_controllers = Controller::get_all(self.session.clone()).await?;
+        let refreshed_controllers =
+            Controller::get_all(self.session.clone(), &self.favorite_devices).await?;
 
         // Remove unplugged adapters in a single pass
         let mut adapter_removed = false;
@@ -810,6 +883,9 @@ impl App {
     }
 
     pub fn quit(&mut self) {
+        if let Err(e) = save_favorite_devices_to_disk(&self.favorite_devices) {
+            eprintln!("{e:?}");
+        }
         self.running = false;
     }
 }

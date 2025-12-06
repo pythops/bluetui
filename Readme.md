@@ -95,6 +95,8 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `t`: Trust/Untrust the device.
 
+`f`: Favorite/Unfavorite the device.
+
 `e`: Rename the device.
 
 ### New devices
@@ -124,6 +126,7 @@ toggle_discovery = "d"
 [paired_device]
 unpair = "u"
 toggle_trust = "t"
+toggle_favorite = "f"
 rename = "e"
 ```
 
