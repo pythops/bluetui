@@ -99,6 +99,13 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 ### New devices
 
+`/`: Fuzzy search devices. In search mode:
+  - All devices shown initially (start typing to filter)
+  - Type any characters to filter devices in real-time (including 'j' and 'k')
+  - `↑/↓`: Navigate through results (arrow keys only)
+  - `Enter` or `Space`: Pair with selected device
+  - `Esc`: Exit search with selected device highlighted
+
 `Space or Enter`: Pair the device.
 
 ## Config
@@ -121,10 +128,13 @@ toggle_pairing = "p"
 toggle_power = "o"
 toggle_discovery = "d"
 
-[paired_device]
-unpair = "u"
-toggle_trust = "t"
-rename = "e"
+ [paired_device]
+ unpair = "u"
+ toggle_trust = "t"
+ rename = "e"
+
+ [new_devices]
+ search = "/"
 ```
 
 ## 🎁 Note

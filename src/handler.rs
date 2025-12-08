@@ -79,7 +79,23 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
 async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
     if let Some(selected_controller) = app.controller_state.selected() {
         let controller = &app.controllers[selected_controller];
-        if let Some(index) = app.new_devices_state.selected() {
+        let index = if app.focused_block == FocusedBlock::SearchNewDevices {
+            if let Some(sel) = app.search_devices_state.selected() {
+                let devices = if app.search_new_devices.value().is_empty() {
+                    controller.new_devices.iter().collect::<Vec<_>>()
+                } else {
+                    app.filtered_new_devices()
+                };
+                devices.get(sel).and_then(|device| {
+                    controller.new_devices.iter().position(|d| d.addr == device.addr)
+                })
+            } else {
+                None
+            }
+        } else {
+            app.new_devices_state.selected()
+        };
+        if let Some(index) = index {
             let addr = controller.new_devices[index].addr;
             match controller.adapter.device(addr) {
                 Ok(device) => match device.alias().await {
@@ -256,6 +272,72 @@ pub async fn handle_key_events(
                 req.cancel(&app.auth_agent).await?;
             }
         }
+        FocusedBlock::SearchNewDevices => match key_event.code {
+            KeyCode::Esc => {
+                app.focused_block = FocusedBlock::NewDevices;
+                let devices = if app.search_new_devices.value().is_empty() {
+                    if let Some(selected_controller) = app.controller_state.selected() {
+                        app.controllers[selected_controller].new_devices.iter().collect::<Vec<_>>()
+                    } else {
+                        vec![]
+                    }
+                } else {
+                    app.filtered_new_devices()
+                };
+                if let Some(sel) = app.search_devices_state.selected() {
+                    if let Some(device) = devices.get(sel) {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            if let Some(idx) = app.controllers[selected_controller].new_devices.iter().position(|d| d.addr == device.addr) {
+                                app.new_devices_state.select(Some(idx));
+                            }
+                        }
+                    }
+                }
+                app.search_new_devices.reset();
+                app.search_devices_state.select(None);
+            }
+            KeyCode::Enter | KeyCode::Char(' ') => pair(app, sender).await,
+            KeyCode::Down => {
+                let len = if app.search_new_devices.value().is_empty() {
+                    if let Some(selected_controller) = app.controller_state.selected() {
+                        app.controllers[selected_controller].new_devices.len()
+                    } else {
+                        0
+                    }
+                } else {
+                    app.filtered_new_devices().len()
+                };
+                if len > 0 {
+                    let i = match app.search_devices_state.selected() {
+                        Some(i) => if i < len - 1 { i + 1 } else { i },
+                        None => 0,
+                    };
+                    app.search_devices_state.select(Some(i));
+                }
+            }
+            KeyCode::Up => {
+                let len = if app.search_new_devices.value().is_empty() {
+                    if let Some(selected_controller) = app.controller_state.selected() {
+                        app.controllers[selected_controller].new_devices.len()
+                    } else {
+                        0
+                    }
+                } else {
+                    app.filtered_new_devices().len()
+                };
+                if len > 0 {
+                    let i = match app.search_devices_state.selected() {
+                        Some(i) => i.saturating_sub(1),
+                        None => 0,
+                    };
+                    app.search_devices_state.select(Some(i));
+                }
+            }
+            _ => {
+                app.search_new_devices
+                    .handle_event(&crossterm::event::Event::Key(key_event));
+            }
+        },
 
         _ => {
             match key_event.code {
@@ -288,9 +370,10 @@ pub async fn handle_key_events(
                             }
                         }
                     }
-                    FocusedBlock::NewDevices => {
+                    FocusedBlock::NewDevices | FocusedBlock::SearchNewDevices => {
                         app.focused_block = FocusedBlock::Adapter;
                         app.new_devices_state.select(None);
+                        app.search_devices_state.select(None);
                     }
                     _ => {}
                 },
@@ -311,9 +394,10 @@ pub async fn handle_key_events(
                         app.focused_block = FocusedBlock::Adapter;
                         app.paired_devices_state.select(None);
                     }
-                    FocusedBlock::NewDevices => {
+                    FocusedBlock::NewDevices | FocusedBlock::SearchNewDevices => {
                         app.focused_block = FocusedBlock::PairedDevices;
                         app.new_devices_state.select(None);
+                        app.search_devices_state.select(None);
                     }
                     _ => {}
                 },
@@ -358,24 +442,25 @@ pub async fn handle_key_events(
                         }
                     }
 
-                    FocusedBlock::NewDevices => {
-                        if let Some(selected_controller) = app.controller_state.selected() {
-                            let controller = &mut app.controllers[selected_controller];
-
-                            if !controller.new_devices.is_empty() {
-                                let i = match app.new_devices_state.selected() {
-                                    Some(i) => {
-                                        if i < controller.new_devices.len() - 1 {
-                                            i + 1
-                                        } else {
-                                            i
-                                        }
-                                    }
-                                    None => 0,
-                                };
-
-                                app.new_devices_state.select(Some(i));
-                            }
+                    FocusedBlock::NewDevices | FocusedBlock::SearchNewDevices => {
+                        let len = if app.focused_block == FocusedBlock::SearchNewDevices {
+                            app.filtered_new_devices().len()
+                        } else if let Some(selected_controller) = app.controller_state.selected() {
+                            app.controllers[selected_controller].new_devices.len()
+                        } else {
+                            0
+                        };
+                        let state = if app.focused_block == FocusedBlock::SearchNewDevices {
+                            &mut app.search_devices_state
+                        } else {
+                            &mut app.new_devices_state
+                        };
+                        if len > 0 {
+                            let i = match state.selected() {
+                                Some(i) => if i < len - 1 { i + 1 } else { i },
+                                None => 0,
+                            };
+                            state.select(Some(i));
                         }
                     }
 
@@ -408,16 +493,25 @@ pub async fn handle_key_events(
                         }
                     }
 
-                    FocusedBlock::NewDevices => {
-                        if let Some(selected_controller) = app.controller_state.selected() {
-                            let controller = &mut app.controllers[selected_controller];
-                            if !controller.new_devices.is_empty() {
-                                let i = match app.new_devices_state.selected() {
-                                    Some(i) => i.saturating_sub(1),
-                                    None => 0,
-                                };
-                                app.new_devices_state.select(Some(i));
-                            }
+                    FocusedBlock::NewDevices | FocusedBlock::SearchNewDevices => {
+                        let len = if app.focused_block == FocusedBlock::SearchNewDevices {
+                            app.filtered_new_devices().len()
+                        } else if let Some(selected_controller) = app.controller_state.selected() {
+                            app.controllers[selected_controller].new_devices.len()
+                        } else {
+                            0
+                        };
+                        let state = if app.focused_block == FocusedBlock::SearchNewDevices {
+                            &mut app.search_devices_state
+                        } else {
+                            &mut app.new_devices_state
+                        };
+                        if len > 0 {
+                            let i = match state.selected() {
+                                Some(i) => i.saturating_sub(1),
+                                None => 0,
+                            };
+                            state.select(Some(i));
                         }
                     }
                     _ => {}
@@ -724,92 +818,109 @@ pub async fn handle_key_events(
                                 }
 
                                 // toggle discovery
-                                KeyCode::Char(c) if c == config.adapter.toggle_discovery => {
-                                    if let Some(selected_controller) =
-                                        app.controller_state.selected()
-                                    {
-                                        let adapter = &app.controllers[selected_controller].adapter;
-                                        tokio::spawn({
-                                            let adapter = adapter.clone();
-                                            async move {
-                                                match adapter.is_discoverable().await {
-                                                    Ok(is_discoverable) => {
-                                                        if is_discoverable {
-                                                            match adapter
-                                                                .set_discoverable(false)
-                                                                .await
-                                                            {
-                                                                Ok(_) => {
-                                                                    let _ = Notification::send(
-                                                                        "Adapter undiscoverable"
-                                                                            .into(),
-                                                                        NotificationLevel::Info,
-                                                                        sender.clone(),
-                                                                    );
-                                                                }
-                                                                Err(e) => {
-                                                                    let _ = Notification::send(
-                                                                        e.into(),
-                                                                        NotificationLevel::Error,
-                                                                        sender.clone(),
-                                                                    );
-                                                                }
-                                                            }
-                                                        } else {
-                                                            match adapter
-                                                                .set_discoverable(true)
-                                                                .await
-                                                            {
-                                                                Ok(_) => {
-                                                                    let _ = Notification::send(
-                                                                        "Adapter discoverable"
-                                                                            .into(),
-                                                                        NotificationLevel::Info,
-                                                                        sender.clone(),
-                                                                    );
-                                                                }
-                                                                Err(e) => {
-                                                                    let _ = Notification::send(
-                                                                        e.into(),
-                                                                        NotificationLevel::Error,
-                                                                        sender.clone(),
-                                                                    );
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    Err(e) => {
-                                                        let _ = Notification::send(
-                                                            e.into(),
-                                                            NotificationLevel::Error,
-                                                            sender.clone(),
-                                                        );
-                                                    }
-                                                }
-                                            }
-                                        });
-                                    }
-                                }
+                 KeyCode::Char(c) if c == config.adapter.toggle_discovery => {
+                                     if let Some(selected_controller) =
+                                         app.controller_state.selected()
+                                     {
+                                         let adapter = &app.controllers[selected_controller].adapter;
+                                         tokio::spawn({
+                                             let adapter = adapter.clone();
+                                             async move {
+                                                 match adapter.is_discoverable().await {
+                                                     Ok(is_discoverable) => {
+                                                         if is_discoverable {
+                                                             match adapter
+                                                                 .set_discoverable(false)
+                                                                 .await
+                                                             {
+                                                                 Ok(_) => {
+                                                                     let _ = Notification::send(
+                                                                         "Adapter undiscoverable"
+                                                                             .into(),
+                                                                         NotificationLevel::Info,
+                                                                         sender.clone(),
+                                                                     );
+                                                                 }
+                                                                 Err(e) => {
+                                                                     let _ = Notification::send(
+                                                                         e.into(),
+                                                                         NotificationLevel::Error,
+                                                                         sender.clone(),
+                                                                     );
+                                                                 }
+                                                             }
+                                                         } else {
+                                                             match adapter
+                                                                 .set_discoverable(true)
+                                                                 .await
+                                                             {
+                                                                 Ok(_) => {
+                                                                     let _ = Notification::send(
+                                                                         "Adapter discoverable"
+                                                                             .into(),
+                                                                         NotificationLevel::Info,
+                                                                         sender.clone(),
+                                                                     );
+                                                                 }
+                                                                 Err(e) => {
+                                                                     let _ = Notification::send(
+                                                                         e.into(),
+                                                                         NotificationLevel::Error,
+                                                                         sender.clone(),
+                                                                     );
+                                                                 }
+                                                             }
+                                                         }
+                                                     }
+                                                     Err(e) => {
+                                                         let _ = Notification::send(
+                                                             e.into(),
+                                                             NotificationLevel::Error,
+                                                             sender.clone(),
+                                                         );
+                                                     }
+                                                 }
+                                             }
+                                         });
+                                     }
+                                 }
 
-                                _ => {}
-                            }
-                        }
+                                 _ => {}
+                             }
+                         }
 
-                        FocusedBlock::NewDevices => {
-                            // Pair new device
-                            match key_event.code {
-                                KeyCode::Enter => pair(app, sender).await,
-                                KeyCode::Char(' ') => pair(app, sender).await,
-                                _ => {}
-                            }
-                        }
+                         FocusedBlock::NewDevices => {
+                             // Pair new device or enter search mode
+                             match key_event.code {
+                                 KeyCode::Char(c) if c == config.new_devices.search => {
+                                     app.focused_block = FocusedBlock::SearchNewDevices;
+                                     let filtered = app.filtered_new_devices();
+                                     if let Some(sel) = app.new_devices_state.selected() {
+                                         if let Some(selected_controller) = app.controller_state.selected() {
+                                             if let Some(device) = app.controllers[selected_controller].new_devices.get(sel) {
+                                                 if let Some(idx) = filtered.iter().position(|d| d.addr == device.addr) {
+                                                     app.search_devices_state.select(Some(idx));
+                                                 } else {
+                                                     app.search_devices_state.select(Some(0));
+                                                 }
+                                             }
+                                         }
+                                     } else {
+                                         app.search_devices_state.select(Some(0));
+                                     }
+                                 }
+                                 KeyCode::Enter | KeyCode::Char(' ') => {
+                                     pair(app, sender.clone()).await;
+                                 }
+                                 _ => {}
+                             }
+                         }
 
-                        _ => {}
-                    }
-                }
-            }
-        }
-    }
-
-    Ok(())
-}
+                         _ => {}
+                     }
+                 }
+             }
+         }
+     }
+     Ok(())
+ }

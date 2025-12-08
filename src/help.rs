@@ -180,6 +180,22 @@ impl Help {
                     Span::from(" Discard"),
                 ])]
             }
+            FocusedBlock::SearchNewDevices => vec![Line::from(vec![
+                Span::from("k,").bold(),
+                Span::from("  Up"),
+                Span::from(" | "),
+                Span::from("j,").bold(),
+                Span::from("  Down"),
+                Span::from(" | "),
+                Span::from("󱁐  or ↵ ").bold(),
+                Span::from(" Pair"),
+                Span::from(" | "),
+                Span::from("󱊷 ").bold(),
+                Span::from(" Exit search"),
+                Span::from(" | "),
+                Span::from("⇄").bold(),
+                Span::from(" Nav"),
+            ])],
         };
         let help = Paragraph::new(help).centered().blue();
         frame.render_widget(help, rendering_block);

@@ -32,6 +32,7 @@ use crate::{
     requests::Requests,
     spinner::Spinner,
 };
+use fuzzy_matcher::FuzzyMatcher;
 use std::sync::{Arc, atomic::Ordering};
 
 pub type AppResult<T> = anyhow::Result<T>;
@@ -41,6 +42,7 @@ pub enum FocusedBlock {
     Adapter,
     PairedDevices,
     NewDevices,
+    SearchNewDevices,
     SetDeviceAliasBox,
     RequestConfirmation,
     EnterPinCode,
@@ -60,8 +62,10 @@ pub struct App {
     pub controller_state: TableState,
     pub paired_devices_state: TableState,
     pub new_devices_state: TableState,
+    pub search_devices_state: TableState,
     pub focused_block: FocusedBlock,
     pub new_alias: Input,
+    pub search_new_devices: Input,
     pub config: Arc<Config>,
     pub requests: Requests,
     pub auth_agent: AuthAgent,
@@ -118,8 +122,10 @@ impl App {
             controller_state,
             paired_devices_state: TableState::default(),
             new_devices_state: TableState::default(),
+            search_devices_state: TableState::default(),
             focused_block: FocusedBlock::PairedDevices,
             new_alias: Input::default(),
+            search_new_devices: Input::default(),
             config,
             requests: Requests::default(),
             auth_agent,
@@ -140,6 +146,44 @@ impl App {
             } else {
                 self.new_devices_state.select(None);
             }
+        }
+    }
+
+    pub fn filtered_new_devices(&self) -> Vec<&crate::bluetooth::Device> {
+        if self.focused_block != FocusedBlock::SearchNewDevices {
+            return vec![];
+        }
+
+        if let Some(selected_controller) = self.controller_state.selected() {
+            let controller = &self.controllers[selected_controller];
+            
+            // If search query is empty, return all devices
+            if self.search_new_devices.value().is_empty() {
+                return controller.new_devices.iter().collect();
+            }
+
+            let matcher = fuzzy_matcher::skim::SkimMatcherV2::default();
+            let query = self.search_new_devices.value();
+            
+            let mut matches: Vec<_> = controller
+                .new_devices
+                .iter()
+                .filter_map(|device| {
+                    let alias_score = matcher.fuzzy_match(&device.alias, query).unwrap_or(0);
+                    let addr_score = matcher.fuzzy_match(&device.addr.to_string(), query).unwrap_or(0);
+                    let score = alias_score.max(addr_score);
+                    if score > 0 {
+                        Some((device, score))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            matches.sort_by(|a, b| b.1.cmp(&a.1)); // Sort by score descending
+            matches.into_iter().map(|(device, _)| device).collect()
+        } else {
+            vec![]
         }
     }
 
@@ -264,13 +308,65 @@ impl App {
         }
     }
 
+    pub fn render_search_new_devices(&mut self, frame: &mut Frame, area: Rect) {
+        let block = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Fill(1),
+                Constraint::Length(3),
+                Constraint::Fill(1),
+            ])
+            .split(area);
+
+        let block = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Fill(1),
+                Constraint::Max(50),
+                Constraint::Fill(1),
+            ])
+            .split(block[1])[1];
+
+        let search_block = {
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Length(3)].as_ref())
+                .split(block);
+
+            chunks[0]
+        };
+
+        frame.render_widget(Clear, block);
+        frame.render_widget(
+            Block::new()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Thick)
+                .style(Style::default().blue())
+                .border_style(Style::default().fg(Color::Blue)),
+            block,
+        );
+
+        let search = Paragraph::new(self.search_new_devices.value())
+            .alignment(Alignment::Left)
+            .style(Style::default().fg(Color::White))
+            .block(
+                Block::new()
+                    .title(" Fuzzy search ")
+                    .title_style(Style::default().fg(Color::Blue))
+                    .borders(Borders::ALL)
+                    .padding(Padding::horizontal(1)),
+            );
+
+        frame.render_widget(search, search_block);
+    }
+
     pub fn render(&mut self, frame: &mut Frame) {
         if let Some(selected_controller_index) = self.controller_state.selected() {
             let selected_controller = &self.controllers[selected_controller_index];
             // Layout
             let render_new_devices = selected_controller.is_scanning.load(Ordering::Relaxed);
 
-            if !render_new_devices && self.focused_block == FocusedBlock::NewDevices {
+            if !render_new_devices && (self.focused_block == FocusedBlock::NewDevices || self.focused_block == FocusedBlock::SearchNewDevices) {
                 self.focused_block = FocusedBlock::PairedDevices;
             }
 
@@ -581,8 +677,13 @@ impl App {
             //New devices
 
             if render_new_devices {
-                let rows: Vec<Row> = selected_controller
-                    .new_devices
+                let devices: Vec<&crate::bluetooth::Device> = if self.focused_block == FocusedBlock::SearchNewDevices {
+                    self.filtered_new_devices()
+                } else {
+                    selected_controller.new_devices.iter().collect()
+                };
+
+                let rows: Vec<Row> = devices
                     .iter()
                     .map(|d| {
                         Row::new(vec![
@@ -593,11 +694,31 @@ impl App {
                     .collect();
                 let rows_len = rows.len();
 
+                let mut state = if self.focused_block == FocusedBlock::SearchNewDevices {
+                    self.search_devices_state.clone()
+                } else {
+                    self.new_devices_state.clone()
+                };
+
+                if self.focused_block == FocusedBlock::SearchNewDevices {
+                    if rows_len == 0 {
+                        state.select(None);
+                    } else if state.selected().is_none() {
+                        state.select(Some(0));
+                    } else if let Some(sel) = state.selected() {
+                        if sel >= rows_len {
+                            state.select(Some(rows_len.saturating_sub(1)));
+                        }
+                    }
+                } else if rows_len > 0 && self.focused_block == FocusedBlock::NewDevices && state.selected().is_none() {
+                    state.select(Some(0));
+                }
+
                 let widths = [Constraint::Length(20), Constraint::Length(20)];
 
                 let new_devices_table = Table::new(rows, widths)
                     .header({
-                        if self.focused_block == FocusedBlock::NewDevices {
+                        if self.focused_block == FocusedBlock::NewDevices || self.focused_block == FocusedBlock::SearchNewDevices {
                             Row::new(vec![
                                 Cell::from(Line::from("Address").fg(Color::Yellow).centered()),
                                 Cell::from(Line::from("Name").fg(Color::Yellow).centered()),
@@ -631,14 +752,14 @@ impl App {
                             })
                             .borders(Borders::ALL)
                             .border_style({
-                                if self.focused_block == FocusedBlock::NewDevices {
+                                if self.focused_block == FocusedBlock::NewDevices || self.focused_block == FocusedBlock::SearchNewDevices {
                                     Style::default().fg(Color::Green)
                                 } else {
                                     Style::default()
                                 }
                             })
                             .border_type({
-                                if self.focused_block == FocusedBlock::NewDevices {
+                                if self.focused_block == FocusedBlock::NewDevices || self.focused_block == FocusedBlock::SearchNewDevices {
                                     BorderType::Thick
                                 } else {
                                     BorderType::default()
@@ -646,16 +767,11 @@ impl App {
                             }),
                     )
                     .flex(self.config.layout)
-                    .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
+                    .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices || self.focused_block == FocusedBlock::SearchNewDevices {
                         Style::default().bg(Color::DarkGray).fg(Color::White)
                     } else {
                         Style::default()
                     });
-
-                let mut state = self.new_devices_state.clone();
-                if self.focused_block == FocusedBlock::NewDevices && state.selected().is_none() {
-                    state.select(Some(0));
-                }
 
                 frame.render_stateful_widget(new_devices_table, new_devices_block, &mut state);
 
@@ -719,6 +835,11 @@ impl App {
             // Display Passkey
             if let Some(req) = &self.requests.display_passkey {
                 req.render(frame, area);
+            }
+
+            // Search New Devices popup
+            if self.focused_block == FocusedBlock::SearchNewDevices {
+                self.render_search_new_devices(frame, area);
             }
         }
     }

@@ -29,6 +29,9 @@ pub struct Config {
 
     #[serde(default)]
     pub paired_device: PairedDevice,
+
+    #[serde(default)]
+    pub new_devices: NewDevices,
 }
 
 #[derive(Debug, Default)]
@@ -134,6 +137,20 @@ impl Default for PairedDevice {
     }
 }
 
+#[derive(Deserialize, Debug)]
+pub struct NewDevices {
+    #[serde(default = "default_search_new_devices")]
+    pub search: char,
+}
+
+impl Default for NewDevices {
+    fn default() -> Self {
+        Self {
+            search: '/',
+        }
+    }
+}
+
 fn deserialize_layout<'de, D>(deserializer: D) -> Result<Flex, D::Error>
 where
     D: Deserializer<'de>,
@@ -191,6 +208,10 @@ fn default_unpair_device() -> char {
 
 fn default_toggle_device_trust() -> char {
     't'
+}
+
+fn default_search_new_devices() -> char {
+    '/'
 }
 
 impl Config {
