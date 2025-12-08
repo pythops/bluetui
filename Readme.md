@@ -127,6 +127,12 @@ toggle_trust = "t"
 rename = "e"
 ```
 
+## Contributing
+
+- No AI slop.
+- Only submit a pull request after having a prior issue or discussion.
+- Keep PRs small and focused.
+
 ## 🎁 Note
 
 If you like `bluetui` and you are looking for a TUI to manage WiFi, checkout out [impala](https://github.com/pythops/impala)
