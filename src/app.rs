@@ -828,9 +828,8 @@ impl App {
     }
 
     pub fn quit(&mut self) {
-        if let Err(e) = save_favorite_devices_to_disk(&self.favorite_devices) {
-            eprintln!("{e:?}");
-        }
+        // TODO: use env_logger error!()
+        let _ = save_favorite_devices_to_disk(&self.favorite_devices);
         self.running = false;
     }
 }
