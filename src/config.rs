@@ -120,6 +120,9 @@ pub struct PairedDevice {
     #[serde(default = "default_toggle_device_trust")]
     pub toggle_trust: char,
 
+    #[serde(default = "default_toggle_device_favorite")]
+    pub toggle_favorite: char,
+
     #[serde(default = "default_set_new_name")]
     pub rename: char,
 }
@@ -129,6 +132,7 @@ impl Default for PairedDevice {
         Self {
             unpair: 'u',
             toggle_trust: 't',
+            toggle_favorite: 'f',
             rename: 'e',
         }
     }
@@ -191,6 +195,10 @@ fn default_unpair_device() -> char {
 
 fn default_toggle_device_trust() -> char {
     't'
+}
+
+fn default_toggle_device_favorite() -> char {
+    'f'
 }
 
 impl Config {

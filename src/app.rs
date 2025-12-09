@@ -6,7 +6,7 @@ use crate::{
     help::Help,
 };
 use bluer::{
-    Session,
+    Address, Session,
     agent::{Agent, AgentHandle},
 };
 use futures::FutureExt;
@@ -20,14 +20,14 @@ use ratatui::{
         ScrollbarOrientation, ScrollbarState, Table, TableState,
     },
 };
-use tui_input::Input;
-
 use tokio::sync::mpsc::UnboundedSender;
+use tui_input::Input;
 
 use crate::{
     agent::AuthAgent,
     bluetooth::Controller,
     config::{Config, Width},
+    favorite::{read_favorite_devices_from_disk, save_favorite_devices_to_disk},
     notification::Notification,
     requests::Requests,
     spinner::Spinner,
@@ -35,6 +35,8 @@ use crate::{
 use std::sync::{Arc, atomic::Ordering};
 
 pub type AppResult<T> = anyhow::Result<T>;
+
+const STAR_SYMBOL: &str = "★";
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FocusedBlock {
@@ -59,6 +61,7 @@ pub struct App {
     pub controllers: Vec<Controller>,
     pub controller_state: TableState,
     pub paired_devices_state: TableState,
+    pub favorite_devices: Vec<Address>,
     pub new_devices_state: TableState,
     pub focused_block: FocusedBlock,
     pub new_alias: Input,
@@ -98,8 +101,11 @@ impl App {
             ..Default::default()
         };
 
+        let favorite_devices = read_favorite_devices_from_disk().await.unwrap_or_default();
+
         let handle = session.register_agent(agent).await?;
-        let controllers: Vec<Controller> = Controller::get_all(session.clone()).await?;
+        let controllers: Vec<Controller> =
+            Controller::get_all(session.clone(), &favorite_devices).await?;
 
         let mut controller_state = TableState::default();
         if controllers.is_empty() {
@@ -117,6 +123,7 @@ impl App {
             controllers,
             controller_state,
             paired_devices_state: TableState::default(),
+            favorite_devices,
             new_devices_state: TableState::default(),
             focused_block: FocusedBlock::PairedDevices,
             new_alias: Input::default(),
@@ -416,6 +423,11 @@ impl App {
                 .iter()
                 .map(|d| {
                     Row::new(vec![
+                        if d.is_favorite {
+                            STAR_SYMBOL.to_string()
+                        } else {
+                            "".to_string()
+                        },
                         format!("{} {}", &d.icon, &d.alias),
                         d.is_trusted.to_string(),
                         d.is_connected.to_string(),
@@ -475,6 +487,7 @@ impl App {
                 .any(|device| device.battery_percentage.is_some());
 
             let mut widths = vec![
+                Constraint::Length(1),
                 Constraint::Max(25),
                 Constraint::Length(7),
                 Constraint::Length(9),
@@ -489,6 +502,7 @@ impl App {
                     if show_battery_column {
                         if self.focused_block == FocusedBlock::PairedDevices {
                             Row::new(vec![
+                                Cell::from("").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -498,6 +512,7 @@ impl App {
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
+                                Cell::from(""),
                                 Cell::from("Name"),
                                 Cell::from("Trusted"),
                                 Cell::from("Connected"),
@@ -507,6 +522,7 @@ impl App {
                         }
                     } else if self.focused_block == FocusedBlock::PairedDevices {
                         Row::new(vec![
+                            Cell::from("").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -515,6 +531,7 @@ impl App {
                         .bottom_margin(1)
                     } else {
                         Row::new(vec![
+                            Cell::from(""),
                             Cell::from("Name"),
                             Cell::from("Trusted"),
                             Cell::from("Connected"),
@@ -735,7 +752,8 @@ impl App {
     }
 
     pub async fn refresh(&mut self) -> AppResult<()> {
-        let refreshed_controllers = Controller::get_all(self.session.clone()).await?;
+        let refreshed_controllers =
+            Controller::get_all(self.session.clone(), &self.favorite_devices).await?;
 
         // Remove unplugged adapters in a single pass
         let mut adapter_removed = false;
@@ -810,6 +828,8 @@ impl App {
     }
 
     pub fn quit(&mut self) {
+        // TODO: use env_logger error!()
+        let _ = save_favorite_devices_to_disk(&self.favorite_devices);
         self.running = false;
     }
 }
