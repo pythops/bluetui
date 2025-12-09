@@ -36,6 +36,8 @@ use std::sync::{Arc, atomic::Ordering};
 
 pub type AppResult<T> = anyhow::Result<T>;
 
+const STAR_SYMBOL: &str = "★";
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FocusedBlock {
     Adapter,
@@ -416,7 +418,6 @@ impl App {
             }
 
             //Paired devices
-            const STAR_SYMBOL: char = '\u{2605}';
             let rows: Vec<Row> = selected_controller
                 .paired_devices
                 .iter()
@@ -501,8 +502,7 @@ impl App {
                     if show_battery_column {
                         if self.focused_block == FocusedBlock::PairedDevices {
                             Row::new(vec![
-                                Cell::from(STAR_SYMBOL.to_string())
-                                    .style(Style::default().fg(Color::Yellow)),
+                                Cell::from("").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -512,7 +512,7 @@ impl App {
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
-                                Cell::from(STAR_SYMBOL.to_string()),
+                                Cell::from(""),
                                 Cell::from("Name"),
                                 Cell::from("Trusted"),
                                 Cell::from("Connected"),
@@ -522,8 +522,7 @@ impl App {
                         }
                     } else if self.focused_block == FocusedBlock::PairedDevices {
                         Row::new(vec![
-                            Cell::from(STAR_SYMBOL.to_string())
-                                .style(Style::default().fg(Color::Yellow)),
+                            Cell::from("").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -532,7 +531,7 @@ impl App {
                         .bottom_margin(1)
                     } else {
                         Row::new(vec![
-                            Cell::from(STAR_SYMBOL.to_string()),
+                            Cell::from(""),
                             Cell::from("Name"),
                             Cell::from("Trusted"),
                             Cell::from("Connected"),
