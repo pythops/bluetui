@@ -13,3 +13,4 @@ pub mod spinner;
 pub mod string_ref;
 pub mod tui;
 pub mod ui;
+pub mod favorite;

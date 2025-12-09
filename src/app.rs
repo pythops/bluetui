@@ -5,12 +5,10 @@ use crate::{
     event::Event,
     help::Help,
 };
-use anyhow::Context;
 use bluer::{
     Address, Session,
     agent::{Agent, AgentHandle},
 };
-use clap::crate_name;
 use futures::FutureExt;
 use ratatui::{
     Frame,
@@ -22,26 +20,19 @@ use ratatui::{
         ScrollbarOrientation, ScrollbarState, Table, TableState,
     },
 };
+use tokio::sync::mpsc::UnboundedSender;
 use tui_input::Input;
-
-use tokio::{
-    fs::File,
-    io::{AsyncBufReadExt, BufReader},
-    sync::mpsc::UnboundedSender,
-};
 
 use crate::{
     agent::AuthAgent,
     bluetooth::Controller,
     config::{Config, Width},
+    favorite::{read_favorite_devices_from_disk, save_favorite_devices_to_disk},
     notification::Notification,
     requests::Requests,
     spinner::Spinner,
 };
-use std::{
-    str::FromStr,
-    sync::{Arc, atomic::Ordering},
-};
+use std::sync::{Arc, atomic::Ordering};
 
 pub type AppResult<T> = anyhow::Result<T>;
 
@@ -75,51 +66,6 @@ pub struct App {
     pub config: Arc<Config>,
     pub requests: Requests,
     pub auth_agent: AuthAgent,
-}
-
-async fn read_favorite_devices_from_disk() -> AppResult<Vec<Address>> {
-    let data_dir = dirs::data_dir()
-        .context("unable to find data_dir")?
-        .join(crate_name!());
-
-    let file = File::open(data_dir.join("favorites.txt"))
-        .await
-        .context("unable to open favorites file")?;
-
-    let mut lines = BufReader::new(file).lines();
-
-    let mut favorite_devices = Vec::new();
-
-    while let Some(line) = lines.next_line().await? {
-        if let Ok(addr) = Address::from_str(&line) {
-            favorite_devices.push(addr);
-        }
-    }
-
-    Ok(favorite_devices)
-}
-
-fn save_favorite_devices_to_disk(favorite_devices: &[Address]) -> AppResult<()> {
-    let data_dir = dirs::data_dir()
-        .context("unable to find data_dir")?
-        .join(crate_name!());
-
-    let file_path = data_dir.join("favorites.txt");
-
-    let contents = favorite_devices
-        .iter()
-        .map(Address::to_string)
-        .collect::<Vec<_>>()
-        .join("\n");
-
-    if !data_dir.exists() {
-        std::fs::create_dir_all(data_dir)
-            .context("unable to create parent dir(s) to favorites file")?;
-    }
-
-    std::fs::write(file_path, contents).context("error writing favorites file")?;
-
-    Ok(())
 }
 
 impl App {
