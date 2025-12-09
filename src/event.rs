@@ -24,6 +24,7 @@ pub enum Event {
     Resize(u16, u16),
     Notification(Notification),
     NewPairedDevice(Address),
+    ToggleFavorite(Address),
     FailedPairing(Address),
     RequestConfirmation(Confirmation),
     ConfirmationSubmitted,

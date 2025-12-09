@@ -63,6 +63,19 @@ async fn main() -> AppResult<()> {
 
                 app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
             }
+
+            Event::ToggleFavorite(address) => {
+                if let Some(pos) = app
+                    .favorite_devices
+                    .iter()
+                    .position(|favorite| *favorite == address)
+                {
+                    app.favorite_devices.swap_remove(pos);
+                } else {
+                    app.favorite_devices.push(address);
+                }
+            }
+
             Event::RequestConfirmation(request) => {
                 app.requests.init_confirmation(request);
                 app.focused_block = bluetui::app::FocusedBlock::RequestConfirmation;
