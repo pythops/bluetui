@@ -22,7 +22,7 @@ impl Help {
     ) {
         let help = match focused_block {
             FocusedBlock::PairedDevices => {
-                if area.width > 103 {
+                if area.width > 118 {
                     vec![Line::from(vec![
                         Span::from("k,").bold(),
                         Span::from("  Up"),
@@ -42,6 +42,9 @@ impl Help {
                         Span::from(config.paired_device.toggle_trust.to_string()).bold(),
                         Span::from(" Un/Trust"),
                         Span::from(" | "),
+                        Span::from(config.paired_device.toggle_favorite.to_string()).bold(),
+                        Span::from(" Un/Favorite"),
+                        Span::from(" | "),
                         Span::from(config.paired_device.rename.to_string()).bold(),
                         Span::from(" Rename"),
                         Span::from(" | "),
@@ -59,6 +62,9 @@ impl Help {
                             Span::from(" | "),
                             Span::from(config.paired_device.unpair.to_string()).bold(),
                             Span::from("  Unpair"),
+                            Span::from(" | "),
+                            Span::from(config.paired_device.toggle_favorite.to_string()).bold(),
+                            Span::from(" Un/Favorite"),
                         ]),
                         Line::from(vec![
                             Span::from(config.paired_device.toggle_trust.to_string()).bold(),
