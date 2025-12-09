@@ -22,7 +22,7 @@ impl Help {
     ) {
         let help = match focused_block {
             FocusedBlock::PairedDevices => {
-                if area.width > 118 {
+                if area.width > 120 {
                     vec![Line::from(vec![
                         Span::from("k,").bold(),
                         Span::from("  Up"),
