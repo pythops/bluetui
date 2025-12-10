@@ -141,7 +141,7 @@ impl Controller {
         }
 
         paired_devices.sort_by_key(|i| (!i.is_favorite, i.addr));
-        new_devices.sort_by_key(|i| i.clone().alias);
+        new_devices.sort_by(|a, b| a.alias.cmp(&b.alias));
         devices_without_aliases.sort_by_key(|i| i.addr);
         new_devices.extend(devices_without_aliases);
 
@@ -150,6 +150,21 @@ impl Controller {
 }
 
 fn is_mac_addr(s: &str) -> bool {
-    let s: String = s.chars().filter(|&c| c != '-').collect();
-    s.len() == 12 && s.chars().all(|c| c.is_ascii_hexdigit())
+    if s.len() != 17 {
+        return false;
+    }
+    let mut chars = s.chars();
+    for _ in 0..5 {
+        // Matches [A-Fa-f0-9][A-Fa-f0-9]-
+        if !(matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
+            && matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
+            && matches!(chars.next(), Some('-')))
+        {
+            return false;
+        }
+    }
+    // Matches [A-Fa-f0-9][A-Fa-f0-9]$
+    matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
+        && matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
+        && chars.next().is_none()
 }
