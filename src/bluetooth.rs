@@ -141,7 +141,7 @@ impl Controller {
         }
 
         paired_devices.sort_by_key(|i| (!i.is_favorite, i.addr));
-        new_devices.sort_by_key(|i| i.clone().alias);
+        new_devices.sort_by(|a, b| a.alias.cmp(&b.alias));
         devices_without_aliases.sort_by_key(|i| i.addr);
         new_devices.extend(devices_without_aliases);
 
