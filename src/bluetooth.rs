@@ -150,6 +150,18 @@ impl Controller {
 }
 
 fn is_mac_addr(s: &str) -> bool {
-    let s: String = s.chars().filter(|&c| c != '-').collect();
-    s.len() == 12 && s.chars().all(|c| c.is_ascii_hexdigit())
+    let mut chars = s.chars();
+    for _ in 0..5 {
+        // Matches [A-Fa-f0-9][A-Fa-f0-9]-
+        if !(matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
+            && matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
+            && matches!(chars.next(), Some('-')))
+        {
+            return false;
+        }
+    }
+    // Matches [A-Fa-f0-9][A-Fa-f0-9]$
+    matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
+        && matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
+        && chars.next().is_none()
 }
