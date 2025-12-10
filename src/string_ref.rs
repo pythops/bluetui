@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub enum StringRef {
     Owned(String),
     Static(&'static str),
@@ -53,15 +54,6 @@ impl std::fmt::Debug for StringRef {
         match self {
             StringRef::Owned(s) => write!(f, "StringRef::Owned({:?})", s),
             StringRef::Static(s) => write!(f, "StringRef::Static({:?})", s),
-        }
-    }
-}
-
-impl Clone for StringRef {
-    fn clone(&self) -> Self {
-        match self {
-            StringRef::Owned(s) => StringRef::Owned(s.clone()),
-            StringRef::Static(s) => StringRef::Static(s),
         }
     }
 }
