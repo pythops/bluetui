@@ -150,6 +150,9 @@ impl Controller {
 }
 
 fn is_mac_addr(s: &str) -> bool {
+    if s.len() != 17 {
+        return false;
+    }
     let mut chars = s.chars();
     for _ in 0..5 {
         // Matches [A-Fa-f0-9][A-Fa-f0-9]-
