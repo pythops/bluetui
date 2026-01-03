@@ -327,7 +327,7 @@ pub async fn handle_key_events(
                                     if i < app.controllers.len() - 1 {
                                         i + 1
                                     } else {
-                                        i
+                                        0
                                     }
                                 }
                                 None => 0,
@@ -347,7 +347,7 @@ pub async fn handle_key_events(
                                         if i < controller.paired_devices.len() - 1 {
                                             i + 1
                                         } else {
-                                            i
+                                            0
                                         }
                                     }
                                     None => 0,
@@ -368,7 +368,7 @@ pub async fn handle_key_events(
                                         if i < controller.new_devices.len() - 1 {
                                             i + 1
                                         } else {
-                                            i
+                                            0
                                         }
                                     }
                                     None => 0,
@@ -387,7 +387,13 @@ pub async fn handle_key_events(
                     FocusedBlock::Adapter => {
                         if !app.controllers.is_empty() {
                             let i = match app.controller_state.selected() {
-                                Some(i) => i.saturating_sub(1),
+                                Some(i) => {
+                                    if i > 0 {
+                                        i - 1
+                                    } else {
+                                        app.controllers.len() - 1
+                                    }
+                                }
                                 None => 0,
                             };
 
@@ -400,7 +406,13 @@ pub async fn handle_key_events(
                             let controller = &mut app.controllers[selected_controller];
                             if !controller.paired_devices.is_empty() {
                                 let i = match app.paired_devices_state.selected() {
-                                    Some(i) => i.saturating_sub(1),
+                                    Some(i) => {
+                                        if i > 0 {
+                                            i - 1
+                                        } else {
+                                            controller.paired_devices.len() - 1
+                                        }
+                                    }
                                     None => 0,
                                 };
                                 app.paired_devices_state.select(Some(i));
@@ -413,7 +425,13 @@ pub async fn handle_key_events(
                             let controller = &mut app.controllers[selected_controller];
                             if !controller.new_devices.is_empty() {
                                 let i = match app.new_devices_state.selected() {
-                                    Some(i) => i.saturating_sub(1),
+                                    Some(i) => {
+                                        if i > 0 {
+                                            i - 1
+                                        } else {
+                                            controller.new_devices.len() - 1
+                                        }
+                                    }
                                     None => 0,
                                 };
                                 app.new_devices_state.select(Some(i));
