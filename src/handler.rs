@@ -273,7 +273,12 @@ pub async fn handle_key_events(
                 }
 
                 // Switch focus
-                KeyCode::Tab | KeyCode::Char('l') => match app.focused_block {
+                _ if matches!(
+                    (key_event.code, key_event.modifiers),
+                    (KeyCode::Tab, _)
+                        | (KeyCode::Char('l'), _)
+                        | (KeyCode::Char('f'), KeyModifiers::CONTROL)
+                ) => match app.focused_block {
                     FocusedBlock::Adapter => {
                         app.focused_block = FocusedBlock::PairedDevices;
                         app.reset_devices_state();
@@ -295,7 +300,12 @@ pub async fn handle_key_events(
                     _ => {}
                 },
 
-                KeyCode::BackTab | KeyCode::Char('h') => match app.focused_block {
+                _ if matches!(
+                    (key_event.code, key_event.modifiers),
+                    (KeyCode::BackTab, _)
+                        | (KeyCode::Char('h'), _)
+                        | (KeyCode::Char('b'), KeyModifiers::CONTROL)
+                ) => match app.focused_block {
                     FocusedBlock::Adapter => {
                         if let Some(selected_controller) = app.controller_state.selected() {
                             let controller = &app.controllers[selected_controller];
@@ -319,7 +329,12 @@ pub async fn handle_key_events(
                 },
 
                 // scroll down
-                KeyCode::Char('j') | KeyCode::Down => match app.focused_block {
+                _ if matches!(
+                    (key_event.code, key_event.modifiers),
+                    (KeyCode::Char('j'), _)
+                        | (KeyCode::Down, _)
+                        | (KeyCode::Char('n'), KeyModifiers::CONTROL)
+                ) => match app.focused_block {
                     FocusedBlock::Adapter => {
                         if !app.controllers.is_empty() {
                             let i = match app.controller_state.selected() {
@@ -383,7 +398,12 @@ pub async fn handle_key_events(
                 },
 
                 // scroll up
-                KeyCode::Char('k') | KeyCode::Up => match app.focused_block {
+                _ if matches!(
+                    (key_event.code, key_event.modifiers),
+                    (KeyCode::Char('k'), _)
+                        | (KeyCode::Up, _)
+                        | (KeyCode::Char('p'), KeyModifiers::CONTROL)
+                ) => match app.focused_block {
                     FocusedBlock::Adapter => {
                         if !app.controllers.is_empty() {
                             let i = match app.controller_state.selected() {

@@ -24,10 +24,10 @@ impl Help {
             FocusedBlock::PairedDevices => {
                 if area.width > 120 {
                     vec![Line::from(vec![
-                        Span::from("k,").bold(),
+                        Span::from("k,,C-p").bold(),
                         Span::from("  Up"),
                         Span::from(" | "),
-                        Span::from("j,").bold(),
+                        Span::from("j,,C-n").bold(),
                         Span::from("  Down"),
                         Span::from(" | "),
                         Span::from("s").bold(),
