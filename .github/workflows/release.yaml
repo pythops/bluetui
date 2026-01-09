@@ -19,25 +19,23 @@ jobs:
       - name: Setup the build env
         run: |
           sudo apt-get update && \
-          sudo apt-get install -y \
-            podman \
-            qemu-user-static\
-            pkg-config \
-            libdbus-1-dev && \
+          sudo apt install -y podman binutils-aarch64-linux-gnu musl-tools
           cargo binstall --no-confirm cross
 
       - name: Build for x86_64 linux gnu
         run: |
-          cargo build --release
-          cp target/release/bluetui bluetui-x86_64-linux-gnu
+          CROSS_CONTAINER_ENGINE=podman cross build --target x86_64-unknown-linux-musl --release
+          cp target/x86_64-unknown-linux-musl/release/bluetui bluetui-x86_64-linux-musl
+
+      - run: cargo clean
 
       - name: Build for aarch64 linux gnu
         run: |
-          CROSS_CONTAINER_ENGINE=podman cross build --target aarch64-unknown-linux-gnu --release
-          cp target/aarch64-unknown-linux-gnu/release/bluetui bluetui-aarch64-linux-gnu
+          CROSS_CONTAINER_ENGINE=podman cross build --target aarch64-unknown-linux-musl --release
+          cp target/aarch64-unknown-linux-musl/release/bluetui bluetui-aarch64-linux-musl
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           body: |
             [Release.md](${{ github.server_url }}/${{ github.repository }}/blob/master/Release.md)
