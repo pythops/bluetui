@@ -669,7 +669,7 @@ impl App {
                         Style::default()
                     });
 
-                let mut state = self.new_devices_state.clone();
+                let mut state = self.new_devices_state;
                 if self.focused_block == FocusedBlock::NewDevices && state.selected().is_none() {
                     state.select(Some(0));
                 }
