@@ -1,3 +1,11 @@
+## v0.8.1 - 2026-01-17
+
+- Serve static binaries
+- Feat: Add favorite device
+- Feat: List wrapping
+- Fix index out of bounds
+- Few optimizations
+
 ## v0.8.0 - 2025-11-13
 
 - Implement the rest of the auth methods
