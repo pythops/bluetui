@@ -35,12 +35,8 @@ pacman -S bluetui
 
 ### 🐧 Gentoo
 
-You can install `bluetui` from the [lamdness Gentoo Overlay](https://gpo.zugaina.org/net-wireless/bluetui):
-
 ```sh
-sudo eselect repository enable lamdness
-sudo emaint -r lamdness sync
-sudo emerge -av net-wireless/bluetui
+emerge net-wireless/bluetui
 ```
 
 ### 🧰 X-CMD
