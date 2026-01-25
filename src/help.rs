@@ -20,17 +20,23 @@ impl Help {
         rendering_block: Rect,
         config: Arc<Config>,
     ) {
+        let nav_up = config.navigation.up.to_string();
+        let nav_down = config.navigation.down.to_string();
+        let toggle_scanning = config.toggle_scanning.to_string();
+
         let help = match focused_block {
             FocusedBlock::PairedDevices => {
                 if area.width > 120 {
                     vec![Line::from(vec![
-                        Span::from("k,").bold(),
+                        Span::from(nav_up.clone()).bold(),
+                        Span::from(",").bold(),
                         Span::from("  Up"),
                         Span::from(" | "),
-                        Span::from("j,").bold(),
+                        Span::from(nav_down.clone()).bold(),
+                        Span::from(",").bold(),
                         Span::from("  Down"),
                         Span::from(" | "),
-                        Span::from("s").bold(),
+                        Span::from(toggle_scanning.clone()).bold(),
                         Span::from("  Scan on/off"),
                         Span::from(" | "),
                         Span::from(config.paired_device.unpair.to_string()).bold(),
@@ -57,7 +63,7 @@ impl Help {
                             Span::from("󱁐  or ↵ ").bold(),
                             Span::from(" Dis/Connect"),
                             Span::from(" | "),
-                            Span::from("s").bold(),
+                            Span::from(toggle_scanning.clone()).bold(),
                             Span::from("  Scan on/off"),
                             Span::from(" | "),
                             Span::from(config.paired_device.unpair.to_string()).bold(),
@@ -73,10 +79,12 @@ impl Help {
                             Span::from(config.paired_device.rename.to_string()).bold(),
                             Span::from(" Rename"),
                             Span::from(" | "),
-                            Span::from("k,").bold(),
+                            Span::from(nav_up.clone()).bold(),
+                            Span::from(",").bold(),
                             Span::from("  Up"),
                             Span::from(" | "),
-                            Span::from("j,").bold(),
+                            Span::from(nav_down.clone()).bold(),
+                            Span::from(",").bold(),
                             Span::from("  Down"),
                             Span::from(" | "),
                             Span::from("⇄").bold(),
@@ -86,16 +94,18 @@ impl Help {
                 }
             }
             FocusedBlock::NewDevices => vec![Line::from(vec![
-                Span::from("k,").bold(),
+                Span::from(nav_up.clone()).bold(),
+                Span::from(",").bold(),
                 Span::from("  Up"),
                 Span::from(" | "),
-                Span::from("j,").bold(),
+                Span::from(nav_down.clone()).bold(),
+                Span::from(",").bold(),
                 Span::from("  Down"),
                 Span::from(" | "),
                 Span::from("󱁐  or ↵ ").bold(),
                 Span::from(" Pair"),
                 Span::from(" | "),
-                Span::from("s").bold(),
+                Span::from(toggle_scanning.clone()).bold(),
                 Span::from("  Scan on/off"),
                 Span::from(" | "),
                 Span::from("⇄").bold(),
@@ -104,7 +114,7 @@ impl Help {
             FocusedBlock::Adapter => {
                 if area.width > 80 {
                     vec![Line::from(vec![
-                        Span::from("s").bold(),
+                        Span::from(toggle_scanning.clone()).bold(),
                         Span::from("  Scan on/off"),
                         Span::from(" | "),
                         Span::from(config.adapter.toggle_pairing.to_string()).bold(),
@@ -122,7 +132,7 @@ impl Help {
                 } else {
                     vec![
                         Line::from(vec![
-                            Span::from("s").bold(),
+                            Span::from(toggle_scanning.clone()).bold(),
                             Span::from("  Scan on/off"),
                             Span::from(" | "),
                             Span::from(config.adapter.toggle_pairing.to_string()).bold(),

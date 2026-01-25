@@ -264,7 +264,7 @@ pub async fn handle_key_events(
                     app.quit();
                 }
 
-                KeyCode::Char('q') => {
+                KeyCode::Char(c) if c == config.navigation.quit => {
                     app.quit();
                 }
 
@@ -272,30 +272,82 @@ pub async fn handle_key_events(
                     app.quit();
                 }
 
-                // Switch focus
-                KeyCode::Tab | KeyCode::Char('l') => match app.focused_block {
-                    FocusedBlock::Adapter => {
-                        app.focused_block = FocusedBlock::PairedDevices;
-                        app.reset_devices_state();
-                    }
-                    FocusedBlock::PairedDevices => {
-                        if let Some(selected_controller) = app.controller_state.selected() {
-                            let controller = &app.controllers[selected_controller];
-                            if controller.is_scanning.load(Ordering::Relaxed) {
-                                app.focused_block = FocusedBlock::NewDevices;
-                            } else {
-                                app.focused_block = FocusedBlock::Adapter;
+                // Switch focus right
+                KeyCode::Tab => {
+                    match app.focused_block {
+                        FocusedBlock::Adapter => {
+                            app.focused_block = FocusedBlock::PairedDevices;
+                            app.reset_devices_state();
+                        }
+                        FocusedBlock::PairedDevices => {
+                            if let Some(selected_controller) = app.controller_state.selected() {
+                                let controller = &app.controllers[selected_controller];
+                                if controller.is_scanning.load(Ordering::Relaxed) {
+                                    app.focused_block = FocusedBlock::NewDevices;
+                                } else {
+                                    app.focused_block = FocusedBlock::Adapter;
+                                }
                             }
                         }
+                        FocusedBlock::NewDevices => {
+                            app.focused_block = FocusedBlock::Adapter;
+                            app.new_devices_state.select(None);
+                        }
+                        _ => {}
                     }
-                    FocusedBlock::NewDevices => {
-                        app.focused_block = FocusedBlock::Adapter;
-                        app.new_devices_state.select(None);
-                    }
-                    _ => {}
-                },
+                }
 
-                KeyCode::BackTab | KeyCode::Char('h') => match app.focused_block {
+                KeyCode::Char(c) if c == config.navigation.right => {
+                    match app.focused_block {
+                        FocusedBlock::Adapter => {
+                            app.focused_block = FocusedBlock::PairedDevices;
+                            app.reset_devices_state();
+                        }
+                        FocusedBlock::PairedDevices => {
+                            if let Some(selected_controller) = app.controller_state.selected() {
+                                let controller = &app.controllers[selected_controller];
+                                if controller.is_scanning.load(Ordering::Relaxed) {
+                                    app.focused_block = FocusedBlock::NewDevices;
+                                } else {
+                                    app.focused_block = FocusedBlock::Adapter;
+                                }
+                            }
+                        }
+                        FocusedBlock::NewDevices => {
+                            app.focused_block = FocusedBlock::Adapter;
+                            app.new_devices_state.select(None);
+                        }
+                        _ => {}
+                    }
+                }
+
+                // Switch focus left
+                KeyCode::BackTab => {
+                    match app.focused_block {
+                        FocusedBlock::Adapter => {
+                            if let Some(selected_controller) = app.controller_state.selected() {
+                                let controller = &app.controllers[selected_controller];
+                                if controller.is_scanning.load(Ordering::Relaxed) {
+                                    app.focused_block = FocusedBlock::NewDevices;
+                                } else {
+                                    app.focused_block = FocusedBlock::PairedDevices;
+                                }
+                                app.reset_devices_state();
+                            }
+                        }
+                        FocusedBlock::PairedDevices => {
+                            app.focused_block = FocusedBlock::Adapter;
+                            app.paired_devices_state.select(None);
+                        }
+                        FocusedBlock::NewDevices => {
+                            app.focused_block = FocusedBlock::PairedDevices;
+                            app.new_devices_state.select(None);
+                        }
+                        _ => {}
+                    }
+                }
+
+                KeyCode::Char(c) if c == config.navigation.left => match app.focused_block {
                     FocusedBlock::Adapter => {
                         if let Some(selected_controller) = app.controller_state.selected() {
                             let controller = &app.controllers[selected_controller];
@@ -319,7 +371,70 @@ pub async fn handle_key_events(
                 },
 
                 // scroll down
-                KeyCode::Char('j') | KeyCode::Down => match app.focused_block {
+                KeyCode::Down => match app.focused_block {
+                    FocusedBlock::Adapter => {
+                        if !app.controllers.is_empty() {
+                            let i = match app.controller_state.selected() {
+                                Some(i) => {
+                                    if i < app.controllers.len() - 1 {
+                                        i + 1
+                                    } else {
+                                        0
+                                    }
+                                }
+                                None => 0,
+                            };
+
+                            app.controller_state.select(Some(i));
+                        }
+                    }
+
+                    FocusedBlock::PairedDevices => {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            let controller = &mut app.controllers[selected_controller];
+
+                            if !controller.paired_devices.is_empty() {
+                                let i = match app.paired_devices_state.selected() {
+                                    Some(i) => {
+                                        if i < controller.paired_devices.len() - 1 {
+                                            i + 1
+                                        } else {
+                                            0
+                                        }
+                                    }
+                                    None => 0,
+                                };
+
+                                app.paired_devices_state.select(Some(i));
+                            }
+                        }
+                    }
+
+                    FocusedBlock::NewDevices => {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            let controller = &mut app.controllers[selected_controller];
+
+                            if !controller.new_devices.is_empty() {
+                                let i = match app.new_devices_state.selected() {
+                                    Some(i) => {
+                                        if i < controller.new_devices.len() - 1 {
+                                            i + 1
+                                        } else {
+                                            0
+                                        }
+                                    }
+                                    None => 0,
+                                };
+
+                                app.new_devices_state.select(Some(i));
+                            }
+                        }
+                    }
+
+                    _ => {}
+                },
+
+                KeyCode::Char(c) if c == config.navigation.down => match app.focused_block {
                     FocusedBlock::Adapter => {
                         if !app.controllers.is_empty() {
                             let i = match app.controller_state.selected() {
@@ -383,7 +498,65 @@ pub async fn handle_key_events(
                 },
 
                 // scroll up
-                KeyCode::Char('k') | KeyCode::Up => match app.focused_block {
+                KeyCode::Up => match app.focused_block {
+                    FocusedBlock::Adapter => {
+                        if !app.controllers.is_empty() {
+                            let i = match app.controller_state.selected() {
+                                Some(i) => {
+                                    if i > 0 {
+                                        i - 1
+                                    } else {
+                                        app.controllers.len() - 1
+                                    }
+                                }
+                                None => 0,
+                            };
+
+                            app.controller_state.select(Some(i));
+                        }
+                    }
+
+                    FocusedBlock::PairedDevices => {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            let controller = &mut app.controllers[selected_controller];
+                            if !controller.paired_devices.is_empty() {
+                                let i = match app.paired_devices_state.selected() {
+                                    Some(i) => {
+                                        if i > 0 {
+                                            i - 1
+                                        } else {
+                                            controller.paired_devices.len() - 1
+                                        }
+                                    }
+                                    None => 0,
+                                };
+                                app.paired_devices_state.select(Some(i));
+                            }
+                        }
+                    }
+
+                    FocusedBlock::NewDevices => {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            let controller = &mut app.controllers[selected_controller];
+                            if !controller.new_devices.is_empty() {
+                                let i = match app.new_devices_state.selected() {
+                                    Some(i) => {
+                                        if i > 0 {
+                                            i - 1
+                                        } else {
+                                            controller.new_devices.len() - 1
+                                        }
+                                    }
+                                    None => 0,
+                                };
+                                app.new_devices_state.select(Some(i));
+                            }
+                        }
+                    }
+                    _ => {}
+                },
+
+                KeyCode::Char(c) if c == config.navigation.up => match app.focused_block {
                     FocusedBlock::Adapter => {
                         if !app.controllers.is_empty() {
                             let i = match app.controller_state.selected() {
@@ -527,7 +700,9 @@ pub async fn handle_key_events(
 
                                 // Connect / Disconnect
                                 KeyCode::Enter => toggle_connect(app, sender).await,
-                                KeyCode::Char(' ') => toggle_connect(app, sender).await,
+                                KeyCode::Char(c) if c == config.navigation.select => {
+                                    toggle_connect(app, sender).await
+                                }
 
                                 // Trust / Untrust
                                 KeyCode::Char(c) if c == config.paired_device.toggle_trust => {
@@ -830,7 +1005,9 @@ pub async fn handle_key_events(
                             // Pair new device
                             match key_event.code {
                                 KeyCode::Enter => pair(app, sender).await,
-                                KeyCode::Char(' ') => pair(app, sender).await,
+                                KeyCode::Char(c) if c == config.navigation.select => {
+                                    pair(app, sender).await
+                                }
                                 _ => {}
                             }
                         }

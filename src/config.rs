@@ -29,6 +29,9 @@ pub struct Config {
 
     #[serde(default)]
     pub paired_device: PairedDevice,
+
+    #[serde(default)]
+    pub navigation: Navigation,
 }
 
 #[derive(Debug, Default)]
@@ -138,6 +141,40 @@ impl Default for PairedDevice {
     }
 }
 
+#[derive(Deserialize, Debug)]
+pub struct Navigation {
+    #[serde(default = "default_nav_up")]
+    pub up: char,
+
+    #[serde(default = "default_nav_down")]
+    pub down: char,
+
+    #[serde(default = "default_nav_left")]
+    pub left: char,
+
+    #[serde(default = "default_nav_right")]
+    pub right: char,
+
+    #[serde(default = "default_quit")]
+    pub quit: char,
+
+    #[serde(default = "default_select")]
+    pub select: char,
+}
+
+impl Default for Navigation {
+    fn default() -> Self {
+        Self {
+            up: 'k',
+            down: 'j',
+            left: 'h',
+            right: 'l',
+            quit: 'q',
+            select: ' ',
+        }
+    }
+}
+
 fn deserialize_layout<'de, D>(deserializer: D) -> Result<Flex, D::Error>
 where
     D: Deserializer<'de>,
@@ -199,6 +236,30 @@ fn default_toggle_device_trust() -> char {
 
 fn default_toggle_device_favorite() -> char {
     'f'
+}
+
+fn default_nav_up() -> char {
+    'k'
+}
+
+fn default_nav_down() -> char {
+    'j'
+}
+
+fn default_nav_left() -> char {
+    'h'
+}
+
+fn default_nav_right() -> char {
+    'l'
+}
+
+fn default_quit() -> char {
+    'q'
+}
+
+fn default_select() -> char {
+    ' '
 }
 
 impl Config {

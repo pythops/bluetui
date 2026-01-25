@@ -124,6 +124,14 @@ unpair = "u"
 toggle_trust = "t"
 toggle_favorite = "f"
 rename = "e"
+
+[navigation]
+up = "k"
+down = "j"
+left = "h"
+right = "l"
+quit = "q"
+select = " "  # Space key for connect/disconnect/pair
 ```
 
 ## Contributing
