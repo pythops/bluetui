@@ -178,7 +178,7 @@ help_text = "blue"
 
 ## 🎁 Note
 
-If you like `bluetui` and you are looking for a TUI to manage WiFi, checkout out [impala](https://github.com/pythops/impala)
+If you like `bluetui` and you are looking for a TUI to manage WiFi, checkout out [impala](https://github.com/pythops/impala) or [netpala](https://github.com/joel-sgc/netpala)
 
 ## ⚖️ License
 
