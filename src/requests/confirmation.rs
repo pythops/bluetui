@@ -1,14 +1,15 @@
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Style, Stylize},
+    style::{Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, Clear},
 };
 
 use bluer::Address;
 
-use crate::{agent::AuthAgent, app::AppResult};
+use crate::{agent::AuthAgent, app::AppResult, config::Config};
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct Confirmation {
@@ -48,7 +49,7 @@ impl Confirmation {
         self.confirmed = !self.confirmed;
     }
 
-    pub fn render(&self, frame: &mut Frame, area: Rect) {
+    pub fn render(&self, frame: &mut Frame, area: Rect, config: Arc<Config>) {
         let block = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -96,7 +97,7 @@ impl Confirmation {
                 Span::from("Confirm Passkey "),
                 Span::styled(
                     format!("{:06}", self.passkey),
-                    Style::new().bg(Color::DarkGray).bold(),
+                    Style::new().bg(config.colors.highlight_bg).bold(),
                 ),
             ])
             .centered(),
@@ -108,13 +109,13 @@ impl Confirmation {
                     Span::from("No").style(Style::default()),
                     Span::from("        "),
                     Span::from("Yes")
-                        .style(Style::default().bg(Color::Blue))
+                        .style(Style::default().bg(config.colors.info))
                         .bold(),
                 ])
             } else {
                 Line::from(vec![
                     Span::from("No")
-                        .style(Style::default().bg(Color::Blue))
+                        .style(Style::default().bg(config.colors.info))
                         .bold(),
                     Span::from("        "),
                     Span::from("Yes").style(Style::default()),
@@ -128,7 +129,7 @@ impl Confirmation {
             Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Thick)
-                .border_style(Style::default().fg(Color::Green)),
+                .border_style(Style::default().fg(config.colors.focused_border)),
             block,
         );
         frame.render_widget(message, message_block);

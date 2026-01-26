@@ -1,14 +1,15 @@
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Margin, Rect},
-    style::{Color, Style, Stylize},
+    style::{Style, Stylize},
     text::{Line, Span},
     widgets::{Block, BorderType, Borders, Clear, Paragraph},
 };
 
 use bluer::Address;
 
-use crate::{agent::AuthAgent, app::AppResult};
+use crate::{agent::AuthAgent, app::AppResult, config::Config};
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct DisplayPasskey {
@@ -36,7 +37,7 @@ impl DisplayPasskey {
         Ok(())
     }
 
-    pub fn render(&self, frame: &mut Frame, area: Rect) {
+    pub fn render(&self, frame: &mut Frame, area: Rect, config: Arc<Config>) {
         let block = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -67,7 +68,7 @@ impl DisplayPasskey {
             Line::from(""),
             Line::from(self.passkey.to_string())
                 .bold()
-                .bg(Color::DarkGray),
+                .bg(config.colors.highlight_bg),
         ];
 
         let message = Paragraph::new(message).centered();
@@ -78,7 +79,7 @@ impl DisplayPasskey {
             Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Thick)
-                .border_style(Style::default().fg(Color::Green)),
+                .border_style(Style::default().fg(config.colors.focused_border)),
             block,
         );
         frame.render_widget(

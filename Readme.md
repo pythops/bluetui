@@ -124,6 +124,50 @@ unpair = "u"
 toggle_trust = "t"
 toggle_favorite = "f"
 rename = "e"
+
+[navigation]
+up = "k"
+down = "j"
+left = "h"
+right = "l"
+quit = "q"
+select = " "  # Space key for connect/disconnect/pair
+
+[colors]
+# Colors can be specified as named colors or hex values (#RRGGBB)
+# Named colors: black, red, green, yellow, blue, magenta, cyan, gray, dark_gray,
+#               light_red, light_green, light_yellow, light_blue, light_magenta,
+#               light_cyan, white, reset
+
+# Border color when a section is focused
+focused_border = "green"
+
+# Border color when a section is not focused
+unfocused_border = "reset"
+
+# Header text color in focused tables
+focused_header = "yellow"
+
+# Background color for selected items
+highlight_bg = "dark_gray"
+
+# Text color for selected items
+highlight_fg = "white"
+
+# Color for informational messages
+info = "green"
+
+# Color for warning messages
+warning = "yellow"
+
+# Color for error messages
+error = "red"
+
+# Color for the scanning spinner
+spinner = "blue"
+
+# Color for the help text at the bottom of the window
+help_text = "blue"
 ```
 
 ## Contributing
@@ -134,7 +178,7 @@ rename = "e"
 
 ## 🎁 Note
 
-If you like `bluetui` and you are looking for a TUI to manage WiFi, checkout out [impala](https://github.com/pythops/impala)
+If you like `bluetui` and you are looking for a TUI to manage WiFi, checkout out [impala](https://github.com/pythops/impala) or [netpala](https://github.com/joel-sgc/netpala)
 
 ## ⚖️ License
 
