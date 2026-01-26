@@ -1,0 +1,110 @@
+# Example bluetui configuration with custom color scheme
+
+# Layout configuration
+layout = "SpaceAround"
+width = "auto"
+
+# Global keybindings
+toggle_scanning = "s"
+esc_quit = false
+
+# Adapter keybindings
+[adapter]
+toggle_pairing = "p"
+toggle_power = "o"
+toggle_discovery = "d"
+
+# Paired device keybindings
+[paired_device]
+unpair = "u"
+toggle_trust = "t"
+toggle_favorite = "f"
+rename = "e"
+
+# Navigation keybindings
+[navigation]
+up = "k"
+down = "j"
+left = "h"
+right = "l"
+quit = "q"
+select = " "
+
+# Custom color scheme - Dracula theme inspired
+[colors]
+# Border color when a section is focused
+focused_border = "#bd93f9"  # Purple
+
+# Border color when a section is not focused
+unfocused_border = "#44475a"  # Dark gray
+
+# Header text color in focused tables
+focused_header = "#f1fa8c"  # Yellow
+
+# Background color for selected items
+highlight_bg = "#44475a"  # Dark gray
+
+# Text color for selected items
+highlight_fg = "#f8f8f2"  # Light gray
+
+# Color for informational messages
+info = "#50fa7b"  # Green
+
+# Color for warning messages
+warning = "#ffb86c"  # Orange
+
+# Color for error messages
+error = "#ff5555"  # Red
+
+# Color for the scanning spinner
+spinner = "#8be9fd"  # Cyan
+
+# Alternative color schemes you can try:
+
+# Solarized Dark
+# [colors]
+# focused_border = "#268bd2"
+# unfocused_border = "#073642"
+# focused_header = "#b58900"
+# highlight_bg = "#073642"
+# highlight_fg = "#839496"
+# info = "#859900"
+# warning = "#cb4b16"
+# error = "#dc322f"
+# spinner = "#2aa198"
+
+# Gruvbox Dark
+# [colors]
+# focused_border = "#fabd2f"
+# unfocused_border = "#3c3836"
+# focused_header = "#fabd2f"
+# highlight_bg = "#3c3836"
+# highlight_fg = "#ebdbb2"
+# info = "#b8bb26"
+# warning = "#fe8019"
+# error = "#fb4934"
+# spinner = "#83a598"
+
+# Nord
+# [colors]
+# focused_border = "#88c0d0"
+# unfocused_border = "#3b4252"
+# focused_header = "#ebcb8b"
+# highlight_bg = "#3b4252"
+# highlight_fg = "#eceff4"
+# info = "#a3be8c"
+# warning = "#d08770"
+# error = "#bf616a"
+# spinner = "#5e81ac"
+
+# High Contrast
+# [colors]
+# focused_border = "white"
+# unfocused_border = "dark_gray"
+# focused_header = "light_yellow"
+# highlight_bg = "blue"
+# highlight_fg = "white"
+# info = "light_green"
+# warning = "yellow"
+# error = "light_red"
+# spinner = "light_cyan"

@@ -197,7 +197,7 @@ impl Help {
                 ])]
             }
         };
-        let help = Paragraph::new(help).centered().blue();
+        let help = Paragraph::new(help).centered().fg(config.colors.help_text);
         frame.render_widget(help, rendering_block);
     }
 }

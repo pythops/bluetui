@@ -9,6 +9,7 @@ use serde::{
     Deserialize, Deserializer,
     de::{self, Unexpected, Visitor},
 };
+use ratatui::style::Color;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
@@ -32,6 +33,9 @@ pub struct Config {
 
     #[serde(default)]
     pub navigation: Navigation,
+
+    #[serde(default)]
+    pub colors: Colors,
 }
 
 #[derive(Debug, Default)]
@@ -260,6 +264,138 @@ fn default_quit() -> char {
 
 fn default_select() -> char {
     ' '
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Colors {
+    #[serde(default = "default_focused_border", deserialize_with = "deserialize_color")]
+    pub focused_border: Color,
+
+    #[serde(default = "default_unfocused_border", deserialize_with = "deserialize_color")]
+    pub unfocused_border: Color,
+
+    #[serde(default = "default_focused_header", deserialize_with = "deserialize_color")]
+    pub focused_header: Color,
+
+    #[serde(default = "default_highlight_bg", deserialize_with = "deserialize_color")]
+    pub highlight_bg: Color,
+
+    #[serde(default = "default_highlight_fg", deserialize_with = "deserialize_color")]
+    pub highlight_fg: Color,
+
+    #[serde(default = "default_info", deserialize_with = "deserialize_color")]
+    pub info: Color,
+
+    #[serde(default = "default_warning", deserialize_with = "deserialize_color")]
+    pub warning: Color,
+
+    #[serde(default = "default_error", deserialize_with = "deserialize_color")]
+    pub error: Color,
+
+    #[serde(default = "default_spinner", deserialize_with = "deserialize_color")]
+    pub spinner: Color,
+
+    #[serde(default = "default_help_text", deserialize_with = "deserialize_color")]
+    pub help_text: Color,
+}
+
+impl Default for Colors {
+    fn default() -> Self {
+        Self {
+            focused_border: Color::Green,
+            unfocused_border: Color::Reset,
+            focused_header: Color::Yellow,
+            highlight_bg: Color::DarkGray,
+            highlight_fg: Color::White,
+            info: Color::Green,
+            warning: Color::Yellow,
+            error: Color::Red,
+            spinner: Color::Blue,
+            help_text: Color::Blue,
+        }
+    }
+}
+
+fn deserialize_color<'de, D>(deserializer: D) -> Result<Color, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    
+    match s.to_lowercase().as_str() {
+        "reset" => Ok(Color::Reset),
+        "black" => Ok(Color::Black),
+        "red" => Ok(Color::Red),
+        "green" => Ok(Color::Green),
+        "yellow" => Ok(Color::Yellow),
+        "blue" => Ok(Color::Blue),
+        "magenta" => Ok(Color::Magenta),
+        "cyan" => Ok(Color::Cyan),
+        "gray" | "grey" => Ok(Color::Gray),
+        "darkgray" | "darkgrey" | "dark_gray" | "dark_grey" => Ok(Color::DarkGray),
+        "lightred" | "light_red" => Ok(Color::LightRed),
+        "lightgreen" | "light_green" => Ok(Color::LightGreen),
+        "lightyellow" | "light_yellow" => Ok(Color::LightYellow),
+        "lightblue" | "light_blue" => Ok(Color::LightBlue),
+        "lightmagenta" | "light_magenta" => Ok(Color::LightMagenta),
+        "lightcyan" | "light_cyan" => Ok(Color::LightCyan),
+        "white" => Ok(Color::White),
+        _ => {
+            // Try to parse as RGB hex color (#RRGGBB)
+            if let Some(hex) = s.strip_prefix('#') {
+                if hex.len() == 6 {
+                    if let Ok(r) = u8::from_str_radix(&hex[0..2], 16) {
+                        if let Ok(g) = u8::from_str_radix(&hex[2..4], 16) {
+                            if let Ok(b) = u8::from_str_radix(&hex[4..6], 16) {
+                                return Ok(Color::Rgb(r, g, b));
+                            }
+                        }
+                    }
+                }
+            }
+            Err(de::Error::custom(format!("Invalid color: {}. Use named colors (e.g., 'green', 'yellow') or hex format '#RRGGBB'", s)))
+        }
+    }
+}
+
+fn default_focused_border() -> Color {
+    Color::Green
+}
+
+fn default_unfocused_border() -> Color {
+    Color::Reset
+}
+
+fn default_focused_header() -> Color {
+    Color::Yellow
+}
+
+fn default_highlight_bg() -> Color {
+    Color::DarkGray
+}
+
+fn default_highlight_fg() -> Color {
+    Color::White
+}
+
+fn default_info() -> Color {
+    Color::Green
+}
+
+fn default_warning() -> Color {
+    Color::Yellow
+}
+
+fn default_error() -> Color {
+    Color::Red
+}
+
+fn default_spinner() -> Color {
+    Color::Blue
+}
+
+fn default_help_text() -> Color {
+    Color::Blue
 }
 
 impl Config {
