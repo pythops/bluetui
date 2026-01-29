@@ -63,7 +63,6 @@ impl Controller {
     ) -> AppResult<Vec<Controller>> {
         let mut controllers: Vec<Controller> = Vec::new();
 
-        // let session = bluer::Session::new().await?;
         let adapter_names = session.adapter_names().await?;
         for adapter_name in adapter_names {
             if let Ok(adapter) = session.adapter(&adapter_name) {
@@ -130,13 +129,12 @@ impl Controller {
 
             if dev.is_paired {
                 paired_devices.push(dev);
+            } else if is_mac_addr(&dev.alias) {
+                // most device names without aliases may default to their mac addresses, but we should not
+                // assume that to be 100% the case
+                devices_without_aliases.push(dev);
             } else {
-                match is_mac_addr(&dev.alias) {
-                    // most device names without aliases may default to their mac addresses, but we should not
-                    // assume that to be 100% the case
-                    true => devices_without_aliases.push(dev),
-                    false => new_devices.push(dev),
-                }
+                new_devices.push(dev);
             }
         }
 
@@ -150,21 +148,11 @@ impl Controller {
 }
 
 fn is_mac_addr(s: &str) -> bool {
-    if s.len() != 17 {
-        return false;
-    }
-    let mut chars = s.chars();
-    for _ in 0..5 {
-        // Matches [A-Fa-f0-9][A-Fa-f0-9]-
-        if !(matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
-            && matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
-            && matches!(chars.next(), Some('-')))
-        {
-            return false;
-        }
-    }
-    // Matches [A-Fa-f0-9][A-Fa-f0-9]$
-    matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
-        && matches!(chars.next(), Some(c) if c.is_ascii_hexdigit())
-        && chars.next().is_none()
+    let bytes = s.as_bytes();
+
+    bytes.len() == 17
+        && bytes.iter().enumerate().all(|(i, &character)| match i {
+            2 | 5 | 8 | 11 | 14 => character == b'-',
+            _ => character.is_ascii_hexdigit(),
+        })
 }
