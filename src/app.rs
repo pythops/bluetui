@@ -32,7 +32,10 @@ use crate::{
     requests::Requests,
     spinner::Spinner,
 };
-use std::sync::{Arc, atomic::Ordering};
+use std::{
+    collections::HashSet,
+    sync::{Arc, atomic::Ordering},
+};
 
 pub type AppResult<T> = anyhow::Result<T>;
 
@@ -57,6 +60,7 @@ pub struct App {
     pub session: Arc<Session>,
     pub agent: AgentHandle,
     pub spinner: Spinner,
+    pub connecting_devices: HashSet<Address>,
     pub notifications: Vec<Notification>,
     pub controllers: Vec<Controller>,
     pub controller_state: TableState,
@@ -119,6 +123,7 @@ impl App {
             session,
             agent: handle,
             spinner: Spinner::default(),
+            connecting_devices: HashSet::new(),
             notifications: Vec::new(),
             controllers,
             controller_state,
@@ -422,6 +427,13 @@ impl App {
                 .paired_devices
                 .iter()
                 .map(|d| {
+                    let connected_cell = if self.connecting_devices.contains(&d.addr) {
+                        // Keep the UI responsive while connect() is in progress.
+                        format!("Connecting {}", self.spinner.draw())
+                    } else {
+                        d.is_connected.to_string()
+                    };
+
                     Row::new(vec![
                         if d.is_favorite {
                             STAR_SYMBOL.to_string()
@@ -430,7 +442,7 @@ impl App {
                         },
                         format!("{} {}", &d.icon, &d.alias),
                         d.is_trusted.to_string(),
-                        d.is_connected.to_string(),
+                        connected_cell,
                         {
                             if let Some(battery_percentage) = d.battery_percentage {
                                 match battery_percentage {
@@ -744,7 +756,7 @@ impl App {
         self.notifications.retain(|n| n.ttl > 0);
         self.notifications.iter_mut().for_each(|n| n.ttl -= 1);
 
-        if self.spinner.active {
+        if self.spinner.active || !self.connecting_devices.is_empty() {
             self.spinner.update();
         }
         self.refresh().await?;

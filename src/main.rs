@@ -53,6 +53,12 @@ async fn main() -> AppResult<()> {
             Event::Notification(notification) => {
                 app.notifications.push(notification);
             }
+            Event::DeviceConnectionStarted(address) => {
+                app.connecting_devices.insert(address);
+            }
+            Event::DeviceConnectionFinished(address) => {
+                app.connecting_devices.remove(&address);
+            }
             Event::NewPairedDevice(address) => {
                 if let Some(req) = &app.requests.display_passkey
                     && req.device == address

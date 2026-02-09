@@ -40,8 +40,10 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                                         }
                                     }
                                 } else {
+                                    let _ = sender.send(Event::DeviceConnectionStarted(addr));
                                     match device.connect().await {
                                         Ok(_) => {
+                                            let _ = sender.send(Event::DeviceConnectionFinished(addr));
                                             let _ = Notification::send(
                                                 "Device connected".into(),
                                                 NotificationLevel::Info,
@@ -49,6 +51,7 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                                             );
                                         }
                                         Err(e) => {
+                                            let _ = sender.send(Event::DeviceConnectionFinished(addr));
                                             let _ = Notification::send(
                                                 e.into(),
                                                 NotificationLevel::Error,
@@ -116,7 +119,12 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                             );
                                         }
                                     };
-                                    match device.connect().await {
+                                    let addr = device.address();
+                                    let _ = sender.send(Event::DeviceConnectionStarted(addr));
+                                    let res = device.connect().await;
+                                    let _ = sender.send(Event::DeviceConnectionFinished(addr));
+
+                                    match res {
                                         Ok(_) => {
                                             let _ = Notification::send(
                                                 "Device connected".into(),

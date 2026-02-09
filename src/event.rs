@@ -23,6 +23,8 @@ pub enum Event {
     Mouse(MouseEvent),
     Resize(u16, u16),
     Notification(Notification),
+    DeviceConnectionStarted(Address),
+    DeviceConnectionFinished(Address),
     NewPairedDevice(Address),
     ToggleFavorite(Address),
     FailedPairing(Address),
