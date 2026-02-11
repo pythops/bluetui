@@ -3,7 +3,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Style, Stylize},
+    style::{Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, Clear, List},
 };
@@ -14,9 +14,11 @@ use tui_input::{Input, backend::crossterm::EventHandler};
 use crate::{
     agent::AuthAgent,
     app::AppResult,
+    config::Config,
     event::Event,
     requests::{pad_str, pad_string},
 };
+use std::sync::Arc;
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum FocusedSection {
@@ -121,7 +123,7 @@ impl EnterPasskey {
         Ok(())
     }
 
-    pub fn render(&self, frame: &mut Frame, area: Rect) {
+    pub fn render(&self, frame: &mut Frame, area: Rect, config: Arc<Config>) {
         let layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -176,14 +178,14 @@ impl EnterPasskey {
             Line::from(vec![
                 {
                     if self.focused_section == FocusedSection::Input {
-                        Span::from("Passkey").green().bold()
+                        Span::from("Passkey").fg(config.colors.focused_header).bold()
                     } else {
                         Span::from("Passkey")
                     }
                 },
                 Span::from("  "),
                 Span::from(pad_string(format!(" {}", self.passkey.field.value()), 60))
-                    .bg(Color::DarkGray),
+                    .bg(config.colors.highlight_bg),
             ]),
             Line::from(vec![Span::from(pad_str(" ", 9)), {
                 if let Some(error) = &self.passkey.error {
@@ -192,13 +194,13 @@ impl EnterPasskey {
                     Span::from("")
                 }
             }])
-            .red(),
+            .fg(config.colors.error),
         ];
 
         let user_input = List::new(items);
 
         let submit = if self.focused_section == FocusedSection::Submit {
-            Text::from("Submit").centered().bold().green()
+            Text::from("Submit").centered().bold().fg(config.colors.focused_header)
         } else {
             Text::from("Submit").centered()
         };
@@ -209,7 +211,7 @@ impl EnterPasskey {
             Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Thick)
-                .border_style(Style::default().fg(Color::Green)),
+                .border_style(Style::default().fg(config.colors.focused_border)),
             block,
         );
 

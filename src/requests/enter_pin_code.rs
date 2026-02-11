@@ -3,7 +3,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Style, Stylize},
+    style::{Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, Clear, List},
 };
@@ -14,9 +14,11 @@ use tui_input::{Input, backend::crossterm::EventHandler};
 use crate::{
     agent::AuthAgent,
     app::AppResult,
+    config::Config,
     event::Event,
     requests::{pad_str, pad_string},
 };
+use std::sync::Arc;
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum FocusedSection {
@@ -115,7 +117,7 @@ impl EnterPinCode {
         Ok(())
     }
 
-    pub fn render(&self, frame: &mut Frame, area: Rect) {
+    pub fn render(&self, frame: &mut Frame, area: Rect, config: Arc<Config>) {
         let layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -170,14 +172,14 @@ impl EnterPinCode {
             Line::from(vec![
                 {
                     if self.focused_section == FocusedSection::Input {
-                        Span::from("Pin Code").green().bold()
+                        Span::from("Pin Code").fg(config.colors.focused_header).bold()
                     } else {
                         Span::from("Pin Code")
                     }
                 },
                 Span::from("  "),
                 Span::from(pad_string(format!(" {}", self.pin_code.field.value()), 60))
-                    .bg(Color::DarkGray),
+                    .bg(config.colors.highlight_bg),
             ]),
             Line::from(vec![Span::from(pad_str(" ", 10)), {
                 if let Some(error) = &self.pin_code.error {
@@ -186,13 +188,13 @@ impl EnterPinCode {
                     Span::from("")
                 }
             }])
-            .red(),
+            .fg(config.colors.error),
         ];
 
         let user_input = List::new(items);
 
         let submit = if self.focused_section == FocusedSection::Submit {
-            Text::from("Submit").centered().bold().green()
+            Text::from("Submit").centered().bold().fg(config.colors.focused_header)
         } else {
             Text::from("Submit").centered()
         };
@@ -203,7 +205,7 @@ impl EnterPinCode {
             Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Thick)
-                .border_style(Style::default().fg(Color::Green)),
+                .border_style(Style::default().fg(config.colors.focused_border)),
             block,
         );
 

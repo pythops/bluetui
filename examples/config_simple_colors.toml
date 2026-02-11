@@ -1,0 +1,65 @@
+# Example bluetui configuration with simple named colors
+
+# Layout configuration
+layout = "SpaceAround"
+width = "auto"
+
+# Global keybindings
+toggle_scanning = "s"
+esc_quit = false
+
+# Adapter keybindings
+[adapter]
+toggle_pairing = "p"
+toggle_power = "o"
+toggle_discovery = "d"
+
+# Paired device keybindings
+[paired_device]
+unpair = "u"
+toggle_trust = "t"
+toggle_favorite = "f"
+rename = "e"
+
+# Navigation keybindings
+[navigation]
+up = "k"
+down = "j"
+left = "h"
+right = "l"
+quit = "q"
+select = " "
+
+# Simple color scheme using named colors
+[colors]
+# Available named colors:
+# black, red, green, yellow, blue, magenta, cyan, gray, dark_gray,
+# light_red, light_green, light_yellow, light_blue, light_magenta,
+# light_cyan, white, reset
+
+# Border color when a section is focused
+focused_border = "light_cyan"
+
+# Border color when a section is not focused
+unfocused_border = "dark_gray"
+
+# Header text color in focused tables
+focused_header = "light_yellow"
+
+# Background color for selected items
+highlight_bg = "blue"
+
+# Text color for selected items
+highlight_fg = "white"
+
+# Color for informational messages
+info = "light_green"
+
+# Color for warning messages
+warning = "yellow"
+
+# Color for error messages
+error = "light_red"
+
+# Color for the scanning spinner
+spinner = "cyan"

@@ -13,7 +13,7 @@ use futures::FutureExt;
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
-    style::{Color, Modifier, Style, Stylize},
+    style::{Modifier, Style, Stylize},
     text::{Line, Span},
     widgets::{
         Block, BorderType, Borders, Cell, Clear, Padding, Paragraph, Row, Scrollbar,
@@ -233,8 +233,8 @@ impl App {
             Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Thick)
-                .style(Style::default().green())
-                .border_style(Style::default().fg(Color::Green)),
+                .style(Style::default().fg(self.config.colors.focused_border))
+                .border_style(Style::default().fg(self.config.colors.focused_border)),
             block,
         );
 
@@ -253,15 +253,15 @@ impl App {
 
                 let msg = Paragraph::new(text)
                     .alignment(Alignment::Center)
-                    .style(Style::default().fg(Color::White))
+                    .style(Style::default().fg(self.config.colors.highlight_fg))
                     .block(Block::new().padding(Padding::horizontal(2)));
 
                 let alias = Paragraph::new(self.new_alias.value())
                     .alignment(Alignment::Left)
-                    .style(Style::default().fg(Color::White))
+                    .style(Style::default().fg(self.config.colors.highlight_fg))
                     .block(
                         Block::new()
-                            .bg(Color::DarkGray)
+                            .bg(self.config.colors.highlight_bg)
                             .padding(Padding::horizontal(2)),
                     );
 
@@ -343,11 +343,11 @@ impl App {
                 .header({
                     if self.focused_block == FocusedBlock::Adapter {
                         Row::new(vec![
-                            Cell::from("Name").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Alias").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Power").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Pairable").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Discoverable").style(Style::default().fg(Color::Yellow)),
+                            Cell::from("Name").style(Style::default().fg(self.config.colors.focused_header)),
+                            Cell::from("Alias").style(Style::default().fg(self.config.colors.focused_header)),
+                            Cell::from("Power").style(Style::default().fg(self.config.colors.focused_header)),
+                            Cell::from("Pairable").style(Style::default().fg(self.config.colors.focused_header)),
+                            Cell::from("Discoverable").style(Style::default().fg(self.config.colors.focused_header)),
                         ])
                         .style(Style::new().bold())
                         .bottom_margin(1)
@@ -375,9 +375,9 @@ impl App {
                         .borders(Borders::ALL)
                         .border_style({
                             if self.focused_block == FocusedBlock::Adapter {
-                                Style::default().fg(Color::Green)
+                                Style::default().fg(self.config.colors.focused_border)
                             } else {
-                                Style::default()
+                                Style::default().fg(self.config.colors.unfocused_border)
                             }
                         })
                         .border_type({
@@ -390,7 +390,7 @@ impl App {
                 )
                 .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::Adapter {
-                    Style::default().bg(Color::DarkGray).fg(Color::White)
+                    Style::default().bg(self.config.colors.highlight_bg).fg(self.config.colors.highlight_fg)
                 } else {
                     Style::default()
                 });
@@ -502,11 +502,11 @@ impl App {
                     if show_battery_column {
                         if self.focused_block == FocusedBlock::PairedDevices {
                             Row::new(vec![
-                                Cell::from("").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Name").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Battery").style(Style::default().fg(Color::Yellow)),
+                                Cell::from("").style(Style::default().fg(self.config.colors.focused_header)),
+                                Cell::from("Name").style(Style::default().fg(self.config.colors.focused_header)),
+                                Cell::from("Trusted").style(Style::default().fg(self.config.colors.focused_header)),
+                                Cell::from("Connected").style(Style::default().fg(self.config.colors.focused_header)),
+                                Cell::from("Battery").style(Style::default().fg(self.config.colors.focused_header)),
                             ])
                             .style(Style::new().bold())
                             .bottom_margin(1)
@@ -522,10 +522,10 @@ impl App {
                         }
                     } else if self.focused_block == FocusedBlock::PairedDevices {
                         Row::new(vec![
-                            Cell::from("").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Name").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
+                            Cell::from("").style(Style::default().fg(self.config.colors.focused_header)),
+                            Cell::from("Name").style(Style::default().fg(self.config.colors.focused_header)),
+                            Cell::from("Trusted").style(Style::default().fg(self.config.colors.focused_header)),
+                            Cell::from("Connected").style(Style::default().fg(self.config.colors.focused_header)),
                         ])
                         .style(Style::new().bold())
                         .bottom_margin(1)
@@ -553,9 +553,9 @@ impl App {
                         .borders(Borders::ALL)
                         .border_style({
                             if self.focused_block == FocusedBlock::PairedDevices {
-                                Style::default().fg(Color::Green)
+                                Style::default().fg(self.config.colors.focused_border)
                             } else {
-                                Style::default()
+                                Style::default().fg(self.config.colors.unfocused_border)
                             }
                         })
                         .border_type({
@@ -568,7 +568,7 @@ impl App {
                 )
                 .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
-                    Style::default().bg(Color::DarkGray).fg(Color::White)
+                    Style::default().bg(self.config.colors.highlight_bg).fg(self.config.colors.highlight_fg)
                 } else {
                     Style::default()
                 });
@@ -616,8 +616,8 @@ impl App {
                     .header({
                         if self.focused_block == FocusedBlock::NewDevices {
                             Row::new(vec![
-                                Cell::from(Line::from("Address").fg(Color::Yellow).centered()),
-                                Cell::from(Line::from("Name").fg(Color::Yellow).centered()),
+                                Cell::from(Line::from("Address").fg(self.config.colors.focused_header).centered()),
+                                Cell::from(Line::from("Name").fg(self.config.colors.focused_header).centered()),
                             ])
                             .style(Style::new().bold())
                             .bottom_margin(1)
@@ -649,9 +649,9 @@ impl App {
                             .borders(Borders::ALL)
                             .border_style({
                                 if self.focused_block == FocusedBlock::NewDevices {
-                                    Style::default().fg(Color::Green)
+                                    Style::default().fg(self.config.colors.focused_border)
                                 } else {
-                                    Style::default()
+                                    Style::default().fg(self.config.colors.unfocused_border)
                                 }
                             })
                             .border_type({
@@ -664,7 +664,7 @@ impl App {
                     )
                     .flex(self.config.layout)
                     .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
-                        Style::default().bg(Color::DarkGray).fg(Color::White)
+                        Style::default().bg(self.config.colors.highlight_bg).fg(self.config.colors.highlight_fg)
                     } else {
                         Style::default()
                     });
@@ -714,28 +714,28 @@ impl App {
 
             // Request Confirmation
             if let Some(req) = &self.requests.confirmation {
-                req.render(frame, area);
+                req.render(frame, area, self.config.clone());
             }
 
             // Request to enter pin code
 
             if let Some(req) = &self.requests.enter_pin_code {
-                req.render(frame, area);
+                req.render(frame, area, self.config.clone());
             }
 
             // Request passkey
             if let Some(req) = &self.requests.enter_passkey {
-                req.render(frame, area);
+                req.render(frame, area, self.config.clone());
             }
 
             // Display Pin Code
             if let Some(req) = &self.requests.display_pin_code {
-                req.render(frame, area);
+                req.render(frame, area, self.config.clone());
             }
 
             // Display Passkey
             if let Some(req) = &self.requests.display_passkey {
-                req.render(frame, area);
+                req.render(frame, area, self.config.clone());
             }
         }
     }

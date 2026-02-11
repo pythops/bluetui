@@ -6,6 +6,6 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     app.render(frame);
 
     for (index, notification) in app.notifications.iter().enumerate() {
-        notification.render(index, frame, app.area(frame));
+        notification.render(index, frame, app.area(frame), app.config.clone());
     }
 }

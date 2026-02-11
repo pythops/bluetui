@@ -19,13 +19,18 @@
       system: let
         overlays = [(import rust-overlay)];
         pkgs = import nixpkgs {inherit system overlays;};
-        bluetui = pkgs.callPackage ./package.nix {};
+        rustToolchain = pkgs.rust-bin.stable.latest.default;
+        rustPlatform = pkgs.makeRustPlatform {
+          cargo = rustToolchain;
+          rustc = rustToolchain;
+        };
+        bluetui = pkgs.callPackage ./package.nix {inherit rustPlatform;};
       in {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             dbus
             pkg-config
-            rust-bin.stable.latest.default
+            rustToolchain
             self.packages.${system}.default
           ];
         };
@@ -33,8 +38,13 @@
           default = bluetui;
           inherit bluetui;
         };
-        legacyPackages = pkgs.extend(final: prev: {
-          bluetui = final.callPackage ./package.nix {};
+        legacyPackages = pkgs.extend (final: prev: {
+          bluetui = final.callPackage ./package.nix {
+            rustPlatform = final.makeRustPlatform {
+              cargo = final.rust-bin.stable.latest.default;
+              rustc = final.rust-bin.stable.latest.default;
+            };
+          };
         });
       }
     );
