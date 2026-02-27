@@ -38,6 +38,14 @@ pub type AppResult<T> = anyhow::Result<T>;
 
 const STAR_SYMBOL: &str = "★";
 
+#[derive(Debug, Clone)]
+pub struct HelpSection {
+    pub label: String,
+    pub x_start: u16,
+    pub x_end: u16,
+    pub y: u16,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FocusedBlock {
     Adapter,
@@ -68,6 +76,11 @@ pub struct App {
     pub config: Arc<Config>,
     pub requests: Requests,
     pub auth_agent: AuthAgent,
+    pub adapter_block_bounds: Option<Rect>,
+    pub paired_devices_block_bounds: Option<Rect>,
+    pub new_devices_block_bounds: Option<Rect>,
+    pub help_block_bounds: Option<Rect>,
+    pub help_sections: Vec<HelpSection>,
 }
 
 impl App {
@@ -130,6 +143,11 @@ impl App {
             config,
             requests: Requests::default(),
             auth_agent,
+            adapter_block_bounds: None,
+            paired_devices_block_bounds: None,
+            new_devices_block_bounds: None,
+            help_block_bounds: None,
+            help_sections: Vec::new(),
         })
     }
 
@@ -307,6 +325,10 @@ impl App {
                     .split(self.area(frame));
                 (chunks[0], chunks[1], chunks[2], chunks[3])
             };
+
+            self.adapter_block_bounds = Some(controller_block);
+            self.paired_devices_block_bounds = Some(paired_devices_block);
+            self.new_devices_block_bounds = render_new_devices.then_some(new_devices_block);
 
             //Adapters
             let rows: Vec<Row> = self
@@ -697,7 +719,8 @@ impl App {
             let area = self.area(frame);
 
             // Help
-            Help::render(
+            self.help_block_bounds = Some(help_block);
+            self.help_sections = Help::render(
                 frame,
                 area,
                 self.focused_block,

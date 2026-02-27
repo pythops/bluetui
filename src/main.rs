@@ -3,7 +3,7 @@ use bluetui::{
     cli,
     config::Config,
     event::{Event, EventHandler},
-    handler::handle_key_events,
+    handler::{handle_key_events, handle_mouse_events},
     rfkill,
     tui::Tui,
 };
@@ -49,7 +49,16 @@ async fn main() -> AppResult<()> {
                     config.clone(),
                 )
                 .await?
-            }
+            },            
+            Event::Mouse(mouse_event) => {
+                handle_mouse_events(
+                    mouse_event,
+                    &mut app,
+                    tui.events.sender.clone(),
+                    config.clone(),
+                )
+                .await?
+            },
             Event::Notification(notification) => {
                 app.notifications.push(notification);
             }
@@ -135,7 +144,7 @@ async fn main() -> AppResult<()> {
                 app.focused_block = bluetui::app::FocusedBlock::PairedDevices;
             }
 
-            Event::Mouse(_) | Event::Resize(_, _) => {}
+            Event::Resize(_, _) => {}
         }
     }
 

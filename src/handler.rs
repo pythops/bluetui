@@ -844,3 +844,109 @@ pub async fn handle_key_events(
 
     Ok(())
 }
+
+fn handle_mouse_down(mouse_event: crossterm::event::MouseEvent, app: &mut App) -> AppResult<()> {
+            let col = mouse_event.column;
+            let row = mouse_event.row;
+
+            if let Some(bounds) = app.adapter_block_bounds {
+                if col >= bounds.x
+                    && col < bounds.x + bounds.width
+                    && row >= bounds.y
+                    && row < bounds.y + bounds.height
+                {
+                    app.focused_block = FocusedBlock::Adapter;
+
+                    // Todo: use actual header height here instead of hardcoding
+                    let header_offset = 3;
+                    if row >= bounds.y + header_offset && !app.controllers.is_empty() {
+                        let clicked_row = (row - bounds.y - header_offset) as usize;
+                        if clicked_row < app.controllers.len() {
+                            app.controller_state.select(Some(clicked_row));
+                            app.reset_devices_state();
+                        }
+                    }
+                    return Ok(());
+                }
+            }
+
+            if let Some(bounds) = app.paired_devices_block_bounds {
+                if col >= bounds.x
+                    && col < bounds.x + bounds.width
+                    && row >= bounds.y
+                    && row < bounds.y + bounds.height
+                {
+                    app.focused_block = FocusedBlock::PairedDevices;
+
+                    if let Some(selected_controller) = app.controller_state.selected() {
+                        let controller = &app.controllers[selected_controller];
+                        let header_offset = 3;
+                        if row >= bounds.y + header_offset && !controller.paired_devices.is_empty()
+                        {
+                            let clicked_row = (row - bounds.y - header_offset) as usize;
+                            if clicked_row < controller.paired_devices.len() {
+                                app.paired_devices_state.select(Some(clicked_row));
+                            }
+                        }
+                    }
+                    return Ok(());
+                }
+            }
+
+            if let Some(bounds) = app.new_devices_block_bounds {
+                if col >= bounds.x
+                    && col < bounds.x + bounds.width
+                    && row >= bounds.y
+                    && row < bounds.y + bounds.height
+                {
+                    app.focused_block = FocusedBlock::NewDevices;
+
+                    if let Some(selected_controller) = app.controller_state.selected() {
+                        let controller = &app.controllers[selected_controller];
+                        let header_offset = 3;
+                        if row >= bounds.y + header_offset && !controller.new_devices.is_empty() {
+                            let clicked_row = (row - bounds.y - header_offset) as usize;
+                            if clicked_row < controller.new_devices.len() {
+                                app.new_devices_state.select(Some(clicked_row));
+                            }
+                        }
+                    }
+                    return Ok(());
+                }
+            }
+            
+            if let Some(_help_bounds) = app.help_block_bounds {
+                for section in &app.help_sections {
+                    if row == section.y && col >= section.x_start && col < section.x_end {
+                        eprintln!("Help section clicked: '{}'", section.label);
+                    }
+                }
+            }
+            return Ok(());
+}
+
+pub async fn handle_mouse_events(
+    mouse_event: crossterm::event::MouseEvent,
+    app: &mut App,
+    _sender: UnboundedSender<Event>,
+    _config: Arc<Config>,
+) -> AppResult<()> {
+    use crossterm::event::{MouseButton, MouseEventKind};
+
+    match mouse_event.kind {
+        MouseEventKind::Down(MouseButton::Left) => {
+           let _ = handle_mouse_down(mouse_event, app);
+        }
+        MouseEventKind::ScrollDown => {
+            // I'll add this later once we have a basic sestup in place for clicking
+            // and defining sections for click interactions.
+        }
+        MouseEventKind::ScrollUp => {
+            // I'll add this later once we have a basic sestup in place for clicking
+            // and defining sections for click interactions.
+        }
+        _ => {}
+    }
+
+    Ok(())
+}
