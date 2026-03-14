@@ -65,7 +65,7 @@ impl DisplayPasskey {
             )])
             .centered(),
             Line::from(""),
-            Line::from(self.passkey.to_string())
+            Line::from(format!("{:06}", self.passkey))
                 .bold()
                 .bg(Color::DarkGray),
         ];
