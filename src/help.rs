@@ -9,7 +9,7 @@ use ratatui::{
 };
 
 use crate::{
-    app::{FocusedBlock, HelpAction, HelpSection},
+    app::{FocusedBlock, HelpAction, ClickableHelpItem},
     config::Config,
 };
 
@@ -45,8 +45,8 @@ impl<'a> HelpItem<'a> {
         self.spans.clone()
     }
 
-    fn to_section(&self, y: u16) -> HelpSection {
-        HelpSection {
+    fn to_clickable_item(&self, y: u16) -> ClickableHelpItem {
+        ClickableHelpItem {
             x_start: self.x_start,
             x_end: self.x_end,
             y,
@@ -55,12 +55,19 @@ impl<'a> HelpItem<'a> {
     }
 }
 
-fn place_items_in_row(items: &mut [&mut HelpItem<'_>], start_x: u16, sep_width: u16) {
+fn place_items_in_row(
+    items: &mut [&mut HelpItem<'_>],
+    start_x: u16,
+    sep_width: u16,
+    y: u16,
+    clickable_items: &mut Vec<ClickableHelpItem>,
+) {
     let mut current_x = start_x;
     let last_idx = items.len().saturating_sub(1);
 
     for (idx, item) in items.iter_mut().enumerate() {
         item.set_position(current_x);
+        clickable_items.push(item.to_clickable_item(y));
 
         if idx < last_idx {
             current_x = current_x
@@ -79,8 +86,8 @@ impl Help {
         focused_block: FocusedBlock,
         rendering_block: Rect,
         config: Arc<Config>,
-    ) -> Vec<HelpSection> {
-        let mut section_indexes: Vec<(HelpItem, u16)> = Vec::new(); // (item, line_index)
+    ) -> Vec<ClickableHelpItem> {
+        let mut clickable_items: Vec<ClickableHelpItem> = Vec::new();
 
         let help = match focused_block {
             FocusedBlock::PairedDevices => {
@@ -151,18 +158,13 @@ impl Help {
                         &mut rename_item,
                         &mut nav_item,
                     ];
-                    place_items_in_row(&mut items, start_x, sep_width);
-
-                    // Add all items to helpItem_lines with line index 0 since it's a single line
-                    section_indexes.push((up_item, 0));
-                    section_indexes.push((down_item, 0));
-                    section_indexes.push((scan_item, 0));
-                    section_indexes.push((unpair_item, 0));
-                    section_indexes.push((connect_item, 0));
-                    section_indexes.push((trust_item, 0));
-                    section_indexes.push((favorite_item, 0));
-                    section_indexes.push((rename_item, 0));
-                    section_indexes.push((nav_item, 0));
+                    place_items_in_row(
+                        &mut items,
+                        start_x,
+                        sep_width,
+                        rendering_block.y,
+                        &mut clickable_items,
+                    );
 
                     vec![Line::from(all_spans)]
                 } else {
@@ -231,12 +233,13 @@ impl Help {
                         &mut unpair_item,
                         &mut favorite_item,
                     ];
-                    place_items_in_row(&mut line1_items, start_x1, sep_width);
-
-                    section_indexes.push((connect_item, 0));
-                    section_indexes.push((scan_item, 0));
-                    section_indexes.push((unpair_item, 0));
-                    section_indexes.push((favorite_item, 0));
+                    place_items_in_row(
+                        &mut line1_items,
+                        start_x1,
+                        sep_width,
+                        rendering_block.y,
+                        &mut clickable_items,
+                    );
 
                     let mut line2: Vec<Span> = Vec::new();
                     line2.extend(trust_item.get_spans());
@@ -259,13 +262,13 @@ impl Help {
                         &mut down_item,
                         &mut nav_item,
                     ];
-                    place_items_in_row(&mut line2_items, start_x2, sep_width);
-
-                    section_indexes.push((trust_item, 1));
-                    section_indexes.push((rename_item, 1));
-                    section_indexes.push((up_item, 1));
-                    section_indexes.push((down_item, 1));
-                    section_indexes.push((nav_item, 1));
+                    place_items_in_row(
+                        &mut line2_items,
+                        start_x2,
+                        sep_width,
+                        rendering_block.y + 1,
+                        &mut clickable_items,
+                    );
 
                     vec![Line::from(line1), Line::from(line2)]
                 }
@@ -306,13 +309,13 @@ impl Help {
                     &mut scan_item,
                     &mut nav_item,
                 ];
-                place_items_in_row(&mut items, start_x, sep_width);
-
-                section_indexes.push((up_item, 0));
-                section_indexes.push((down_item, 0));
-                section_indexes.push((pair_item, 0));
-                section_indexes.push((scan_item, 0));
-                section_indexes.push((nav_item, 0));
+                place_items_in_row(
+                    &mut items,
+                    start_x,
+                    sep_width,
+                    rendering_block.y,
+                    &mut clickable_items,
+                );
 
                 vec![Line::from(all_spans)]
             }
@@ -368,13 +371,13 @@ impl Help {
                         &mut discovery_item,
                         &mut nav_item,
                     ];
-                    place_items_in_row(&mut items, start_x, sep_width);
-
-                    section_indexes.push((scan_item, 0));
-                    section_indexes.push((pairing_item, 0));
-                    section_indexes.push((power_item, 0));
-                    section_indexes.push((discovery_item, 0));
-                    section_indexes.push((nav_item, 0));
+                    place_items_in_row(
+                        &mut items,
+                        start_x,
+                        sep_width,
+                        rendering_block.y,
+                        &mut clickable_items,
+                    );
 
                     vec![Line::from(all_spans)]
                 } else {
@@ -417,10 +420,13 @@ impl Help {
                     let start_x1 =
                         rendering_block.x + (rendering_block.width.saturating_sub(total_width1)) / 2;
                     let mut line1_items = [&mut scan_item, &mut pairing_item];
-                    place_items_in_row(&mut line1_items, start_x1, sep_width);
-
-                    section_indexes.push((scan_item, 0));
-                    section_indexes.push((pairing_item, 0));
+                    place_items_in_row(
+                        &mut line1_items,
+                        start_x1,
+                        sep_width,
+                        rendering_block.y,
+                        &mut clickable_items,
+                    );
 
                     let mut line2: Vec<Span> = Vec::new();
                     line2.extend(power_item.get_spans());
@@ -433,11 +439,13 @@ impl Help {
                     let start_x2 =
                         rendering_block.x + (rendering_block.width.saturating_sub(total_width2)) / 2;
                     let mut line2_items = [&mut power_item, &mut discovery_item, &mut nav_item];
-                    place_items_in_row(&mut line2_items, start_x2, sep_width);
-
-                    section_indexes.push((power_item, 1));
-                    section_indexes.push((discovery_item, 1));
-                    section_indexes.push((nav_item, 1));
+                    place_items_in_row(
+                        &mut line2_items,
+                        start_x2,
+                        sep_width,
+                        rendering_block.y + 1,
+                        &mut clickable_items,
+                    );
 
                     vec![Line::from(line1), Line::from(line2)]
                 }
@@ -489,15 +497,9 @@ impl Help {
             }
         };
 
-        let mut sections = Vec::new();
-        for (item, line_idx) in section_indexes {
-            let y = rendering_block.y + line_idx;
-            sections.push(item.to_section(y));
-        }
-
         let help = Paragraph::new(help).centered().blue();
         frame.render_widget(help, rendering_block);
 
-        sections
+        clickable_items
     }
 }

@@ -55,7 +55,7 @@ pub enum HelpAction {
 }
 
 #[derive(Debug, Clone)]
-pub struct HelpSection {
+pub struct ClickableHelpItem {
     pub x_start: u16,
     pub x_end: u16,
     pub y: u16,
@@ -96,7 +96,7 @@ pub struct App {
     pub paired_devices_block_bounds: Option<Rect>,
     pub new_devices_block_bounds: Option<Rect>,
     pub help_block_bounds: Option<Rect>,
-    pub help_sections: Vec<HelpSection>,
+    pub help_sections: Vec<ClickableHelpItem>,
 }
 
 impl App {
