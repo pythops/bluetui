@@ -839,16 +839,19 @@ pub async fn handle_key_events(
     Ok(())
 }
 
+fn is_within_bounds(col: u16, row: u16, bounds: ratatui::layout::Rect) -> bool {
+    let right = bounds.x.saturating_add(bounds.width);
+    let bottom = bounds.y.saturating_add(bounds.height);
+
+    col >= bounds.x && col < right && row >= bounds.y && row < bottom
+}
+
 async fn handle_mouse_down(mouse_event: crossterm::event::MouseEvent, app: &mut App, sender: UnboundedSender<Event>) -> AppResult<()> {
             let col = mouse_event.column;
             let row = mouse_event.row;
 
             if let Some(bounds) = app.adapter_block_bounds {
-                if col >= bounds.x
-                    && col < bounds.x + bounds.width
-                    && row >= bounds.y
-                    && row < bounds.y + bounds.height
-                {
+                if is_within_bounds(col, row, bounds) {
                     app.focused_block = FocusedBlock::Adapter;
 
                     // Todo: use actual header height here instead of hardcoding
@@ -865,11 +868,7 @@ async fn handle_mouse_down(mouse_event: crossterm::event::MouseEvent, app: &mut 
             }
 
             if let Some(bounds) = app.paired_devices_block_bounds {
-                if col >= bounds.x
-                    && col < bounds.x + bounds.width
-                    && row >= bounds.y
-                    && row < bounds.y + bounds.height
-                {
+                if is_within_bounds(col, row, bounds) {
                     app.focused_block = FocusedBlock::PairedDevices;
 
                     if let Some(selected_controller) = app.controller_state.selected() {
@@ -888,11 +887,7 @@ async fn handle_mouse_down(mouse_event: crossterm::event::MouseEvent, app: &mut 
             }
 
             if let Some(bounds) = app.new_devices_block_bounds {
-                if col >= bounds.x
-                    && col < bounds.x + bounds.width
-                    && row >= bounds.y
-                    && row < bounds.y + bounds.height
-                {
+                if is_within_bounds(col, row, bounds) {
                     app.focused_block = FocusedBlock::NewDevices;
 
                     if let Some(selected_controller) = app.controller_state.selected() {
@@ -909,7 +904,11 @@ async fn handle_mouse_down(mouse_event: crossterm::event::MouseEvent, app: &mut 
                 }
             }
             
-            if let Some(_help_bounds) = app.help_block_bounds {
+            if let Some(help_bounds) = app.help_block_bounds {
+                if !is_within_bounds(col, row, help_bounds) {
+                    return Ok(());
+                }
+
                 let found_item = app
                     .help_sections
                     .iter()

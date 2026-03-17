@@ -40,20 +40,15 @@ const STAR_SYMBOL: &str = "★";
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum HelpAction {
-    // Navigation
     ScrollUp,
     ScrollDown,
-    // PairedDevices
     ToggleConnect,
     Unpair,
     ToggleTrust,
     ToggleFavorite,
     Rename,
-    // Shared
     ToggleScan,
-    // NewDevices
     Pair,
-    // Adapter
     TogglePairing,
     TogglePower,
     ToggleDiscovery,
@@ -61,7 +56,6 @@ pub enum HelpAction {
 
 #[derive(Debug, Clone)]
 pub struct HelpSection {
-    pub label: String,
     pub x_start: u16,
     pub x_end: u16,
     pub y: u16,

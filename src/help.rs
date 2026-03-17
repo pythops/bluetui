@@ -45,13 +45,8 @@ impl<'a> HelpItem<'a> {
         self.spans.clone()
     }
 
-    fn label(&self) -> String {
-        self.spans.iter().map(|s| s.content.as_ref()).collect()
-    }
-
     fn to_section(&self, y: u16) -> HelpSection {
         HelpSection {
-            label: self.label().trim().to_string(),
             x_start: self.x_start,
             x_end: self.x_end,
             y,
