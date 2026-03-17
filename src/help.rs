@@ -55,6 +55,21 @@ impl<'a> HelpItem<'a> {
     }
 }
 
+fn place_items_in_row(items: &mut [&mut HelpItem<'_>], start_x: u16, sep_width: u16) {
+    let mut current_x = start_x;
+    let last_idx = items.len().saturating_sub(1);
+
+    for (idx, item) in items.iter_mut().enumerate() {
+        item.set_position(current_x);
+
+        if idx < last_idx {
+            current_x = current_x
+                .saturating_add(item.width())
+                .saturating_add(sep_width);
+        }
+    }
+}
+
 pub struct Help;
 
 impl Help {
@@ -125,25 +140,18 @@ impl Help {
 
                     // Set positions on each item
                     let sep_width = separator.content.len() as u16;
-                    let mut current_x = start_x;
-
-                    up_item.set_position(current_x);
-                    current_x += up_item.width() + sep_width;
-                    down_item.set_position(current_x);
-                    current_x += down_item.width() + sep_width;
-                    scan_item.set_position(current_x);
-                    current_x += scan_item.width() + sep_width;
-                    unpair_item.set_position(current_x);
-                    current_x += unpair_item.width() + sep_width;
-                    connect_item.set_position(current_x);
-                    current_x += connect_item.width() + sep_width;
-                    trust_item.set_position(current_x);
-                    current_x += trust_item.width() + sep_width;
-                    favorite_item.set_position(current_x);
-                    current_x += favorite_item.width() + sep_width;
-                    rename_item.set_position(current_x);
-                    current_x += rename_item.width() + sep_width;
-                    nav_item.set_position(current_x);
+                    let mut items = [
+                        &mut up_item,
+                        &mut down_item,
+                        &mut scan_item,
+                        &mut unpair_item,
+                        &mut connect_item,
+                        &mut trust_item,
+                        &mut favorite_item,
+                        &mut rename_item,
+                        &mut nav_item,
+                    ];
+                    place_items_in_row(&mut items, start_x, sep_width);
 
                     // Add all items to helpItem_lines with line index 0 since it's a single line
                     section_indexes.push((up_item, 0));
@@ -217,15 +225,13 @@ impl Help {
                     let total_width1: u16 = line1.iter().map(|s| s.content.len() as u16).sum();
                     let start_x1 =
                         rendering_block.x + (rendering_block.width.saturating_sub(total_width1)) / 2;
-                    let mut current_x1 = start_x1;
-
-                    connect_item.set_position(current_x1);
-                    current_x1 += connect_item.width() + sep_width;
-                    scan_item.set_position(current_x1);
-                    current_x1 += scan_item.width() + sep_width;
-                    unpair_item.set_position(current_x1);
-                    current_x1 += unpair_item.width() + sep_width;
-                    favorite_item.set_position(current_x1);
+                    let mut line1_items = [
+                        &mut connect_item,
+                        &mut scan_item,
+                        &mut unpair_item,
+                        &mut favorite_item,
+                    ];
+                    place_items_in_row(&mut line1_items, start_x1, sep_width);
 
                     section_indexes.push((connect_item, 0));
                     section_indexes.push((scan_item, 0));
@@ -246,17 +252,14 @@ impl Help {
                     let total_width2: u16 = line2.iter().map(|s| s.content.len() as u16).sum();
                     let start_x2 =
                         rendering_block.x + (rendering_block.width.saturating_sub(total_width2)) / 2;
-                    let mut current_x2 = start_x2;
-
-                    trust_item.set_position(current_x2);
-                    current_x2 += trust_item.width() + sep_width;
-                    rename_item.set_position(current_x2);
-                    current_x2 += rename_item.width() + sep_width;
-                    up_item.set_position(current_x2);
-                    current_x2 += up_item.width() + sep_width;
-                    down_item.set_position(current_x2);
-                    current_x2 += down_item.width() + sep_width;
-                    nav_item.set_position(current_x2);
+                    let mut line2_items = [
+                        &mut trust_item,
+                        &mut rename_item,
+                        &mut up_item,
+                        &mut down_item,
+                        &mut nav_item,
+                    ];
+                    place_items_in_row(&mut line2_items, start_x2, sep_width);
 
                     section_indexes.push((trust_item, 1));
                     section_indexes.push((rename_item, 1));
@@ -296,17 +299,14 @@ impl Help {
                 let total_width: u16 = all_spans.iter().map(|s| s.content.len() as u16).sum();
                 let start_x =
                     rendering_block.x + (rendering_block.width.saturating_sub(total_width)) / 2;
-                let mut current_x = start_x;
-
-                up_item.set_position(current_x);
-                current_x += up_item.width() + sep_width;
-                down_item.set_position(current_x);
-                current_x += down_item.width() + sep_width;
-                pair_item.set_position(current_x);
-                current_x += pair_item.width() + sep_width;
-                scan_item.set_position(current_x);
-                current_x += scan_item.width() + sep_width;
-                nav_item.set_position(current_x);
+                let mut items = [
+                    &mut up_item,
+                    &mut down_item,
+                    &mut pair_item,
+                    &mut scan_item,
+                    &mut nav_item,
+                ];
+                place_items_in_row(&mut items, start_x, sep_width);
 
                 section_indexes.push((up_item, 0));
                 section_indexes.push((down_item, 0));
@@ -361,17 +361,14 @@ impl Help {
                     let total_width: u16 = all_spans.iter().map(|s| s.content.len() as u16).sum();
                     let start_x =
                         rendering_block.x + (rendering_block.width.saturating_sub(total_width)) / 2;
-                    let mut current_x = start_x;
-
-                    scan_item.set_position(current_x);
-                    current_x += scan_item.width() + sep_width;
-                    pairing_item.set_position(current_x);
-                    current_x += pairing_item.width() + sep_width;
-                    power_item.set_position(current_x);
-                    current_x += power_item.width() + sep_width;
-                    discovery_item.set_position(current_x);
-                    current_x += discovery_item.width() + sep_width;
-                    nav_item.set_position(current_x);
+                    let mut items = [
+                        &mut scan_item,
+                        &mut pairing_item,
+                        &mut power_item,
+                        &mut discovery_item,
+                        &mut nav_item,
+                    ];
+                    place_items_in_row(&mut items, start_x, sep_width);
 
                     section_indexes.push((scan_item, 0));
                     section_indexes.push((pairing_item, 0));
@@ -419,10 +416,8 @@ impl Help {
                     let total_width1: u16 = line1.iter().map(|s| s.content.len() as u16).sum();
                     let start_x1 =
                         rendering_block.x + (rendering_block.width.saturating_sub(total_width1)) / 2;
-                    let mut current_x1 = start_x1;
-                    scan_item.set_position(current_x1);
-                    current_x1 += scan_item.width() + sep_width;
-                    pairing_item.set_position(current_x1);
+                    let mut line1_items = [&mut scan_item, &mut pairing_item];
+                    place_items_in_row(&mut line1_items, start_x1, sep_width);
 
                     section_indexes.push((scan_item, 0));
                     section_indexes.push((pairing_item, 0));
@@ -437,12 +432,8 @@ impl Help {
                     let total_width2: u16 = line2.iter().map(|s| s.content.len() as u16).sum();
                     let start_x2 =
                         rendering_block.x + (rendering_block.width.saturating_sub(total_width2)) / 2;
-                    let mut current_x2 = start_x2;
-                    power_item.set_position(current_x2);
-                    current_x2 += power_item.width() + sep_width;
-                    discovery_item.set_position(current_x2);
-                    current_x2 += discovery_item.width() + sep_width;
-                    nav_item.set_position(current_x2);
+                    let mut line2_items = [&mut power_item, &mut discovery_item, &mut nav_item];
+                    place_items_in_row(&mut line2_items, start_x2, sep_width);
 
                     section_indexes.push((power_item, 1));
                     section_indexes.push((discovery_item, 1));
