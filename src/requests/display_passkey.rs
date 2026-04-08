@@ -1,6 +1,6 @@
 use ratatui::{
     Frame,
-    layout::{Constraint, Direction, Layout, Margin, Rect},
+    layout::{Constraint, Layout, Margin, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span},
     widgets::{Block, BorderType, Borders, Clear, Paragraph},
@@ -37,9 +37,7 @@ impl DisplayPasskey {
     }
 
     pub fn render(&self, frame: &mut Frame, area: Rect) {
-        let block = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
+        let block = Layout::vertical([
                 Constraint::Fill(1),
                 Constraint::Length(12),
                 Constraint::Fill(1),
@@ -47,9 +45,7 @@ impl DisplayPasskey {
             .margin(2)
             .split(area)[1];
 
-        let block = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
+        let block = Layout::horizontal([
                 Constraint::Fill(1),
                 Constraint::Max(70),
                 Constraint::Fill(1),

@@ -1,6 +1,6 @@
 use ratatui::{
     Frame,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Constraint, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, Clear},
@@ -49,38 +49,32 @@ impl Confirmation {
     }
 
     pub fn render(&self, frame: &mut Frame, area: Rect) {
-        let block = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Fill(1),
-                Constraint::Length(8),
-                Constraint::Fill(1),
-            ])
-            .split(area);
+        let block = Layout::vertical([
+            Constraint::Fill(1),
+            Constraint::Length(8),
+            Constraint::Fill(1),
+        ])
+        .split(area);
 
-        let block = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Fill(1),
-                Constraint::Max(70),
-                Constraint::Fill(1),
-            ])
-            .split(block[1])[1];
+        let block = Layout::horizontal([
+            Constraint::Fill(1),
+            Constraint::Max(70),
+            Constraint::Fill(1),
+        ])
+        .split(block[1])[1];
 
         let (message_block, choices_block) = {
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints(
-                    [
-                        Constraint::Length(1),
-                        Constraint::Length(3),
-                        Constraint::Length(1),
-                        Constraint::Length(2),
-                        Constraint::Length(1),
-                    ]
-                    .as_ref(),
-                )
-                .split(block);
+            let chunks = Layout::vertical(
+                [
+                    Constraint::Length(1),
+                    Constraint::Length(3),
+                    Constraint::Length(1),
+                    Constraint::Length(2),
+                    Constraint::Length(1),
+                ]
+                .as_ref(),
+            )
+            .split(block);
 
             (chunks[1], chunks[3])
         };
