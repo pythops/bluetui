@@ -1,6 +1,6 @@
 use ratatui::{
     Frame,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Constraint, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Text},
     widgets::{Block, BorderType, Borders, Clear, Paragraph, Wrap},
@@ -74,27 +74,23 @@ impl Notification {
 }
 
 pub fn notification_rect(offset: u16, height: u16, width: u16, r: Rect) -> Rect {
-    let popup_layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(
-            [
-                Constraint::Length(height * offset),
-                Constraint::Length(height),
-                Constraint::Min(1),
-            ]
-            .as_ref(),
-        )
-        .split(r);
+    let popup_layout = Layout::vertical(
+        [
+            Constraint::Length(height * offset),
+            Constraint::Length(height),
+            Constraint::Min(1),
+        ]
+        .as_ref(),
+    )
+    .split(r);
 
-    Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints(
-            [
-                Constraint::Min(1),
-                Constraint::Length(width),
-                Constraint::Length(2),
-            ]
-            .as_ref(),
-        )
-        .split(popup_layout[1])[1]
+    Layout::horizontal(
+        [
+            Constraint::Min(1),
+            Constraint::Length(width),
+            Constraint::Length(2),
+        ]
+        .as_ref(),
+    )
+    .split(popup_layout[1])[1]
 }

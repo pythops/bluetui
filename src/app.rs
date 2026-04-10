@@ -12,7 +12,7 @@ use bluer::{
 use futures::FutureExt;
 use ratatui::{
     Frame,
-    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
+    layout::{Alignment, Constraint, Layout, Margin, Rect},
     style::{Color, Modifier, Style, Stylize},
     text::{Line, Span},
     widgets::{
@@ -154,9 +154,7 @@ impl App {
         match self.config.width {
             Width::Size(v) => {
                 if v < frame.area().width {
-                    let area = Layout::default()
-                        .direction(Direction::Horizontal)
-                        .constraints([Constraint::Length(v), Constraint::Fill(1)])
+                    let area = Layout::horizontal([Constraint::Length(v), Constraint::Fill(1)])
                         .split(frame.area());
 
                     area[0]
@@ -169,61 +167,51 @@ impl App {
     }
 
     pub fn render_set_alias(&mut self, frame: &mut Frame, area: Rect) {
-        let block = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Fill(1),
-                Constraint::Length(6),
-                Constraint::Fill(1),
-            ])
-            .split(area);
+        let block = Layout::vertical([
+            Constraint::Fill(1),
+            Constraint::Length(6),
+            Constraint::Fill(1),
+        ])
+        .split(area);
 
-        let block = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Fill(1),
-                Constraint::Max(70),
-                Constraint::Fill(1),
-            ])
-            .split(block[1])[1];
+        let block = Layout::horizontal([
+            Constraint::Fill(1),
+            Constraint::Max(70),
+            Constraint::Fill(1),
+        ])
+        .split(block[1])[1];
 
         let (text_block, alias_block) = {
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints(
-                    [
-                        Constraint::Length(1),
-                        Constraint::Length(3),
-                        Constraint::Length(1),
-                        Constraint::Length(2),
-                    ]
-                    .as_ref(),
-                )
-                .split(block);
+            let chunks = Layout::vertical(
+                [
+                    Constraint::Length(1),
+                    Constraint::Length(3),
+                    Constraint::Length(1),
+                    Constraint::Length(2),
+                ]
+                .as_ref(),
+            )
+            .split(block);
 
-            let area1 = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints(
-                    [
-                        Constraint::Length(1),
-                        Constraint::Fill(1),
-                        Constraint::Length(1),
-                    ]
-                    .as_ref(),
-                )
-                .split(chunks[1]);
+            let area1 = Layout::horizontal(
+                [
+                    Constraint::Length(1),
+                    Constraint::Fill(1),
+                    Constraint::Length(1),
+                ]
+                .as_ref(),
+            )
+            .split(chunks[1]);
 
-            let area2 = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints(
-                    [
-                        Constraint::Percentage(20),
-                        Constraint::Fill(1),
-                        Constraint::Percentage(20),
-                    ]
-                    .as_ref(),
-                )
-                .split(chunks[2]);
+            let area2 = Layout::horizontal(
+                [
+                    Constraint::Percentage(20),
+                    Constraint::Fill(1),
+                    Constraint::Percentage(20),
+                ]
+                .as_ref(),
+            )
+            .split(chunks[2]);
 
             (area1[1], area2[1])
         };
@@ -286,25 +274,23 @@ impl App {
             let paired_devices_block_height = selected_controller.paired_devices.len() as u16 + 4;
 
             let (paired_devices_block, new_devices_block, controller_block, help_block) = {
-                let chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints(if render_new_devices {
-                        [
-                            Constraint::Length(paired_devices_block_height),
-                            Constraint::Fill(1),
-                            Constraint::Length(adapter_block_height),
-                            Constraint::Length(2),
-                        ]
-                    } else {
-                        [
-                            Constraint::Fill(1),
-                            Constraint::Length(0),
-                            Constraint::Length(adapter_block_height),
-                            Constraint::Length(2),
-                        ]
-                    })
-                    .margin(1)
-                    .split(self.area(frame));
+                let chunks = Layout::vertical(if render_new_devices {
+                    [
+                        Constraint::Length(paired_devices_block_height),
+                        Constraint::Fill(1),
+                        Constraint::Length(adapter_block_height),
+                        Constraint::Length(2),
+                    ]
+                } else {
+                    [
+                        Constraint::Fill(1),
+                        Constraint::Length(0),
+                        Constraint::Length(adapter_block_height),
+                        Constraint::Length(2),
+                    ]
+                })
+                .margin(1)
+                .split(self.area(frame));
                 (chunks[0], chunks[1], chunks[2], chunks[3])
             };
 
