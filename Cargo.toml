@@ -26,6 +26,10 @@ tui-input = "0.15"
 anyhow = "1"
 libdbus-sys = { version = "0.2", features = ["vendored"] }
 
+[dev-dependencies]
+insta = "1"
+rstest = "0.26"
+
 [profile.release]
 strip = true
 codegen-units = 1
