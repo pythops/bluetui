@@ -1,0 +1,6 @@
+---
+source: src/help.rs
+expression: terminal.backend()
+---
+"                     s  Scan on/off | p Pairing on/off | o Power on/off | d Discovery on/off | ⇄ Nav                    "
+"                                                                                                                        "

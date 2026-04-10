@@ -1,0 +1,6 @@
+---
+source: src/help.rs
+expression: terminal.backend()
+---
+" k,  Up | j,  Down | s  Scan on/off | u  Unpair | 󱁐  or ↵  Dis/Connect | t Un/Trust | f Un/Favorite | e Rename | ⇄ Nav "
+"                                                                                                                         "
