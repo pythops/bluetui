@@ -54,8 +54,11 @@ async fn main() -> AppResult<()> {
                 app.notifications.push(notification);
             }
             Event::NewPairedDevice(address) => {
-                if let Some(req) = &app.requests.display_passkey
-                    && req.device == address
+                if app
+                    .requests
+                    .display_passkey
+                    .as_ref()
+                    .is_some_and(|req| req.device == address)
                 {
                     app.requests.display_passkey = None;
                 }
@@ -126,8 +129,11 @@ async fn main() -> AppResult<()> {
             }
 
             Event::FailedPairing(address) => {
-                if let Some(req) = &app.requests.display_passkey
-                    && req.device == address
+                if app
+                    .requests
+                    .display_passkey
+                    .as_ref()
+                    .is_some_and(|req| req.device == address)
                 {
                     app.requests.display_passkey = None;
                 }
