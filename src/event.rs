@@ -50,7 +50,7 @@ impl EventHandler {
     pub fn new(tick_rate: u64) -> Self {
         let tick_rate = Duration::from_millis(tick_rate);
         let (sender, receiver) = mpsc::unbounded_channel();
-        let _sender = sender.clone();
+        let sender_task = sender.clone();
         let handler = tokio::spawn(async move {
             let mut reader = crossterm::event::EventStream::new();
             let mut tick = tokio::time::interval(tick_rate);
@@ -59,27 +59,22 @@ impl EventHandler {
                 let crossterm_event = reader.next().fuse();
                 tokio::select! {
                   _ = tick_delay => {
-                    _sender.send(Event::Tick).unwrap();
+                    sender_task.send(Event::Tick).unwrap();
                   }
                   Some(Ok(evt)) = crossterm_event => {
                     match evt {
                       CrosstermEvent::Key(key) => {
                         if key.kind == crossterm::event::KeyEventKind::Press {
-                          _sender.send(Event::Key(key)).unwrap();
+                          sender_task.send(Event::Key(key)).unwrap();
                         }
                       },
                       CrosstermEvent::Mouse(mouse) => {
-                        _sender.send(Event::Mouse(mouse)).unwrap();
+                        sender_task.send(Event::Mouse(mouse)).unwrap();
                       },
                       CrosstermEvent::Resize(x, y) => {
-                        _sender.send(Event::Resize(x, y)).unwrap();
+                        sender_task.send(Event::Resize(x, y)).unwrap();
                       },
-                      CrosstermEvent::FocusLost => {
-                      },
-                      CrosstermEvent::FocusGained => {
-                      },
-                      CrosstermEvent::Paste(_) => {
-                      },
+                      CrosstermEvent::FocusLost | CrosstermEvent::FocusGained | CrosstermEvent::Paste(_) => {},
                     }
                   }
                 };
