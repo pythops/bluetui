@@ -212,3 +212,23 @@ impl EnterPinCode {
         frame.render_widget(submit, submit_block);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use insta::assert_snapshot;
+    use ratatui::{Terminal, backend::TestBackend};
+
+    #[test]
+    fn render() {
+        let mut terminal = Terminal::new(TestBackend::new(80, 10)).unwrap();
+        terminal
+            .draw(|frame| {
+                EnterPinCode::new("adapter".to_string(), Address::new(*b"DEADBE"))
+                    .render(frame, frame.area())
+            })
+            .unwrap();
+
+        assert_snapshot!(terminal.backend());
+    }
+}
