@@ -1,29 +1,49 @@
 ---
 name: CI
+
+# Set the permissions of the github token to the minimum and only enable what is needed
+# See https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions
+permissions: {}
+
 on:
-  pull_request:
+  workflow_dispatch:
   push:
     branches:
-      - "*"
+      - main
+  pull_request:
+    branches:
+      - main
+
+# ensure that the workflow is only triggered once per PR,
+# subsequent pushes to the PR will cancel and restart the workflow.
+# See https://docs.github.com/en/actions/using-jobs/using-concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
+  lint-and-formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - run: cargo fmt --all -- --check
+
+      - run: cargo clippy --workspace --all-features -- -D warnings
+
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-          components: clippy rustfmt
 
-      - name: Setup the build env
-        run: |
-          sudo apt update
-          sudo apt install -y libdbus-1-dev pkg-config
+      - uses: Swatinem/rust-cache@v2
 
-      - name: Linting
-        run: |
-          cargo clippy --workspace --all-features -- -D warnings
-          cargo fmt --all -- --check
-
-      - name: Debug builds
-        run: cargo build
+      - run: cargo test
