@@ -1,0 +1,14 @@
+---
+source: src/requests/enter_pin_code.rs
+expression: terminal.backend()
+---
+"                                                                                "
+"     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓     "
+"     ┃   Enter the PIN Code for the device 44:45:41:44:42:45 on adapter   ┃     "
+"     ┃                                                                    ┃     "
+"     ┃    Pin Code                                                        ┃     "
+"     ┃                                                                    ┃     "
+"     ┃                                                                    ┃     "
+"     ┃                               Submit                               ┃     "
+"     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛     "
+"                                                                                "
