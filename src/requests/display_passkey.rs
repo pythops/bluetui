@@ -38,20 +38,20 @@ impl DisplayPasskey {
 
     pub fn render(&self, frame: &mut Frame, area: Rect) {
         let block = Layout::vertical([
-                Constraint::Fill(1),
-                Constraint::Length(12),
-                Constraint::Fill(1),
-            ])
-            .margin(2)
-            .split(area)[1];
+            Constraint::Fill(1),
+            Constraint::Length(12),
+            Constraint::Fill(1),
+        ])
+        .margin(2)
+        .split(area)[1];
 
         let block = Layout::horizontal([
-                Constraint::Fill(1),
-                Constraint::Max(70),
-                Constraint::Fill(1),
-            ])
-            .margin(1)
-            .split(block)[1];
+            Constraint::Fill(1),
+            Constraint::Max(70),
+            Constraint::Fill(1),
+        ])
+        .margin(1)
+        .split(block)[1];
 
         let message = vec![
             Line::from(format!("Authentication for the device {}", self.device)).centered(),
