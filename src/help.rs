@@ -191,3 +191,44 @@ impl Help {
         frame.render_widget(help, rendering_block);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use insta::assert_snapshot;
+    use ratatui::{Terminal, backend::TestBackend};
+    use rstest::rstest;
+
+    #[rstest]
+    fn render_help(
+        #[values(
+            FocusedBlock::Adapter,
+            FocusedBlock::PairedDevices,
+            FocusedBlock::NewDevices,
+            FocusedBlock::SetDeviceAliasBox,
+            FocusedBlock::RequestConfirmation,
+            FocusedBlock::EnterPinCode,
+            FocusedBlock::EnterPasskey,
+            FocusedBlock::DisplayPinCode,
+            FocusedBlock::DisplayPasskey
+        )]
+        focused_block: FocusedBlock,
+        #[values(80, 81, 120, 121)] width: u16,
+    ) {
+        let mut terminal = Terminal::new(TestBackend::new(width, 2)).unwrap();
+        terminal
+            .draw(|frame| {
+                Help::render(
+                    frame,
+                    frame.area(),
+                    focused_block,
+                    frame.area(),
+                    Config::new(None).into(),
+                );
+            })
+            .unwrap();
+
+        let snapshot_name = format!("{:?}-{}", focused_block, width);
+        assert_snapshot!(snapshot_name, terminal.backend());
+    }
+}
