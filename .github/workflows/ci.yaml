@@ -9,10 +9,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 # ensure that the workflow is only triggered once per PR,
 # subsequent pushes to the PR will cancel and restart the workflow.
