@@ -9,15 +9,24 @@ use bluetui::{
 };
 use clap::Parser;
 use ratatui::{Terminal, backend::CrosstermBackend};
-use std::{io, sync::Arc};
+use std::{io, process::exit, sync::Arc};
 
 #[tokio::main]
 async fn main() -> AppResult<()> {
     let args = cli::Args::parse();
 
+    let config_file_path = args.config_path.map(|config_path| {
+        if config_path.exists() {
+            config_path.to_owned()
+        } else {
+            eprintln!("Config file not found");
+            exit(1);
+        }
+    });
+
     rfkill::check()?;
 
-    let config = Arc::new(Config::new(args.config_path)?);
+    let config = Arc::new(Config::new(config_file_path));
 
     let backend = CrosstermBackend::new(io::stdout());
     let terminal = Terminal::new(backend)?;

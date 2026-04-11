@@ -223,7 +223,7 @@ mod tests {
                     frame.area(),
                     focused_block,
                     frame.area(),
-                    Config::new(None).unwrap().into(),
+                    Config::new(None).into(),
                 );
             })
             .unwrap();

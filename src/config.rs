@@ -1,7 +1,6 @@
 use core::fmt;
-use std::path::PathBuf;
+use std::{path::PathBuf, process::exit};
 
-use anyhow::Context;
 use ratatui::layout::Flex;
 use toml;
 
@@ -10,8 +9,6 @@ use serde::{
     Deserialize, Deserializer,
     de::{self, Unexpected, Visitor},
 };
-
-use crate::app::AppResult;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
@@ -205,7 +202,7 @@ fn default_toggle_device_favorite() -> char {
 }
 
 impl Config {
-    pub fn new(config_file_path: Option<PathBuf>) -> AppResult<Self> {
+    pub fn new(config_file_path: Option<PathBuf>) -> Self {
         let conf_path = config_file_path.unwrap_or(
             dirs::config_dir()
                 .unwrap()
@@ -213,9 +210,15 @@ impl Config {
                 .join("config.toml"),
         );
 
-        let config_file_contents =
-            std::fs::read_to_string(conf_path).context("failed reading contents of config file")?;
+        let config = std::fs::read_to_string(conf_path).unwrap_or_default();
+        let app_config: Config = match toml::from_str(&config) {
+            Ok(c) => c,
+            Err(e) => {
+                eprintln!("{}", e);
+                exit(1);
+            }
+        };
 
-        toml::from_str(&config_file_contents).context("failed deserializing config file")
+        app_config
     }
 }
