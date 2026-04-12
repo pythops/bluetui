@@ -129,3 +129,33 @@ impl Confirmation {
         frame.render_widget(choice.centered(), choices_block);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use insta::assert_snapshot;
+    use ratatui::{Terminal, backend::TestBackend};
+    use rstest::rstest;
+
+    #[rstest]
+    fn render(
+        #[values(u32::MIN, 1, u32::MAX)] passkey: u32,
+        #[values(true, false)] confirmed: bool,
+    ) {
+        let mut terminal = Terminal::new(TestBackend::new(80, 24)).unwrap();
+        terminal
+            .draw(|frame| {
+                let mut confirmation =
+                    Confirmation::new("adapter".to_string(), Address::new(*b"DEADBE"), passkey);
+
+                if !confirmed {
+                    confirmation.toggle_select();
+                }
+
+                confirmation.render(frame, frame.area());
+            })
+            .unwrap();
+
+        assert_snapshot!(format!("{passkey}-{confirmed}"), terminal.backend());
+    }
+}
