@@ -94,3 +94,47 @@ pub fn notification_rect(offset: u16, height: u16, width: u16, r: Rect) -> Rect 
     )
     .split(popup_layout[1])[1]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use insta::assert_snapshot;
+    use ratatui::{Terminal, backend::TestBackend};
+    use rstest::rstest;
+
+    #[rstest]
+    fn render_help(
+        #[values(
+            "short",
+            "with\nnewline",
+            "extremely long WITHOUT newline Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed id mauris sit amet libero convallis fringilla quis non augue. In sollicitudin quam sed magna finibus, vitae malesuada magna porttitor. Pellentesque in dictum dui. Nullam nec mi venenatis, faucibus odio eget, molestie nisi. Fusce velit nibh, euismod vel lectus id, placerat.",
+            r#"extremely long WITH newline Lorem ipsum dolor sit amet, consectetur
+adipiscing elit. Sed id mauris sit amet libero convallis fringilla quis non
+augue. In sollicitudin quam sed magna finibus, vitae malesuada magna porttitor.
+Pellentesque in dictum dui. Nullam nec mi venenatis, faucibus odio eget, molestie
+nisi. Fusce velit nibh, euismod vel lectus id, placerat."#
+        )]
+        message_str: &'static str,
+        #[values(
+            NotificationLevel::Info,
+            NotificationLevel::Warning,
+            NotificationLevel::Error
+        )]
+        level: NotificationLevel,
+    ) {
+        let mut terminal = Terminal::new(TestBackend::new(80, 24)).unwrap();
+        terminal
+            .draw(|frame| {
+                let notification = Notification {
+                    message: message_str.into(),
+                    level: level.clone(),
+                    ttl: 1,
+                };
+                notification.render(0, frame, frame.area());
+            })
+            .unwrap();
+
+        let snapshot_name = format!("{}-{:?}", message_str, level);
+        assert_snapshot!(snapshot_name, terminal.backend());
+    }
+}

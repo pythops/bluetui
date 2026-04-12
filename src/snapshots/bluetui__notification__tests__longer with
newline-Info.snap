@@ -1,0 +1,28 @@
+---
+source: src/notification.rs
+expression: terminal.backend()
+---
+"                                                               ┏━━━━━━━━━━━━━┓  "
+"                                                               ┃    Info     ┃  "
+"                                                               ┃ longer with ┃  "
+"                                                               ┃   newline   ┃  "
+"                                                               ┗━━━━━━━━━━━━━┛  "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
