@@ -33,7 +33,6 @@ $ sudo rfkill unblock bluetooth
                         }
                         _ => {}
                     }
-                    break;
                 }
             }
         }
