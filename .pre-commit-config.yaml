@@ -8,6 +8,11 @@ repos:
         entry: cargo fmt --all --
         language: system
         types: [rust]
+      - id: cargo-test
+        name: cargo test
+        entry: cargo test
+        language: system
+        pass_filenames: false
       - id: clippy
         name: clippy
         entry: |
