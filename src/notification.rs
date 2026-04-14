@@ -1,13 +1,13 @@
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Layout, Rect},
-    style::{Color, Modifier, Style},
+    style::{Modifier, Style},
     text::{Line, Text},
     widgets::{Block, BorderType, Borders, Clear, Paragraph, Wrap},
 };
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::{app::AppResult, event::Event, string_ref::StringRef};
+use crate::{app::AppResult, event::Event, string_ref::StringRef, theme::Theme};
 
 #[derive(Debug, Clone)]
 pub struct Notification {
@@ -24,15 +24,15 @@ pub enum NotificationLevel {
 }
 
 impl Notification {
-    pub fn render(&self, index: usize, frame: &mut Frame, area: Rect) {
-        let (color, title) = match self.level {
-            NotificationLevel::Info => (Color::Green, "Info"),
-            NotificationLevel::Warning => (Color::Yellow, "Warning"),
-            NotificationLevel::Error => (Color::Red, "Error"),
+    pub fn render(&self, index: usize, frame: &mut Frame, area: Rect, theme: &Theme) {
+        let (style, title) = match self.level {
+            NotificationLevel::Info => (theme.notification_info, "Info"),
+            NotificationLevel::Warning => (theme.notification_warning, "Warning"),
+            NotificationLevel::Error => (theme.notification_error, "Error"),
         };
 
         let mut text = Text::from(vec![
-            Line::from(title).style(Style::new().fg(color).add_modifier(Modifier::BOLD)),
+            Line::from(title).style(style.add_modifier(Modifier::BOLD)),
         ]);
 
         text.extend(Text::from(self.message.as_str()));
@@ -48,7 +48,7 @@ impl Notification {
                     .borders(Borders::ALL)
                     .style(Style::default())
                     .border_type(BorderType::Thick)
-                    .border_style(Style::default().fg(color)),
+                    .border_style(style),
             );
 
         let area = notification_rect(index as u16, notification_height, notification_width, area);
@@ -120,7 +120,7 @@ mod tests {
                     level: level.clone(),
                     ttl: 1,
                 };
-                notification.render(0, frame, frame.area());
+                notification.render(0, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -155,7 +155,7 @@ nisi. Fusce velit nibh, euismod vel lectus id, placerat."#
                     level: level.clone(),
                     ttl: 1,
                 };
-                notification.render(0, frame, frame.area());
+                notification.render(0, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 

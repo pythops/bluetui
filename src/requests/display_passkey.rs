@@ -1,14 +1,14 @@
 use ratatui::{
     Frame,
     layout::{Constraint, Layout, Margin, Rect},
-    style::{Color, Style, Stylize},
+    style::Modifier,
     text::{Line, Span},
     widgets::{Block, BorderType, Borders, Clear, Paragraph},
 };
 
 use bluer::Address;
 
-use crate::{agent::AuthAgent, app::AppResult};
+use crate::{agent::AuthAgent, app::AppResult, theme::Theme};
 
 #[derive(Debug, Clone)]
 pub struct DisplayPasskey {
@@ -36,7 +36,7 @@ impl DisplayPasskey {
         Ok(())
     }
 
-    pub fn render(&self, frame: &mut Frame, area: Rect) {
+    pub fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme) {
         let block = Layout::vertical([
             Constraint::Fill(1),
             Constraint::Length(12),
@@ -61,12 +61,10 @@ impl DisplayPasskey {
             )])
             .centered(),
             Line::from(""),
-            Line::from(self.passkey.to_string())
-                .bold()
-                .bg(Color::DarkGray),
+            Line::from(self.passkey.to_string()).style(theme.input.add_modifier(Modifier::BOLD)),
         ];
 
-        let message = Paragraph::new(message).centered();
+        let message = Paragraph::new(message).centered().style(theme.popup_text);
 
         frame.render_widget(Clear, block);
 
@@ -74,7 +72,7 @@ impl DisplayPasskey {
             Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Thick)
-                .border_style(Style::default().fg(Color::Green)),
+                .border_style(theme.popup_border),
             block,
         );
         frame.render_widget(

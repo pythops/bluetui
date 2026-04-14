@@ -3,7 +3,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     Frame,
     layout::{Constraint, Layout, Rect},
-    style::{Color, Style, Stylize},
+    style::Modifier,
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, Clear, List},
 };
@@ -16,6 +16,7 @@ use crate::{
     app::AppResult,
     event::Event,
     requests::{pad_str, pad_string},
+    theme::Theme,
 };
 
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -115,7 +116,7 @@ impl EnterPinCode {
         Ok(())
     }
 
-    pub fn render(&self, frame: &mut Frame, area: Rect) {
+    pub fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme) {
         let layout = Layout::vertical([
             Constraint::Fill(1),
             Constraint::Length(8),
@@ -163,29 +164,35 @@ impl EnterPinCode {
             Line::from(vec![
                 {
                     if self.focused_section == FocusedSection::Input {
-                        Span::from("Pin Code").green().bold()
+                        Span::styled(
+                            "Pin Code",
+                            theme.focused_border.add_modifier(Modifier::BOLD),
+                        )
                     } else {
                         Span::from("Pin Code")
                     }
                 },
                 Span::from("  "),
-                Span::from(pad_string(format!(" {}", self.pin_code.field.value()), 60))
-                    .bg(Color::DarkGray),
+                Span::styled(
+                    pad_string(format!(" {}", self.pin_code.field.value()), 60),
+                    theme.input,
+                ),
             ]),
             Line::from(vec![Span::from(pad_str(" ", 10)), {
                 if let Some(error) = &self.pin_code.error {
-                    Span::from(pad_str(error, 60))
+                    Span::styled(pad_str(error, 60), theme.notification_error)
                 } else {
                     Span::from("")
                 }
-            }])
-            .red(),
+            }]),
         ];
 
         let user_input = List::new(items);
 
         let submit = if self.focused_section == FocusedSection::Submit {
-            Text::from("Submit").centered().bold().green()
+            Text::from("Submit")
+                .centered()
+                .style(theme.focused_border.add_modifier(Modifier::BOLD))
         } else {
             Text::from("Submit").centered()
         };
@@ -196,11 +203,11 @@ impl EnterPinCode {
             Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Thick)
-                .border_style(Style::default().fg(Color::Green)),
+                .border_style(theme.popup_border),
             block,
         );
 
-        frame.render_widget(message, message_block);
+        frame.render_widget(message.style(theme.popup_text), message_block);
         frame.render_widget(user_input, input_block);
         frame.render_widget(submit, submit_block);
     }
@@ -217,8 +224,11 @@ mod tests {
         let mut terminal = Terminal::new(TestBackend::new(80, 10)).unwrap();
         terminal
             .draw(|frame| {
-                EnterPinCode::new("adapter".to_string(), Address::new(*b"DEADBE"))
-                    .render(frame, frame.area())
+                EnterPinCode::new("adapter".to_string(), Address::new(*b"DEADBE")).render(
+                    frame,
+                    frame.area(),
+                    &Theme::default(),
+                )
             })
             .unwrap();
 

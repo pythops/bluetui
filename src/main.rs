@@ -5,6 +5,7 @@ use bluetui::{
     event::{Event, EventHandler},
     handler::handle_key_events,
     rfkill,
+    theme::Theme,
     tui::Tui,
 };
 use clap::Parser;
@@ -27,6 +28,7 @@ async fn main() -> AppResult<()> {
     rfkill::check()?;
 
     let config = Arc::new(Config::new(config_file_path));
+    let theme = Arc::new(Theme::load(config.theme_file.as_deref())?);
 
     let backend = CrosstermBackend::new(io::stdout());
     let terminal = Terminal::new(backend)?;
@@ -35,7 +37,7 @@ async fn main() -> AppResult<()> {
 
     tui.init()?;
 
-    let mut app = App::new(config.clone(), tui.events.sender.clone()).await?;
+    let mut app = App::new(config.clone(), theme, tui.events.sender.clone()).await?;
 
     while app.running {
         tui.draw(&mut app)?;

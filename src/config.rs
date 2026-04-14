@@ -1,5 +1,8 @@
 use core::fmt;
-use std::{path::PathBuf, process::exit};
+use std::{
+    path::{Path, PathBuf},
+    process::exit,
+};
 
 use ratatui::layout::Flex;
 use toml;
@@ -23,6 +26,9 @@ pub struct Config {
 
     #[serde(default = "default_esc_quit")]
     pub esc_quit: bool,
+
+    #[serde(default)]
+    pub theme_file: Option<PathBuf>,
 
     #[serde(default)]
     pub adapter: Adapter,
@@ -210,8 +216,8 @@ impl Config {
                 .join("config.toml"),
         );
 
-        let config = std::fs::read_to_string(conf_path).unwrap_or_default();
-        let app_config: Config = match toml::from_str(&config) {
+        let config = std::fs::read_to_string(&conf_path).unwrap_or_default();
+        let mut app_config: Config = match toml::from_str(&config) {
             Ok(c) => c,
             Err(e) => {
                 eprintln!("{}", e);
@@ -219,6 +225,53 @@ impl Config {
             }
         };
 
+        app_config.theme_file = app_config.theme_file.take().map(|path| {
+            resolve_theme_file_path(path, conf_path.parent().unwrap_or(Path::new(".")))
+        });
+
         app_config
+    }
+}
+
+fn resolve_theme_file_path(path: PathBuf, config_dir: &Path) -> PathBuf {
+    let expanded = expand_tilde(path);
+    if expanded.is_absolute() {
+        expanded
+    } else {
+        config_dir.join(expanded)
+    }
+}
+
+fn expand_tilde(path: PathBuf) -> PathBuf {
+    let path_str = path.to_string_lossy();
+    if path_str == "~" {
+        return dirs::home_dir().unwrap_or(path);
+    }
+
+    if let Some(rest) = path_str.strip_prefix("~/") {
+        if let Some(home) = dirs::home_dir() {
+            return home.join(rest);
+        }
+    }
+
+    path
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolves_relative_theme_file_against_config_dir() {
+        let resolved = resolve_theme_file_path(PathBuf::from("theme.toml"), Path::new("/tmp/app"));
+        assert_eq!(resolved, PathBuf::from("/tmp/app/theme.toml"));
+    }
+
+    #[test]
+    fn expands_tilde_theme_file() {
+        let resolved =
+            resolve_theme_file_path(PathBuf::from("~/theme.toml"), Path::new("/tmp/app"));
+        assert!(resolved.is_absolute());
+        assert!(resolved.ends_with("theme.toml"));
     }
 }

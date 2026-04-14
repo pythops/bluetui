@@ -13,7 +13,7 @@ use futures::FutureExt;
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Layout, Margin, Rect},
-    style::{Color, Modifier, Style, Stylize},
+    style::{Modifier, Style},
     text::{Line, Span},
     widgets::{
         Block, BorderType, Borders, Cell, Clear, Padding, Paragraph, Row, Scrollbar,
@@ -31,6 +31,7 @@ use crate::{
     notification::Notification,
     requests::Requests,
     spinner::Spinner,
+    theme::Theme,
 };
 use std::sync::{Arc, atomic::Ordering};
 
@@ -66,12 +67,17 @@ pub struct App {
     pub focused_block: FocusedBlock,
     pub new_alias: Input,
     pub config: Arc<Config>,
+    pub theme: Arc<Theme>,
     pub requests: Requests,
     pub auth_agent: AuthAgent,
 }
 
 impl App {
-    pub async fn new(config: Arc<Config>, sender: UnboundedSender<Event>) -> AppResult<Self> {
+    pub async fn new(
+        config: Arc<Config>,
+        theme: Arc<Theme>,
+        sender: UnboundedSender<Event>,
+    ) -> AppResult<Self> {
         let session = Arc::new(bluer::Session::new().await?);
 
         let auth_agent = AuthAgent::new(sender.clone());
@@ -128,6 +134,7 @@ impl App {
             focused_block: FocusedBlock::PairedDevices,
             new_alias: Input::default(),
             config,
+            theme,
             requests: Requests::default(),
             auth_agent,
         })
@@ -221,8 +228,8 @@ impl App {
             Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Thick)
-                .style(Style::default().green())
-                .border_style(Style::default().fg(Color::Green)),
+                .style(self.theme.popup_border)
+                .border_style(self.theme.popup_border),
             block,
         );
 
@@ -241,15 +248,15 @@ impl App {
 
                 let msg = Paragraph::new(text)
                     .alignment(Alignment::Center)
-                    .style(Style::default().fg(Color::White))
+                    .style(self.theme.popup_text)
                     .block(Block::new().padding(Padding::horizontal(2)));
 
                 let alias = Paragraph::new(self.new_alias.value())
                     .alignment(Alignment::Left)
-                    .style(Style::default().fg(Color::White))
+                    .style(self.theme.input)
                     .block(
                         Block::new()
-                            .bg(Color::DarkGray)
+                            .style(self.theme.input)
                             .padding(Padding::horizontal(2)),
                     );
 
@@ -329,13 +336,13 @@ impl App {
                 .header({
                     if self.focused_block == FocusedBlock::Adapter {
                         Row::new(vec![
-                            Cell::from("Name").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Alias").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Power").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Pairable").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Discoverable").style(Style::default().fg(Color::Yellow)),
+                            Cell::from("Name"),
+                            Cell::from("Alias"),
+                            Cell::from("Power"),
+                            Cell::from("Pairable"),
+                            Cell::from("Discoverable"),
                         ])
-                        .style(Style::new().bold())
+                        .style(self.theme.header)
                         .bottom_margin(1)
                     } else {
                         Row::new(vec![
@@ -353,7 +360,7 @@ impl App {
                         .title(" Adapter ")
                         .title_style({
                             if self.focused_block == FocusedBlock::Adapter {
-                                Style::default().bold()
+                                self.theme.focused_title
                             } else {
                                 Style::default()
                             }
@@ -361,7 +368,7 @@ impl App {
                         .borders(Borders::ALL)
                         .border_style({
                             if self.focused_block == FocusedBlock::Adapter {
-                                Style::default().fg(Color::Green)
+                                self.theme.focused_border
                             } else {
                                 Style::default()
                             }
@@ -376,7 +383,7 @@ impl App {
                 )
                 .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::Adapter {
-                    Style::default().bg(Color::DarkGray).fg(Color::White)
+                    self.theme.selected_row
                 } else {
                     Style::default()
                 });
@@ -488,13 +495,13 @@ impl App {
                     if show_battery_column {
                         if self.focused_block == FocusedBlock::PairedDevices {
                             Row::new(vec![
-                                Cell::from("").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Name").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Battery").style(Style::default().fg(Color::Yellow)),
+                                Cell::from(""),
+                                Cell::from("Name"),
+                                Cell::from("Trusted"),
+                                Cell::from("Connected"),
+                                Cell::from("Battery"),
                             ])
-                            .style(Style::new().bold())
+                            .style(self.theme.header)
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
@@ -508,12 +515,12 @@ impl App {
                         }
                     } else if self.focused_block == FocusedBlock::PairedDevices {
                         Row::new(vec![
-                            Cell::from("").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Name").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
+                            Cell::from(""),
+                            Cell::from("Name"),
+                            Cell::from("Trusted"),
+                            Cell::from("Connected"),
                         ])
-                        .style(Style::new().bold())
+                        .style(self.theme.header)
                         .bottom_margin(1)
                     } else {
                         Row::new(vec![
@@ -531,7 +538,7 @@ impl App {
                         .title(" Paired Devices ")
                         .title_style({
                             if self.focused_block == FocusedBlock::PairedDevices {
-                                Style::default().bold()
+                                self.theme.focused_title
                             } else {
                                 Style::default()
                             }
@@ -539,7 +546,7 @@ impl App {
                         .borders(Borders::ALL)
                         .border_style({
                             if self.focused_block == FocusedBlock::PairedDevices {
-                                Style::default().fg(Color::Green)
+                                self.theme.focused_border
                             } else {
                                 Style::default()
                             }
@@ -554,7 +561,7 @@ impl App {
                 )
                 .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
-                    Style::default().bg(Color::DarkGray).fg(Color::White)
+                    self.theme.selected_row
                 } else {
                     Style::default()
                 });
@@ -602,10 +609,10 @@ impl App {
                     .header({
                         if self.focused_block == FocusedBlock::NewDevices {
                             Row::new(vec![
-                                Cell::from(Line::from("Address").fg(Color::Yellow).centered()),
-                                Cell::from(Line::from("Name").fg(Color::Yellow).centered()),
+                                Cell::from(Line::from("Address").centered()),
+                                Cell::from(Line::from("Name").centered()),
                             ])
-                            .style(Style::new().bold())
+                            .style(self.theme.header)
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
@@ -627,7 +634,7 @@ impl App {
                             })
                             .title_style({
                                 if self.focused_block == FocusedBlock::NewDevices {
-                                    Style::default().bold()
+                                    self.theme.focused_title
                                 } else {
                                     Style::default()
                                 }
@@ -635,7 +642,7 @@ impl App {
                             .borders(Borders::ALL)
                             .border_style({
                                 if self.focused_block == FocusedBlock::NewDevices {
-                                    Style::default().fg(Color::Green)
+                                    self.theme.focused_border
                                 } else {
                                     Style::default()
                                 }
@@ -650,7 +657,7 @@ impl App {
                     )
                     .flex(self.config.layout)
                     .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
-                        Style::default().bg(Color::DarkGray).fg(Color::White)
+                        self.theme.selected_row
                     } else {
                         Style::default()
                     });
@@ -700,28 +707,28 @@ impl App {
 
             // Request Confirmation
             if let Some(req) = &self.requests.confirmation {
-                req.render(frame, area);
+                req.render(frame, area, &self.theme);
             }
 
             // Request to enter pin code
 
             if let Some(req) = &self.requests.enter_pin_code {
-                req.render(frame, area);
+                req.render(frame, area, &self.theme);
             }
 
             // Request passkey
             if let Some(req) = &self.requests.enter_passkey {
-                req.render(frame, area);
+                req.render(frame, area, &self.theme);
             }
 
             // Display Pin Code
             if let Some(req) = &self.requests.display_pin_code {
-                req.render(frame, area);
+                req.render(frame, area, &self.theme);
             }
 
             // Display Passkey
             if let Some(req) = &self.requests.display_passkey {
-                req.render(frame, area);
+                req.render(frame, area, &self.theme);
             }
         }
     }

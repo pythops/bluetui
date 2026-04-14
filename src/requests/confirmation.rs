@@ -1,14 +1,14 @@
 use ratatui::{
     Frame,
     layout::{Constraint, Layout, Rect},
-    style::{Color, Style, Stylize},
+    style::Modifier,
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, Clear},
 };
 
 use bluer::Address;
 
-use crate::{agent::AuthAgent, app::AppResult};
+use crate::{agent::AuthAgent, app::AppResult, theme::Theme};
 
 #[derive(Debug, Clone)]
 pub struct Confirmation {
@@ -48,7 +48,7 @@ impl Confirmation {
         self.confirmed = !self.confirmed;
     }
 
-    pub fn render(&self, frame: &mut Frame, area: Rect) {
+    pub fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme) {
         let block = Layout::vertical([
             Constraint::Fill(1),
             Constraint::Length(8),
@@ -90,7 +90,7 @@ impl Confirmation {
                 Span::from("Confirm Passkey "),
                 Span::styled(
                     format!("{:06}", self.passkey),
-                    Style::new().bg(Color::DarkGray).bold(),
+                    theme.input.add_modifier(Modifier::BOLD),
                 ),
             ])
             .centered(),
@@ -99,19 +99,15 @@ impl Confirmation {
         let choice = {
             if self.confirmed {
                 Line::from(vec![
-                    Span::from("No").style(Style::default()),
+                    Span::from("No").style(theme.button_inactive),
                     Span::from("        "),
-                    Span::from("Yes")
-                        .style(Style::default().bg(Color::Blue))
-                        .bold(),
+                    Span::from("Yes").style(theme.button_active),
                 ])
             } else {
                 Line::from(vec![
-                    Span::from("No")
-                        .style(Style::default().bg(Color::Blue))
-                        .bold(),
+                    Span::from("No").style(theme.button_active),
                     Span::from("        "),
-                    Span::from("Yes").style(Style::default()),
+                    Span::from("Yes").style(theme.button_inactive),
                 ])
             }
         };
@@ -122,7 +118,7 @@ impl Confirmation {
             Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Thick)
-                .border_style(Style::default().fg(Color::Green)),
+                .border_style(theme.popup_border),
             block,
         );
         frame.render_widget(message, message_block);
@@ -152,7 +148,7 @@ mod tests {
                     confirmation.toggle_select();
                 }
 
-                confirmation.render(frame, frame.area());
+                confirmation.render(frame, frame.area(), &Theme::default());
             })
             .unwrap();
 

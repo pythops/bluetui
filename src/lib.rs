@@ -12,5 +12,6 @@ pub mod requests;
 pub mod rfkill;
 pub mod spinner;
 pub mod string_ref;
+pub mod theme;
 pub mod tui;
 pub mod ui;
