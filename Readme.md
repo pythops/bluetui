@@ -101,7 +101,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 ## Config
 
-Keybindings can be customized in the default config file location `$HOME/.config/bluetui/config.toml` or from a custom path with `-c`
+Keybindings and theming can be customized in the default config file location `$HOME/.config/bluetui/config.toml` or from a custom path with `-c`
 
 ```toml
 # Possible values: "Legacy", "Start", "End", "Center", "SpaceAround", "SpaceBetween"
@@ -110,6 +110,10 @@ layout = "SpaceAround"
 # Window width
 # Possible values: "auto" or a positive integer
 width = "auto"
+
+# Optional path to a theme file.
+# Supports `~` expansion. Relative paths are resolved against the config file directory.
+theme_file = "~/.config/bluetui/theme.toml"
 
 toggle_scanning = "s"
 esc_quit = false  # Set to true to enable Esc key to quit the app
@@ -125,6 +129,86 @@ toggle_trust = "t"
 toggle_favorite = "f"
 rename = "e"
 ```
+
+## Theme
+
+`bluetui` can load an optional TOML theme file via `theme_file`.
+
+- If the file is missing, `bluetui` falls back to the built-in default theme.
+- If the file exists but contains invalid TOML or invalid color values, `bluetui` exits with a clear error.
+
+Example:
+
+```toml
+[focused_border]
+fg = "#509475"
+
+[focused_title]
+fg = "#509475"
+modifiers = ["bold"]
+
+[selected_row]
+fg = "#111C18"
+bg = "#C1C497"
+modifiers = ["bold"]
+
+[header]
+fg = "#509475"
+modifiers = ["bold"]
+
+[input]
+fg = "#C1C497"
+bg = "#53685B"
+
+[popup_border]
+fg = "#509475"
+
+[popup_text]
+fg = "#C1C497"
+
+[button_active]
+fg = "#111c18"
+bg = "#509475"
+modifiers = ["bold"]
+
+[button_inactive]
+fg = "#C1C497"
+
+[notification_info]
+fg = "#549e6a"
+modifiers = ["bold"]
+
+[notification_warning]
+fg = "#E5C736"
+modifiers = ["bold"]
+
+[notification_error]
+fg = "#FF5345"
+modifiers = ["bold"]
+```
+
+Supported modifiers:
+
+- `bold`
+- `italic`
+- `underlined`
+- `reversed`
+- `dim`
+
+Supported color formats:
+
+- named colors such as `green`, `yellow`, `white`, `darkgray`, `reset`
+- hex colors in `#RRGGBB` format
+
+### Omarchy
+
+`bluetui` can integrate cleanly with Omarchy by pointing `theme_file` at a generated theme file, for example:
+
+```toml
+theme_file = "~/.config/omarchy/current/theme/bluetui.toml"
+```
+
+This makes it possible to keep `bluetui` in sync with the active Omarchy theme without adding any Omarchy-specific logic to `bluetui` itself.
 
 ## Contributing
 
