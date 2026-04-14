@@ -200,16 +200,6 @@ Supported color formats:
 - named colors such as `green`, `yellow`, `white`, `darkgray`, `reset`
 - hex colors in `#RRGGBB` format
 
-### Omarchy
-
-`bluetui` can integrate cleanly with Omarchy by pointing `theme_file` at a generated theme file, for example:
-
-```toml
-theme_file = "~/.config/omarchy/current/theme/bluetui.toml"
-```
-
-This makes it possible to keep `bluetui` in sync with the active Omarchy theme without adding any Omarchy-specific logic to `bluetui` itself.
-
 ## Contributing
 
 - No AI slop.
