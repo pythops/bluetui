@@ -374,7 +374,7 @@ impl App {
             frame.render_stateful_widget(
                 controller_table,
                 controller_block,
-                &mut self.controller_state.clone(),
+                &mut self.controller_state,
             );
 
             if rows_len > controller_block.height.saturating_sub(4) as usize {
