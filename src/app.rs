@@ -611,6 +611,8 @@ impl App {
             if let Some(req) = &self.requests.display_passkey {
                 req.render(frame, popup_area);
             }
+        } else {
+            frame.render_widget("No Bluetooth adapters found. This will automatically refresh when any adapter is detected!".red().bold(), self.area(frame));
         }
     }
 
@@ -689,6 +691,13 @@ impl App {
                 }
             } else {
                 // Add new detected adapters
+
+                // Coming from having NO adapters (e.g. having suspended), no adapter is selected.
+                // This makes it fallback select the FIRST controller.
+                // TODO: ideally we would remember what controller was selected before...
+                if self.controllers.is_empty() && self.controller_state.selected().is_none() {
+                    self.controller_state.select_first();
+                }
                 self.controllers.push(refreshed_controller);
             }
         }
