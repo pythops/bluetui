@@ -21,7 +21,7 @@ tokio = { version = "1", features = ["full"] }
 dirs = "6"
 toml = "0.9"
 serde = { version = "1", features = ["derive"] }
-clap = { version = "4", features = ["derive", "cargo"] }
+clap = { version = "4", features = ["derive"] }
 tui-input = "0.15"
 anyhow = "1"
 libdbus-sys = { version = "0.2", features = ["vendored"] }
