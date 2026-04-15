@@ -1,14 +1,13 @@
 use crate::app::AppResult;
 use anyhow::Context;
 use bluer::Address;
-use clap::crate_name;
 use std::str::FromStr;
 use tokio::io::{AsyncBufReadExt, BufReader};
 
 pub async fn read_favorite_devices_from_disk() -> AppResult<Vec<Address>> {
     let data_dir = dirs::data_dir()
         .context("unable to find data_dir")?
-        .join(crate_name!());
+        .join("bluetui");
 
     let file = tokio::fs::File::open(data_dir.join("favorites.txt"))
         .await
@@ -30,7 +29,7 @@ pub async fn read_favorite_devices_from_disk() -> AppResult<Vec<Address>> {
 pub fn save_favorite_devices_to_disk(favorite_devices: &[Address]) -> AppResult<()> {
     let data_dir = dirs::data_dir()
         .context("unable to find data_dir")?
-        .join(crate_name!());
+        .join("bluetui");
 
     let file_path = data_dir.join("favorites.txt");
 
