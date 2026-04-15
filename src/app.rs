@@ -340,7 +340,7 @@ impl App {
                     .bottom_margin(1),
                 )
                 .block(
-                    Block::default()
+                    Block::bordered()
                         .title(" Adapter ")
                         .title_style({
                             if self.focused_block == FocusedBlock::Adapter {
@@ -349,10 +349,9 @@ impl App {
                                 Style::default()
                             }
                         })
-                        .borders(Borders::ALL)
                         .border_style({
                             if self.focused_block == FocusedBlock::Adapter {
-                                Style::default().fg(Color::Green)
+                                Style::default().green()
                             } else {
                                 Style::default()
                             }
@@ -367,7 +366,7 @@ impl App {
                 )
                 .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::Adapter {
-                    Style::default().bg(Color::DarkGray).fg(Color::White)
+                    Style::default().white().on_dark_gray()
                 } else {
                     Style::default()
                 });
