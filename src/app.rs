@@ -273,26 +273,28 @@ impl App {
 
             let paired_devices_block_height = selected_controller.paired_devices.len() as u16 + 4;
 
-            let (paired_devices_block, new_devices_block, controller_block, help_block) = {
-                let chunks = Layout::vertical(if render_new_devices {
-                    [
-                        Constraint::Length(paired_devices_block_height),
-                        Constraint::Fill(1),
-                        Constraint::Length(adapter_block_height),
-                        Constraint::Length(2),
-                    ]
-                } else {
-                    [
-                        Constraint::Fill(1),
-                        Constraint::Length(0),
-                        Constraint::Length(adapter_block_height),
-                        Constraint::Length(2),
-                    ]
-                })
-                .margin(1)
-                .split(self.area(frame));
-                (chunks[0], chunks[1], chunks[2], chunks[3])
-            };
+            let [
+                paired_devices_block,
+                new_devices_block,
+                controller_block,
+                help_block,
+            ] = Layout::vertical(if render_new_devices {
+                [
+                    Constraint::Length(paired_devices_block_height),
+                    Constraint::Fill(1),
+                    Constraint::Length(adapter_block_height),
+                    Constraint::Length(2),
+                ]
+            } else {
+                [
+                    Constraint::Fill(1),
+                    Constraint::Length(0),
+                    Constraint::Length(adapter_block_height),
+                    Constraint::Length(2),
+                ]
+            })
+            .margin(1)
+            .areas(self.area(frame));
 
             //Adapters
             let rows: Vec<Row> = self
