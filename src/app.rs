@@ -327,29 +327,18 @@ impl App {
 
             let rows_len = rows.len();
 
+            const CONTROLLER_TABLE_HEADER: [&str; 5] =
+                ["Name", "Alias", "Power", "Pairable", "Discoverable"];
+
             let controller_table = Table::new(rows, widths)
-                .header({
-                    if self.focused_block == FocusedBlock::Adapter {
-                        Row::new(vec![
-                            Cell::from("Name").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Alias").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Power").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Pairable").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Discoverable").style(Style::default().fg(Color::Yellow)),
-                        ])
-                        .style(Style::new().bold())
-                        .bottom_margin(1)
+                .header(
+                    Row::new(if self.focused_block == FocusedBlock::Adapter {
+                        CONTROLLER_TABLE_HEADER.map(|s| Cell::new(s.yellow().bold()))
                     } else {
-                        Row::new(vec![
-                            Cell::from("Name"),
-                            Cell::from("Alias"),
-                            Cell::from("Power"),
-                            Cell::from("Pairable"),
-                            Cell::from("Discoverable"),
-                        ])
-                        .bottom_margin(1)
-                    }
-                })
+                        CONTROLLER_TABLE_HEADER.map(Cell::new)
+                    })
+                    .bottom_margin(1),
+                )
                 .block(
                     Block::default()
                         .title(" Adapter ")
