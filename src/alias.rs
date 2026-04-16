@@ -18,40 +18,15 @@ pub fn render_set_alias(
 ) {
     let center_cutout = area.centered(Constraint::Max(70), Constraint::Length(6));
 
-    let (text_block, alias_input_block) = {
-        let chunks = Layout::vertical(
-            [
-                Constraint::Length(1),
-                Constraint::Length(3),
-                Constraint::Length(1),
-                Constraint::Length(2),
-            ]
-            .as_ref(),
-        )
-        .split(center_cutout);
+    let [_, message_area, full_input_area, _] = Layout::vertical([
+        Constraint::Length(1),
+        Constraint::Length(3),
+        Constraint::Length(1),
+        Constraint::Length(2),
+    ])
+    .areas(center_cutout);
 
-        let area1 = Layout::horizontal(
-            [
-                Constraint::Length(1),
-                Constraint::Fill(1),
-                Constraint::Length(1),
-            ]
-            .as_ref(),
-        )
-        .split(chunks[1]);
-
-        let area2 = Layout::horizontal(
-            [
-                Constraint::Percentage(20),
-                Constraint::Fill(1),
-                Constraint::Percentage(20),
-            ]
-            .as_ref(),
-        )
-        .split(chunks[2]);
-
-        (area1[1], area2[1])
-    };
+    let input_area = full_input_area.centered_horizontally(Constraint::Percentage(60));
 
     frame.render_widget(Clear, center_cutout);
     frame.render_widget(
@@ -78,8 +53,8 @@ pub fn render_set_alias(
                 .style(Style::default().fg(Color::White))
                 .block(Block::new().on_dark_gray().padding(Padding::horizontal(2)));
 
-            frame.render_widget(message_paragraph, text_block);
-            frame.render_widget(alias_input, alias_input_block);
+            frame.render_widget(message_paragraph, message_area);
+            frame.render_widget(alias_input, input_area);
         }
     }
 }
