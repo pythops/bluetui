@@ -2,11 +2,11 @@
 source: src/notification.rs
 expression: terminal.backend()
 ---
-"                                                               ┏━━━━━━━━━━━━━┓  "
-"                                                               ┃    Error    ┃  "
-"                                                               ┃ longer with ┃  "
-"                                                               ┃   newline   ┃  "
-"                                                               ┗━━━━━━━━━━━━━┛  "
+" ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  "
+" ┃                                   Info                                    ┃  "
+" ┃  extremely long WITHOUT newline Lorem ipsum dolor sit amet, consectetur   ┃  "
+" ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  "
+"                                                                                "
 "                                                                                "
 "                                                                                "
 "                                                                                "

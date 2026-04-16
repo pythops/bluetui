@@ -1,0 +1,28 @@
+---
+source: src/notification.rs
+expression: terminal.backend()
+---
+" ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  "
+" ┃                                   Error                                   ┃  "
+" ┃    extremely long WITH newline Lorem ipsum dolor sit amet, consectetur    ┃  "
+" ┃adipiscing elit. Sed id mauris sit amet libero convallis fringilla quis non┃  "
+" ┃   augue. In sollicitudin quam sed magna finibus, vitae malesuada magna    ┃  "
+" ┃                                porttitor.                                 ┃  "
+" ┃ Pellentesque in dictum dui. Nullam nec mi venenatis, faucibus odio eget,  ┃  "
+" ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
+"                                                                                "
