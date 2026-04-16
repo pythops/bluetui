@@ -12,12 +12,12 @@ use bluer::{
 use futures::FutureExt;
 use ratatui::{
     Frame,
-    layout::{Alignment, Constraint, Layout, Margin, Rect},
-    style::{Color, Modifier, Style, Stylize},
-    text::{Line, Span},
+    layout::{Constraint, Layout, Margin, Rect},
+    style::{Color, Style, Stylize},
+    text::Line,
     widgets::{
-        Block, BorderType, Borders, Cell, Clear, Padding, Paragraph, Row, Scrollbar,
-        ScrollbarOrientation, ScrollbarState, Table, TableState,
+        Block, BorderType, Borders, Cell, Padding, Row, Scrollbar, ScrollbarOrientation,
+        ScrollbarState, Table, TableState,
     },
 };
 use tokio::sync::mpsc::UnboundedSender;
@@ -25,6 +25,7 @@ use tui_input::Input;
 
 use crate::{
     agent::AuthAgent,
+    alias::render_set_alias,
     bluetooth::Controller,
     config::{Config, Width},
     favorite::{read_favorite_devices_from_disk, save_favorite_devices_to_disk},
@@ -163,99 +164,6 @@ impl App {
                 }
             }
             Width::Auto => frame.area(),
-        }
-    }
-
-    pub fn render_set_alias(&mut self, frame: &mut Frame, area: Rect) {
-        let block = Layout::vertical([
-            Constraint::Fill(1),
-            Constraint::Length(6),
-            Constraint::Fill(1),
-        ])
-        .split(area);
-
-        let block = Layout::horizontal([
-            Constraint::Fill(1),
-            Constraint::Max(70),
-            Constraint::Fill(1),
-        ])
-        .split(block[1])[1];
-
-        let (text_block, alias_block) = {
-            let chunks = Layout::vertical(
-                [
-                    Constraint::Length(1),
-                    Constraint::Length(3),
-                    Constraint::Length(1),
-                    Constraint::Length(2),
-                ]
-                .as_ref(),
-            )
-            .split(block);
-
-            let area1 = Layout::horizontal(
-                [
-                    Constraint::Length(1),
-                    Constraint::Fill(1),
-                    Constraint::Length(1),
-                ]
-                .as_ref(),
-            )
-            .split(chunks[1]);
-
-            let area2 = Layout::horizontal(
-                [
-                    Constraint::Percentage(20),
-                    Constraint::Fill(1),
-                    Constraint::Percentage(20),
-                ]
-                .as_ref(),
-            )
-            .split(chunks[2]);
-
-            (area1[1], area2[1])
-        };
-
-        frame.render_widget(Clear, block);
-        frame.render_widget(
-            Block::new()
-                .borders(Borders::ALL)
-                .border_type(BorderType::Thick)
-                .style(Style::default().green())
-                .border_style(Style::default().fg(Color::Green)),
-            block,
-        );
-
-        if let Some(selected_controller) = self.controller_state.selected() {
-            let controller = &self.controllers[selected_controller];
-            if let Some(index) = self.paired_devices_state.selected() {
-                let name = controller.paired_devices[index].alias.as_str();
-
-                let text = Line::from(vec![
-                    Span::from("Enter the new name for "),
-                    Span::styled(
-                        name,
-                        Style::default().add_modifier(Modifier::BOLD | Modifier::ITALIC),
-                    ),
-                ]);
-
-                let msg = Paragraph::new(text)
-                    .alignment(Alignment::Center)
-                    .style(Style::default().fg(Color::White))
-                    .block(Block::new().padding(Padding::horizontal(2)));
-
-                let alias = Paragraph::new(self.new_alias.value())
-                    .alignment(Alignment::Left)
-                    .style(Style::default().fg(Color::White))
-                    .block(
-                        Block::new()
-                            .bg(Color::DarkGray)
-                            .padding(Padding::horizontal(2)),
-                    );
-
-                frame.render_widget(msg, text_block);
-                frame.render_widget(alias, alias_block);
-            }
         }
     }
 
@@ -685,7 +593,14 @@ impl App {
 
             // Set alias popup
             if self.focused_block == FocusedBlock::SetDeviceAliasBox {
-                self.render_set_alias(frame, area);
+                render_set_alias(
+                    &self.controllers,
+                    &self.controller_state,
+                    &self.paired_devices_state,
+                    &self.new_alias,
+                    frame,
+                    area,
+                );
             }
 
             // Request Confirmation

@@ -1,4 +1,5 @@
 pub mod agent;
+mod alias;
 pub mod app;
 pub mod bluetooth;
 pub mod cli;
