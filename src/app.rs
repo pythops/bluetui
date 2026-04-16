@@ -609,7 +609,6 @@ impl App {
             }
 
             // Request to enter pin code
-
             if let Some(req) = &self.requests.enter_pin_code {
                 req.render(frame, area);
             }
