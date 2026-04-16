@@ -25,14 +25,16 @@ use tui_input::Input;
 
 use crate::{
     agent::AuthAgent,
-    bluetooth::Controller,
+    bluetooth::{BatteryCache, Controller, PendingFetches},
     config::{Config, Width},
     favorite::{read_favorite_devices_from_disk, save_favorite_devices_to_disk},
     notification::Notification,
     requests::Requests,
     spinner::Spinner,
 };
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, atomic::Ordering};
+use tokio::sync::RwLock;
 
 pub type AppResult<T> = anyhow::Result<T>;
 
@@ -68,6 +70,8 @@ pub struct App {
     pub config: Arc<Config>,
     pub requests: Requests,
     pub auth_agent: AuthAgent,
+    pub battery_cache: BatteryCache,
+    pub pending_fetches: PendingFetches,
 }
 
 impl App {
@@ -104,8 +108,18 @@ impl App {
         let favorite_devices = read_favorite_devices_from_disk().await.unwrap_or_default();
 
         let handle = session.register_agent(agent).await?;
-        let controllers: Vec<Controller> =
-            Controller::get_all(session.clone(), &favorite_devices).await?;
+
+        // Initialize battery cache and pending fetches tracker
+        let battery_cache: BatteryCache = Arc::new(RwLock::new(HashMap::new()));
+        let pending_fetches: PendingFetches = Arc::new(RwLock::new(HashSet::new()));
+
+        let controllers: Vec<Controller> = Controller::get_all(
+            session.clone(),
+            &favorite_devices,
+            battery_cache.clone(),
+            pending_fetches.clone(),
+        )
+        .await?;
 
         let mut controller_state = TableState::default();
         if controllers.is_empty() {
@@ -130,6 +144,8 @@ impl App {
             config,
             requests: Requests::default(),
             auth_agent,
+            battery_cache,
+            pending_fetches,
         })
     }
 
@@ -418,41 +434,37 @@ impl App {
                         d.is_trusted.to_string(),
                         d.is_connected.to_string(),
                         {
-                            if let Some(battery_percentage) = d.battery_percentage {
-                                match battery_percentage {
-                                    n if n >= 90 => {
-                                        format!("{battery_percentage}% 󰥈 ")
-                                    }
-                                    n if (80..90).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥅 ")
-                                    }
-                                    n if (70..80).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥄 ")
-                                    }
-                                    n if (60..70).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥃 ")
-                                    }
-                                    n if (50..60).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥂 ")
-                                    }
-                                    n if (40..50).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥁 ")
-                                    }
-                                    n if (30..40).contains(&n) => {
-                                        format!("{battery_percentage}% 󰥀 ")
-                                    }
-                                    n if (20..30).contains(&n) => {
-                                        format!("{battery_percentage}% 󰤿 ")
-                                    }
-                                    n if (10..20).contains(&n) => {
-                                        format!("{battery_percentage}% 󰤾 ")
-                                    }
-                                    _ => {
-                                        format!("{battery_percentage}% 󰤾 ")
-                                    }
+                            let battery_icon = |pct: u8| -> &'static str {
+                                match pct {
+                                    n if n >= 90 => "󰥈 ",
+                                    n if (80..90).contains(&n) => "󰥅 ",
+                                    n if (70..80).contains(&n) => "󰥄 ",
+                                    n if (60..70).contains(&n) => "󰥃 ",
+                                    n if (50..60).contains(&n) => "󰥂 ",
+                                    n if (40..50).contains(&n) => "󰥁 ",
+                                    n if (30..40).contains(&n) => "󰥀 ",
+                                    n if (20..30).contains(&n) => "󰤿 ",
+                                    _ => "󰤾 ",
                                 }
-                            } else {
-                                String::new()
+                            };
+
+                            match (d.battery_percentage, d.battery_percentage_peripheral) {
+                                (Some(central), Some(peripheral)) => {
+                                    let min_pct = central.min(peripheral);
+                                    format!(
+                                        "{}%|{}% {}",
+                                        central,
+                                        peripheral,
+                                        battery_icon(min_pct)
+                                    )
+                                }
+                                (Some(central), None) => {
+                                    format!("{}% {}", central, battery_icon(central))
+                                }
+                                (None, Some(peripheral)) => {
+                                    format!("{}% {}", peripheral, battery_icon(peripheral))
+                                }
+                                (None, None) => String::new(),
                             }
                         },
                     ])
@@ -467,10 +479,10 @@ impl App {
                 self.paired_devices_state.select(Some(0));
             }
 
-            let show_battery_column = selected_controller
-                .paired_devices
-                .iter()
-                .any(|device| device.battery_percentage.is_some());
+            let show_battery_column = selected_controller.paired_devices.iter().any(|device| {
+                device.battery_percentage.is_some()
+                    || device.battery_percentage_peripheral.is_some()
+            });
 
             let mut widths = vec![
                 Constraint::Length(1),
@@ -480,7 +492,8 @@ impl App {
             ];
 
             if show_battery_column {
-                widths.push(Constraint::Length(10));
+                // Width for "100%|100% 󰥈 " format
+                widths.push(Constraint::Length(14));
             }
 
             let paired_devices_table = Table::new(rows, widths)
@@ -738,8 +751,13 @@ impl App {
     }
 
     pub async fn refresh(&mut self) -> AppResult<()> {
-        let refreshed_controllers =
-            Controller::get_all(self.session.clone(), &self.favorite_devices).await?;
+        let refreshed_controllers = Controller::get_all(
+            self.session.clone(),
+            &self.favorite_devices,
+            self.battery_cache.clone(),
+            self.pending_fetches.clone(),
+        )
+        .await?;
 
         // Remove unplugged adapters in a single pass
         let mut adapter_removed = false;
