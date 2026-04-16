@@ -568,7 +568,6 @@ impl App {
 
             let popup_area = self.area(frame);
 
-            // Help
             Help::render(
                 frame,
                 popup_area,
@@ -577,9 +576,6 @@ impl App {
                 self.config.clone(),
             );
 
-            // Pairing confirmation
-
-            // Set alias popup
             if self.focused_block == FocusedBlock::SetDeviceAliasBox {
                 render_set_alias(
                     &self.controllers,
@@ -701,7 +697,6 @@ impl App {
     }
 
     pub fn quit(&mut self) {
-        // TODO: use env_logger error!()
         let _ = save_favorite_devices_to_disk(&self.favorite_devices);
         self.running = false;
     }
