@@ -13,11 +13,10 @@ use futures::FutureExt;
 use ratatui::{
     Frame,
     layout::{Constraint, Layout, Margin, Rect},
-    style::{Color, Style, Stylize},
-    text::Line,
+    style::{Style, Stylize},
     widgets::{
-        Block, BorderType, Borders, Cell, Padding, Row, Scrollbar, ScrollbarOrientation,
-        ScrollbarState, Table, TableState,
+        Block, BorderType, Cell, Padding, Row, Scrollbar, ScrollbarOrientation, ScrollbarState,
+        Table, TableState,
     },
 };
 use tokio::sync::mpsc::UnboundedSender;
@@ -470,58 +469,48 @@ impl App {
                 let widths = [Constraint::Length(20), Constraint::Length(20)];
 
                 let new_devices_table = Table::new(rows, widths)
-                    .header({
-                        if self.focused_block == FocusedBlock::NewDevices {
-                            Row::new(vec![
-                                Cell::from(Line::from("Address").fg(Color::Yellow).centered()),
-                                Cell::from(Line::from("Name").fg(Color::Yellow).centered()),
-                            ])
-                            .style(Style::new().bold())
-                            .bottom_margin(1)
+                    .header(
+                        Row::new(if self.focused_block == FocusedBlock::NewDevices {
+                            [
+                                "Address".yellow().into_centered_line(),
+                                "Name".yellow().into_centered_line(),
+                            ]
                         } else {
-                            Row::new(vec![
-                                Cell::from(Line::from("Address").centered()),
-                                Cell::from(Line::from("Name").centered()),
-                            ])
-                            .bottom_margin(1)
-                        }
-                    })
+                            [
+                                "Address".white().into_centered_line(),
+                                "Name".white().into_centered_line(),
+                            ]
+                        })
+                        .bold()
+                        .bottom_margin(1),
+                    )
                     .block(
-                        Block::default()
+                        Block::bordered()
                             .padding(Padding::horizontal(1))
-                            .title({
-                                if selected_controller.is_scanning.load(Ordering::Relaxed) {
-                                    format!(" Scanning {} ", self.spinner.draw())
-                                } else {
-                                    String::from(" Discovered devices ")
-                                }
+                            .title(if selected_controller.is_scanning.load(Ordering::Relaxed) {
+                                format!(" Scanning {} ", self.spinner.draw())
+                            } else {
+                                String::from(" Discovered devices ")
                             })
-                            .title_style({
-                                if self.focused_block == FocusedBlock::NewDevices {
-                                    Style::default().bold()
-                                } else {
-                                    Style::default()
-                                }
+                            .title_style(if self.focused_block == FocusedBlock::NewDevices {
+                                Style::default().bold()
+                            } else {
+                                Style::default()
                             })
-                            .borders(Borders::ALL)
-                            .border_style({
-                                if self.focused_block == FocusedBlock::NewDevices {
-                                    Style::default().fg(Color::Green)
-                                } else {
-                                    Style::default()
-                                }
+                            .border_style(if self.focused_block == FocusedBlock::NewDevices {
+                                Style::default().green()
+                            } else {
+                                Style::default()
                             })
-                            .border_type({
-                                if self.focused_block == FocusedBlock::NewDevices {
-                                    BorderType::Thick
-                                } else {
-                                    BorderType::default()
-                                }
+                            .border_type(if self.focused_block == FocusedBlock::NewDevices {
+                                BorderType::Thick
+                            } else {
+                                BorderType::default()
                             }),
                     )
                     .flex(self.config.layout)
                     .row_highlight_style(if self.focused_block == FocusedBlock::NewDevices {
-                        Style::default().bg(Color::DarkGray).fg(Color::White)
+                        Style::default().white().on_dark_gray()
                     } else {
                         Style::default()
                     });
