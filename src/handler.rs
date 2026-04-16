@@ -16,9 +16,19 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
     if let Some(selected_controller) = app.controller_state.selected() {
         let controller = &app.controllers[selected_controller];
         if let Some(index) = app.paired_devices_state.selected() {
-            let addr = controller.paired_devices[index].addr;
-            match controller.adapter.device(addr) {
+            let paired_device = &controller.paired_devices[index];
+            if paired_device.is_busy.load(Ordering::Relaxed) {
+                let _ = Notification::send(
+                    "Device is busy. Please wait for the current operation to finish.".into(),
+                    NotificationLevel::Warning,
+                    sender.clone(),
+                );
+                return;
+            }
+            paired_device.is_busy.store(true, Ordering::Relaxed);
+            match controller.adapter.device(paired_device.addr) {
                 Ok(device) => {
+                    let paired_device_is_busy = paired_device.is_busy.clone();
                     tokio::spawn(async move {
                         match device.is_connected().await {
                             Ok(is_connected) => {
@@ -66,6 +76,7 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                                 );
                             }
                         }
+                        paired_device_is_busy.store(false, Ordering::Relaxed);
                     });
                 }
                 Err(e) => {

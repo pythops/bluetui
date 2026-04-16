@@ -414,6 +414,11 @@ impl App {
                         } else {
                             "".to_string()
                         },
+                        if d.is_busy.load(Ordering::Relaxed) {
+                            "BUSY".to_string()
+                        } else {
+                            "".to_string()
+                        },
                         format!("{} {}", &d.icon, &d.alias),
                         d.is_trusted.to_string(),
                         d.is_connected.to_string(),
@@ -474,6 +479,7 @@ impl App {
 
             let mut widths = vec![
                 Constraint::Length(1),
+                Constraint::Length(4),
                 Constraint::Max(25),
                 Constraint::Length(7),
                 Constraint::Length(9),
@@ -489,6 +495,7 @@ impl App {
                         if self.focused_block == FocusedBlock::PairedDevices {
                             Row::new(vec![
                                 Cell::from("").style(Style::default().fg(Color::Yellow)),
+                                Cell::from("").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                                 Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -498,6 +505,7 @@ impl App {
                             .bottom_margin(1)
                         } else {
                             Row::new(vec![
+                                Cell::from(""),
                                 Cell::from(""),
                                 Cell::from("Name"),
                                 Cell::from("Trusted"),
@@ -509,6 +517,7 @@ impl App {
                     } else if self.focused_block == FocusedBlock::PairedDevices {
                         Row::new(vec![
                             Cell::from("").style(Style::default().fg(Color::Yellow)),
+                            Cell::from("").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Name").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
                             Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
@@ -517,6 +526,7 @@ impl App {
                         .bottom_margin(1)
                     } else {
                         Row::new(vec![
+                            Cell::from(""),
                             Cell::from(""),
                             Cell::from("Name"),
                             Cell::from("Trusted"),

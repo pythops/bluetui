@@ -30,6 +30,10 @@ pub struct Device {
     pub is_trusted: bool,
     pub is_connected: bool,
     pub battery_percentage: Option<u8>,
+
+    /// user has requested connect/disconnect and (bluer) hasn't yet performed the action
+    /// when true, a spinner is shown in the ui
+    pub is_busy: Arc<AtomicBool>,
 }
 
 impl Device {
@@ -126,6 +130,7 @@ impl Controller {
                 is_connected,
                 is_favorite,
                 battery_percentage,
+                is_busy: Arc::new(AtomicBool::new(false)),
             };
 
             if dev.is_paired {
