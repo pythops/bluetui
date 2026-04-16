@@ -8,7 +8,74 @@ use ratatui::{
     widgets::Paragraph,
 };
 
-use crate::{app::FocusedBlock, config::Config};
+use crate::{
+    app::{FocusedBlock, HelpAction, ClickableHelpItem},
+    config::Config,
+};
+
+struct HelpItem<'a> {
+    spans: Vec<Span<'a>>,
+    x_start: u16,
+    x_end: u16,
+    action: Option<HelpAction>,
+}
+
+impl<'a> HelpItem<'a> {
+    fn new(spans: Vec<Span<'a>>, action: Option<HelpAction>) -> Self {
+        let width: u16 = spans.iter().map(|s| s.content.len() as u16).sum();
+        Self {
+            spans,
+            x_start: 0,
+            x_end: width,
+            action,
+        }
+    }
+
+    fn width(&self) -> u16 {
+        self.x_end - self.x_start
+    }
+
+    fn set_position(&mut self, x_start: u16) {
+        let width = self.width();
+        self.x_start = x_start;
+        self.x_end = x_start + width;
+    }
+
+    fn get_spans(&self) -> Vec<Span<'a>> {
+        self.spans.clone()
+    }
+
+    fn to_clickable_item(&self, y: u16) -> ClickableHelpItem {
+        ClickableHelpItem {
+            x_start: self.x_start,
+            x_end: self.x_end,
+            y,
+            action: self.action,
+        }
+    }
+}
+
+fn place_items_in_row(
+    items: &mut [&mut HelpItem<'_>],
+    start_x: u16,
+    sep_width: u16,
+    y: u16,
+    clickable_items: &mut Vec<ClickableHelpItem>,
+) {
+    let mut current_x = start_x;
+    let last_idx = items.len().saturating_sub(1);
+
+    for (idx, item) in items.iter_mut().enumerate() {
+        item.set_position(current_x);
+        clickable_items.push(item.to_clickable_item(y));
+
+        if idx < last_idx {
+            current_x = current_x
+                .saturating_add(item.width())
+                .saturating_add(sep_width);
+        }
+    }
+}
 
 pub struct Help;
 
@@ -19,126 +86,368 @@ impl Help {
         focused_block: FocusedBlock,
         rendering_block: Rect,
         config: Arc<Config>,
-    ) {
+    ) -> Vec<ClickableHelpItem> {
+        let mut clickable_items: Vec<ClickableHelpItem> = Vec::new();
+
         let help = match focused_block {
             FocusedBlock::PairedDevices => {
                 if area.width > 120 {
-                    vec![Line::from(vec![
-                        Span::from("k,").bold(),
-                        Span::from("  Up"),
-                        Span::from(" | "),
-                        Span::from("j,").bold(),
-                        Span::from("  Down"),
-                        Span::from(" | "),
-                        Span::from("s").bold(),
-                        Span::from("  Scan on/off"),
-                        Span::from(" | "),
+                    let mut up_item =
+                        HelpItem::new(vec![Span::from("k,").bold(), Span::from("  Up")], Some(HelpAction::ScrollUp));
+                    let mut down_item =
+                        HelpItem::new(vec![Span::from("j,").bold(), Span::from("  Down")], Some(HelpAction::ScrollDown));
+                    let mut scan_item =
+                        HelpItem::new(vec![Span::from("s").bold(), Span::from("  Scan on/off")], Some(HelpAction::ToggleScan));
+                    let mut unpair_item = HelpItem::new(vec![
                         Span::from(config.paired_device.unpair.to_string()).bold(),
-                        Span::from("  Unpair"),
-                        Span::from(" | "),
-                        Span::from("󱁐  or ↵ ").bold(),
-                        Span::from(" Dis/Connect"),
-                        Span::from(" | "),
+                        Span::from("  Unpair----"),
+                    ], Some(HelpAction::Unpair));
+                    let mut connect_item =
+                        HelpItem::new(vec![Span::from("󱁐  or ↵ ").bold(), Span::from(" Dis/Connect")], Some(HelpAction::ToggleConnect));
+                    let mut trust_item = HelpItem::new(vec![
                         Span::from(config.paired_device.toggle_trust.to_string()).bold(),
                         Span::from(" Un/Trust"),
-                        Span::from(" | "),
+                    ], Some(HelpAction::ToggleTrust));
+                    let mut favorite_item = HelpItem::new(vec![
                         Span::from(config.paired_device.toggle_favorite.to_string()).bold(),
                         Span::from(" Un/Favorite"),
-                        Span::from(" | "),
+                    ], Some(HelpAction::ToggleFavorite));
+                    let mut rename_item = HelpItem::new(vec![
                         Span::from(config.paired_device.rename.to_string()).bold(),
                         Span::from(" Rename"),
-                        Span::from(" | "),
-                        Span::from("⇄").bold(),
-                        Span::from(" Nav"),
-                    ])]
+                    ], Some(HelpAction::Rename));
+                    let mut nav_item =
+                        HelpItem::new(vec![Span::from("⇄").bold(), Span::from(" Nav")], None);
+
+                    let separator = Span::from(" | ");
+
+                    let mut all_spans: Vec<Span> = Vec::new();
+                    all_spans.extend(up_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(down_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(scan_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(unpair_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(connect_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(trust_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(favorite_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(rename_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(nav_item.get_spans());
+
+                    // Calculate start_x for centered line
+                    let total_width: u16 = all_spans.iter().map(|s| s.content.len() as u16).sum();
+                    let start_x =
+                        rendering_block.x + (rendering_block.width.saturating_sub(total_width)) / 2;
+
+                    // Set positions on each item
+                    let sep_width = separator.content.len() as u16;
+                    let mut items = [
+                        &mut up_item,
+                        &mut down_item,
+                        &mut scan_item,
+                        &mut unpair_item,
+                        &mut connect_item,
+                        &mut trust_item,
+                        &mut favorite_item,
+                        &mut rename_item,
+                        &mut nav_item,
+                    ];
+                    place_items_in_row(
+                        &mut items,
+                        start_x,
+                        sep_width,
+                        rendering_block.y,
+                        &mut clickable_items,
+                    );
+
+                    vec![Line::from(all_spans)]
                 } else {
-                    vec![
-                        Line::from(vec![
-                            Span::from("󱁐  or ↵ ").bold(),
-                            Span::from(" Dis/Connect"),
-                            Span::from(" | "),
-                            Span::from("s").bold(),
-                            Span::from("  Scan on/off"),
-                            Span::from(" | "),
+                    let mut connect_item = HelpItem::new(
+                        vec![Span::from("󱁐  or ↵ ").bold(), Span::from(" Dis/Connect")],
+                        Some(HelpAction::ToggleConnect),
+                    );
+                    let mut scan_item = HelpItem::new(
+                        vec![Span::from("s").bold(), Span::from("  Scan on/off")],
+                        Some(HelpAction::ToggleScan),
+                    );
+                    let mut unpair_item = HelpItem::new(
+                        vec![
                             Span::from(config.paired_device.unpair.to_string()).bold(),
                             Span::from("  Unpair"),
-                            Span::from(" | "),
+                        ],
+                        Some(HelpAction::Unpair),
+                    );
+                    let mut favorite_item = HelpItem::new(
+                        vec![
                             Span::from(config.paired_device.toggle_favorite.to_string()).bold(),
                             Span::from(" Un/Favorite"),
-                        ]),
-                        Line::from(vec![
+                        ],
+                        Some(HelpAction::ToggleFavorite),
+                    );
+
+                    let mut trust_item = HelpItem::new(
+                        vec![
                             Span::from(config.paired_device.toggle_trust.to_string()).bold(),
                             Span::from(" Un/Trust"),
-                            Span::from(" | "),
+                        ],
+                        Some(HelpAction::ToggleTrust),
+                    );
+                    let mut rename_item = HelpItem::new(
+                        vec![
                             Span::from(config.paired_device.rename.to_string()).bold(),
                             Span::from(" Rename"),
-                            Span::from(" | "),
-                            Span::from("k,").bold(),
-                            Span::from("  Up"),
-                            Span::from(" | "),
-                            Span::from("j,").bold(),
-                            Span::from("  Down"),
-                            Span::from(" | "),
-                            Span::from("⇄").bold(),
-                            Span::from(" Nav"),
-                        ]),
-                    ]
+                        ],
+                        Some(HelpAction::Rename),
+                    );
+                    let mut up_item =
+                        HelpItem::new(vec![Span::from("k,").bold(), Span::from("  Up")], Some(HelpAction::ScrollUp));
+                    let mut down_item =
+                        HelpItem::new(vec![Span::from("j,").bold(), Span::from("  Down")], Some(HelpAction::ScrollDown));
+                    let mut nav_item =
+                        HelpItem::new(vec![Span::from("⇄").bold(), Span::from(" Nav")], None);
+
+                    let separator = Span::from(" | ");
+                    let sep_width = separator.content.len() as u16;
+
+                    let mut line1: Vec<Span> = Vec::new();
+                    line1.extend(connect_item.get_spans());
+                    line1.push(separator.clone());
+                    line1.extend(scan_item.get_spans());
+                    line1.push(separator.clone());
+                    line1.extend(unpair_item.get_spans());
+                    line1.push(separator.clone());
+                    line1.extend(favorite_item.get_spans());
+
+                    let total_width1: u16 = line1.iter().map(|s| s.content.len() as u16).sum();
+                    let start_x1 =
+                        rendering_block.x + (rendering_block.width.saturating_sub(total_width1)) / 2;
+                    let mut line1_items = [
+                        &mut connect_item,
+                        &mut scan_item,
+                        &mut unpair_item,
+                        &mut favorite_item,
+                    ];
+                    place_items_in_row(
+                        &mut line1_items,
+                        start_x1,
+                        sep_width,
+                        rendering_block.y,
+                        &mut clickable_items,
+                    );
+
+                    let mut line2: Vec<Span> = Vec::new();
+                    line2.extend(trust_item.get_spans());
+                    line2.push(separator.clone());
+                    line2.extend(rename_item.get_spans());
+                    line2.push(separator.clone());
+                    line2.extend(up_item.get_spans());
+                    line2.push(separator.clone());
+                    line2.extend(down_item.get_spans());
+                    line2.push(separator.clone());
+                    line2.extend(nav_item.get_spans());
+
+                    let total_width2: u16 = line2.iter().map(|s| s.content.len() as u16).sum();
+                    let start_x2 =
+                        rendering_block.x + (rendering_block.width.saturating_sub(total_width2)) / 2;
+                    let mut line2_items = [
+                        &mut trust_item,
+                        &mut rename_item,
+                        &mut up_item,
+                        &mut down_item,
+                        &mut nav_item,
+                    ];
+                    place_items_in_row(
+                        &mut line2_items,
+                        start_x2,
+                        sep_width,
+                        rendering_block.y + 1,
+                        &mut clickable_items,
+                    );
+
+                    vec![Line::from(line1), Line::from(line2)]
                 }
             }
-            FocusedBlock::NewDevices => vec![Line::from(vec![
-                Span::from("k,").bold(),
-                Span::from("  Up"),
-                Span::from(" | "),
-                Span::from("j,").bold(),
-                Span::from("  Down"),
-                Span::from(" | "),
-                Span::from("󱁐  or ↵ ").bold(),
-                Span::from(" Pair"),
-                Span::from(" | "),
-                Span::from("s").bold(),
-                Span::from("  Scan on/off"),
-                Span::from(" | "),
-                Span::from("⇄").bold(),
-                Span::from(" Nav"),
-            ])],
+            FocusedBlock::NewDevices => {
+                let mut up_item =
+                    HelpItem::new(vec![Span::from("k,").bold(), Span::from("  Up")], Some(HelpAction::ScrollUp));
+                let mut down_item =
+                    HelpItem::new(vec![Span::from("j,").bold(), Span::from("  Down")], Some(HelpAction::ScrollDown));
+                let mut pair_item =
+                    HelpItem::new(vec![Span::from("󱁐  or ↵ ").bold(), Span::from(" Pair")], Some(HelpAction::Pair));
+                let mut scan_item =
+                    HelpItem::new(vec![Span::from("s").bold(), Span::from("  Scan on/off")], Some(HelpAction::ToggleScan));
+                let mut nav_item =
+                    HelpItem::new(vec![Span::from("⇄").bold(), Span::from(" Nav")], None);
+
+                let separator = Span::from(" | ");
+                let sep_width = separator.content.len() as u16;
+
+                let mut all_spans: Vec<Span> = Vec::new();
+                all_spans.extend(up_item.get_spans());
+                all_spans.push(separator.clone());
+                all_spans.extend(down_item.get_spans());
+                all_spans.push(separator.clone());
+                all_spans.extend(pair_item.get_spans());
+                all_spans.push(separator.clone());
+                all_spans.extend(scan_item.get_spans());
+                all_spans.push(separator.clone());
+                all_spans.extend(nav_item.get_spans());
+
+                let total_width: u16 = all_spans.iter().map(|s| s.content.len() as u16).sum();
+                let start_x =
+                    rendering_block.x + (rendering_block.width.saturating_sub(total_width)) / 2;
+                let mut items = [
+                    &mut up_item,
+                    &mut down_item,
+                    &mut pair_item,
+                    &mut scan_item,
+                    &mut nav_item,
+                ];
+                place_items_in_row(
+                    &mut items,
+                    start_x,
+                    sep_width,
+                    rendering_block.y,
+                    &mut clickable_items,
+                );
+
+                vec![Line::from(all_spans)]
+            }
             FocusedBlock::Adapter => {
                 if area.width > 80 {
-                    vec![Line::from(vec![
-                        Span::from("s").bold(),
-                        Span::from("  Scan on/off"),
-                        Span::from(" | "),
-                        Span::from(config.adapter.toggle_pairing.to_string()).bold(),
-                        Span::from(" Pairing on/off"),
-                        Span::from(" | "),
-                        Span::from(config.adapter.toggle_power.to_string()).bold(),
-                        Span::from(" Power on/off"),
-                        Span::from(" | "),
-                        Span::from(config.adapter.toggle_discovery.to_string()).bold(),
-                        Span::from(" Discovery on/off"),
-                        Span::from(" | "),
-                        Span::from("⇄").bold(),
-                        Span::from(" Nav"),
-                    ])]
-                } else {
-                    vec![
-                        Line::from(vec![
-                            Span::from("s").bold(),
-                            Span::from("  Scan on/off"),
-                            Span::from(" | "),
+                    let mut scan_item =
+                        HelpItem::new(vec![Span::from("s").bold(), Span::from("  Scan on/off")], Some(HelpAction::ToggleScan));
+                    let mut pairing_item = HelpItem::new(
+                        vec![
                             Span::from(config.adapter.toggle_pairing.to_string()).bold(),
                             Span::from(" Pairing on/off"),
-                        ]),
-                        Line::from(vec![
+                        ],
+                        Some(HelpAction::TogglePairing),
+                    );
+                    let mut power_item = HelpItem::new(
+                        vec![
                             Span::from(config.adapter.toggle_power.to_string()).bold(),
                             Span::from(" Power on/off"),
-                            Span::from(" | "),
+                        ],
+                        Some(HelpAction::TogglePower),
+                    );
+                    let mut discovery_item = HelpItem::new(
+                        vec![
                             Span::from(config.adapter.toggle_discovery.to_string()).bold(),
                             Span::from(" Discovery on/off"),
-                            Span::from(" | "),
-                            Span::from("⇄").bold(),
-                            Span::from(" Nav"),
-                        ]),
-                    ]
+                        ],
+                        Some(HelpAction::ToggleDiscovery),
+                    );
+                    let mut nav_item =
+                        HelpItem::new(vec![Span::from("⇄").bold(), Span::from(" Nav")], None);
+
+                    let separator = Span::from(" | ");
+                    let sep_width = separator.content.len() as u16;
+
+                    let mut all_spans: Vec<Span> = Vec::new();
+                    all_spans.extend(scan_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(pairing_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(power_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(discovery_item.get_spans());
+                    all_spans.push(separator.clone());
+                    all_spans.extend(nav_item.get_spans());
+
+                    let total_width: u16 = all_spans.iter().map(|s| s.content.len() as u16).sum();
+                    let start_x =
+                        rendering_block.x + (rendering_block.width.saturating_sub(total_width)) / 2;
+                    let mut items = [
+                        &mut scan_item,
+                        &mut pairing_item,
+                        &mut power_item,
+                        &mut discovery_item,
+                        &mut nav_item,
+                    ];
+                    place_items_in_row(
+                        &mut items,
+                        start_x,
+                        sep_width,
+                        rendering_block.y,
+                        &mut clickable_items,
+                    );
+
+                    vec![Line::from(all_spans)]
+                } else {
+                    let mut scan_item =
+                        HelpItem::new(vec![Span::from("s").bold(), Span::from("  Scan on/off")], Some(HelpAction::ToggleScan));
+                    let mut pairing_item = HelpItem::new(
+                        vec![
+                            Span::from(config.adapter.toggle_pairing.to_string()).bold(),
+                            Span::from(" Pairing on/off"),
+                        ],
+                        Some(HelpAction::TogglePairing),
+                    );
+
+                    let mut power_item = HelpItem::new(
+                        vec![
+                            Span::from(config.adapter.toggle_power.to_string()).bold(),
+                            Span::from(" Power on/off"),
+                        ],
+                        Some(HelpAction::TogglePower),
+                    );
+                    let mut discovery_item = HelpItem::new(
+                        vec![
+                            Span::from(config.adapter.toggle_discovery.to_string()).bold(),
+                            Span::from(" Discovery on/off"),
+                        ],
+                        Some(HelpAction::ToggleDiscovery),
+                    );
+                    let mut nav_item =
+                        HelpItem::new(vec![Span::from("⇄").bold(), Span::from(" Nav")], None);
+
+                    let separator = Span::from(" | ");
+                    let sep_width = separator.content.len() as u16;
+
+                    let mut line1: Vec<Span> = Vec::new();
+                    line1.extend(scan_item.get_spans());
+                    line1.push(separator.clone());
+                    line1.extend(pairing_item.get_spans());
+
+                    let total_width1: u16 = line1.iter().map(|s| s.content.len() as u16).sum();
+                    let start_x1 =
+                        rendering_block.x + (rendering_block.width.saturating_sub(total_width1)) / 2;
+                    let mut line1_items = [&mut scan_item, &mut pairing_item];
+                    place_items_in_row(
+                        &mut line1_items,
+                        start_x1,
+                        sep_width,
+                        rendering_block.y,
+                        &mut clickable_items,
+                    );
+
+                    let mut line2: Vec<Span> = Vec::new();
+                    line2.extend(power_item.get_spans());
+                    line2.push(separator.clone());
+                    line2.extend(discovery_item.get_spans());
+                    line2.push(separator.clone());
+                    line2.extend(nav_item.get_spans());
+
+                    let total_width2: u16 = line2.iter().map(|s| s.content.len() as u16).sum();
+                    let start_x2 =
+                        rendering_block.x + (rendering_block.width.saturating_sub(total_width2)) / 2;
+                    let mut line2_items = [&mut power_item, &mut discovery_item, &mut nav_item];
+                    place_items_in_row(
+                        &mut line2_items,
+                        start_x2,
+                        sep_width,
+                        rendering_block.y + 1,
+                        &mut clickable_items,
+                    );
+
+                    vec![Line::from(line1), Line::from(line2)]
                 }
             }
             FocusedBlock::SetDeviceAliasBox => {
@@ -187,8 +496,11 @@ impl Help {
                 ])]
             }
         };
+
         let help = Paragraph::new(help).centered().blue();
         frame.render_widget(help, rendering_block);
+
+        clickable_items
     }
 }
 
