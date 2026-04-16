@@ -136,16 +136,16 @@ impl App {
     pub fn reset_devices_state(&mut self) {
         if let Some(selected_controller) = self.controller_state.selected() {
             let controller = &self.controllers[selected_controller];
-            if !controller.paired_devices.is_empty() {
-                self.paired_devices_state.select(Some(0));
-            } else {
+            if controller.paired_devices.is_empty() {
                 self.paired_devices_state.select(None);
+            } else {
+                self.paired_devices_state.select(Some(0));
             }
 
-            if !controller.new_devices.is_empty() {
-                self.new_devices_state.select(Some(0));
-            } else {
+            if controller.new_devices.is_empty() {
                 self.new_devices_state.select(None);
+            } else {
+                self.new_devices_state.select(Some(0));
             }
         }
     }
@@ -162,7 +162,7 @@ impl App {
                     frame.area()
                 }
             }
-            _ => frame.area(),
+            Width::Auto => frame.area(),
         }
     }
 
@@ -300,8 +300,8 @@ impl App {
                 .iter()
                 .map(|controller| {
                     Row::new(vec![
-                        controller.name.to_string(),
-                        controller.alias.to_string(),
+                        controller.name.clone(),
+                        controller.alias.clone(),
                         {
                             if controller.is_powered {
                                 "On".to_string()
@@ -412,7 +412,7 @@ impl App {
                         if d.is_favorite {
                             STAR_SYMBOL.to_string()
                         } else {
-                            "".to_string()
+                            String::new()
                         },
                         format!("{} {}", &d.icon, &d.alias),
                         d.is_trusted.to_string(),
@@ -757,7 +757,9 @@ impl App {
 
         // Update selection after removal
         if adapter_removed {
-            if !self.controllers.is_empty() {
+            if self.controllers.is_empty() {
+                self.controller_state.select(None);
+            } else {
                 let i = match self.controller_state.selected() {
                     Some(i) => {
                         if i > 0 {
@@ -769,8 +771,6 @@ impl App {
                     None => 0,
                 };
                 self.controller_state.select(Some(i));
-            } else {
-                self.controller_state.select(None);
             }
         }
 

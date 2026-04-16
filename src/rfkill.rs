@@ -19,11 +19,11 @@ pub fn check() -> AppResult<()> {
                     match state {
                         0 => {
                             eprintln!(
-                                r#"
+                                r"
 The bluetooth device is soft blocked
 Run the following command to unblock it
 $ sudo rfkill unblock bluetooth
-                    "#
+                    "
                             );
                             std::process::exit(1);
                         }

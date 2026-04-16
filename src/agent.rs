@@ -73,10 +73,7 @@ pub async fn request_confirmation(request: RequestConfirmation, agent: AuthAgent
     r = agent.rx_request_confirmation.recv() =>  {
                 match r {
                     Ok(v) => {
-                        match v  {
-                            true => Ok(()),
-                            false =>  Err(ReqError::Rejected)
-                        }
+                        if v { Ok(()) } else { Err(ReqError::Rejected) }
                     }
                     Err(_) => {
                         Err(ReqError::Canceled)

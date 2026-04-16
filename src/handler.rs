@@ -12,7 +12,7 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use tui_input::backend::crossterm::EventHandler;
 
-async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
+fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
     if let Some(selected_controller) = app.controller_state.selected() {
         let controller = &app.controllers[selected_controller];
         if let Some(index) = app.paired_devices_state.selected() {
@@ -24,7 +24,7 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                             Ok(is_connected) => {
                                 if is_connected {
                                     match device.disconnect().await {
-                                        Ok(_) => {
+                                        Ok(()) => {
                                             let _ = Notification::send(
                                                 "Device disconnected".into(),
                                                 NotificationLevel::Info,
@@ -41,7 +41,7 @@ async fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                                     }
                                 } else {
                                     match device.connect().await {
-                                        Ok(_) => {
+                                        Ok(()) => {
                                             let _ = Notification::send(
                                                 "Device connected".into(),
                                                 NotificationLevel::Info,
@@ -92,7 +92,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
 
                         tokio::spawn(async move {
                             match device.pair().await {
-                                Ok(_) => {
+                                Ok(()) => {
                                     let _ = Notification::send(
                                         "Device paired".into(),
                                         NotificationLevel::Info,
@@ -101,7 +101,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
 
                                     let _ = sender.send(Event::NewPairedDevice(device.address()));
                                     match device.set_trusted(true).await {
-                                        Ok(_) => {
+                                        Ok(()) => {
                                             let _ = Notification::send(
                                                 "Device trusted".into(),
                                                 NotificationLevel::Info,
@@ -115,9 +115,9 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                                 sender.clone(),
                                             );
                                         }
-                                    };
+                                    }
                                     match device.connect().await {
-                                        Ok(_) => {
+                                        Ok(()) => {
                                             let _ = Notification::send(
                                                 "Device connected".into(),
                                                 NotificationLevel::Info,
@@ -131,7 +131,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                                 sender.clone(),
                                             );
                                         }
-                                    };
+                                    }
                                 }
                                 Err(e) => {
                                     let _ = Notification::send(
@@ -171,7 +171,7 @@ pub async fn handle_key_events(
                     if let Some(index) = app.paired_devices_state.selected() {
                         let device = &controller.paired_devices[index];
                         match device.set_alias(app.new_alias.value().into()).await {
-                            Ok(_) => {
+                            Ok(()) => {
                                 Notification::send(
                                     "Set New Alias".into(),
                                     NotificationLevel::Info,
@@ -506,7 +506,7 @@ pub async fn handle_key_events(
                                         if let Some(index) = app.paired_devices_state.selected() {
                                             let addr = controller.paired_devices[index].addr;
                                             match controller.adapter.remove_device(addr).await {
-                                                Ok(_) => {
+                                                Ok(()) => {
                                                     let _ = Notification::send(
                                                         "Device unpaired".into(),
                                                         NotificationLevel::Info,
@@ -526,8 +526,7 @@ pub async fn handle_key_events(
                                 }
 
                                 // Connect / Disconnect
-                                KeyCode::Enter => toggle_connect(app, sender).await,
-                                KeyCode::Char(' ') => toggle_connect(app, sender).await,
+                                KeyCode::Enter | KeyCode::Char(' ') => toggle_connect(app, sender),
 
                                 // Trust / Untrust
                                 KeyCode::Char(c) if c == config.paired_device.toggle_trust => {
@@ -547,7 +546,7 @@ pub async fn handle_key_events(
                                                                         .set_trusted(false)
                                                                         .await
                                                                     {
-                                                                        Ok(_) => {
+                                                                        Ok(()) => {
                                                                             let _ = Notification::send(
                                                                         "Device untrusted"
                                                                             .into(),
@@ -568,7 +567,7 @@ pub async fn handle_key_events(
                                                                         .set_trusted(true)
                                                                         .await
                                                                     {
-                                                                        Ok(_) => {
+                                                                        Ok(()) => {
                                                                             let _ = Notification::send(
                                                                         "Device trusted"
                                                                             .into(),
@@ -646,7 +645,7 @@ pub async fn handle_key_events(
                                                         if is_pairable {
                                                             match adapter.set_pairable(false).await
                                                             {
-                                                                Ok(_) => {
+                                                                Ok(()) => {
                                                                     let _ = Notification::send(
                                                                         "Adapter unpairable".into(),
                                                                         NotificationLevel::Info,
@@ -663,7 +662,7 @@ pub async fn handle_key_events(
                                                             }
                                                         } else {
                                                             match adapter.set_pairable(true).await {
-                                                                Ok(_) => {
+                                                                Ok(()) => {
                                                                     let _ = Notification::send(
                                                                         "Adapter pairable".into(),
                                                                         NotificationLevel::Info,
@@ -706,7 +705,7 @@ pub async fn handle_key_events(
                                                     Ok(is_powered) => {
                                                         if is_powered {
                                                             match adapter.set_powered(false).await {
-                                                                Ok(_) => {
+                                                                Ok(()) => {
                                                                     let _ = Notification::send(
                                                                         "Adapter powered off"
                                                                             .into(),
@@ -724,7 +723,7 @@ pub async fn handle_key_events(
                                                             }
                                                         } else {
                                                             match adapter.set_powered(true).await {
-                                                                Ok(_) => {
+                                                                Ok(()) => {
                                                                     let _ = Notification::send(
                                                                         "Adapter powered on".into(),
                                                                         NotificationLevel::Info,
@@ -770,7 +769,7 @@ pub async fn handle_key_events(
                                                                 .set_discoverable(false)
                                                                 .await
                                                             {
-                                                                Ok(_) => {
+                                                                Ok(()) => {
                                                                     let _ = Notification::send(
                                                                         "Adapter undiscoverable"
                                                                             .into(),
@@ -791,7 +790,7 @@ pub async fn handle_key_events(
                                                                 .set_discoverable(true)
                                                                 .await
                                                             {
-                                                                Ok(_) => {
+                                                                Ok(()) => {
                                                                     let _ = Notification::send(
                                                                         "Adapter discoverable"
                                                                             .into(),
@@ -829,8 +828,7 @@ pub async fn handle_key_events(
                         FocusedBlock::NewDevices => {
                             // Pair new device
                             match key_event.code {
-                                KeyCode::Enter => pair(app, sender).await,
-                                KeyCode::Char(' ') => pair(app, sender).await,
+                                KeyCode::Enter | KeyCode::Char(' ') => pair(app, sender).await,
                                 _ => {}
                             }
                         }

@@ -17,7 +17,7 @@ async fn main() -> AppResult<()> {
 
     let config_file_path = args.config_path.map(|config_path| {
         if config_path.exists() {
-            config_path.to_owned()
+            config_path.clone()
         } else {
             eprintln!("Config file not found");
             exit(1);
@@ -48,7 +48,7 @@ async fn main() -> AppResult<()> {
                     tui.events.sender.clone(),
                     config.clone(),
                 )
-                .await?
+                .await?;
             }
             Event::Notification(notification) => {
                 app.notifications.push(notification);

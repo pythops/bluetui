@@ -19,6 +19,7 @@ pub struct Controller {
     pub new_devices: Vec<Device>,
 }
 
+#[allow(clippy::struct_excessive_bools, clippy::struct_field_names)]
 #[derive(Debug, Clone)]
 pub struct Device {
     device: BTDevice,
@@ -119,24 +120,21 @@ impl Controller {
             let dev = Device {
                 device,
                 addr,
-                alias,
                 icon,
+                alias,
                 is_paired,
+                is_favorite,
                 is_trusted,
                 is_connected,
-                is_favorite,
                 battery_percentage,
             };
 
             if dev.is_paired {
                 paired_devices.push(dev);
+            } else if is_mac_addr(&dev.alias) {
+                devices_without_aliases.push(dev);
             } else {
-                match is_mac_addr(&dev.alias) {
-                    // most device names without aliases may default to their mac addresses, but we should not
-                    // assume that to be 100% the case
-                    true => devices_without_aliases.push(dev),
-                    false => new_devices.push(dev),
-                }
+                new_devices.push(dev);
             }
         }
 

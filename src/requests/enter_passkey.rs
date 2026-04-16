@@ -110,7 +110,7 @@ impl EnterPasskey {
                     }
                 }
 
-                _ => {
+                FocusedSection::Input => {
                     self.passkey
                         .field
                         .handle_event(&crossterm::event::Event::Key(key_event));

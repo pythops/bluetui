@@ -40,7 +40,7 @@ pub enum Width {
 
 struct WidthVisitor;
 
-impl<'de> Visitor<'de> for WidthVisitor {
+impl Visitor<'_> for WidthVisitor {
     type Value = Width;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

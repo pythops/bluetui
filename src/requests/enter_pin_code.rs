@@ -104,7 +104,7 @@ impl EnterPinCode {
                     }
                 }
 
-                _ => {
+                FocusedSection::Input => {
                     self.pin_code
                         .field
                         .handle_event(&crossterm::event::Event::Key(key_event));
@@ -218,7 +218,7 @@ mod tests {
         terminal
             .draw(|frame| {
                 EnterPinCode::new("adapter".to_string(), Address::new(*b"DEADBE"))
-                    .render(frame, frame.area())
+                    .render(frame, frame.area());
             })
             .unwrap();
 

@@ -38,7 +38,7 @@ impl Requests {
     }
 }
 
-fn pad_str<'a>(input: &'a str, length: usize) -> Cow<'a, str> {
+fn pad_str(input: &str, length: usize) -> Cow<'_, str> {
     let current_length = input.chars().count();
     if current_length >= length {
         Cow::Borrowed(input)
