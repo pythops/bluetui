@@ -320,21 +320,13 @@ pub async fn handle_key_events(
 
                 // scroll down
                 KeyCode::Char('j') | KeyCode::Down => match app.focused_block {
-                    FocusedBlock::Adapter => {
-                        if !app.controllers.is_empty() {
-                            let i = match app.controller_state.selected() {
-                                Some(i) => {
-                                    if i < app.controllers.len() - 1 {
-                                        i + 1
-                                    } else {
-                                        0
-                                    }
-                                }
-                                None => 0,
-                            };
+                    FocusedBlock::Adapter if !app.controllers.is_empty() => {
+                        let i = match app.controller_state.selected() {
+                            Some(i) if i < app.controllers.len() - 1 => i + 1,
+                            _ => 0,
+                        };
 
-                            app.controller_state.select(Some(i));
-                        }
+                        app.controller_state.select(Some(i));
                     }
 
                     FocusedBlock::PairedDevices => {
@@ -343,14 +335,8 @@ pub async fn handle_key_events(
 
                             if !controller.paired_devices.is_empty() {
                                 let i = match app.paired_devices_state.selected() {
-                                    Some(i) => {
-                                        if i < controller.paired_devices.len() - 1 {
-                                            i + 1
-                                        } else {
-                                            0
-                                        }
-                                    }
-                                    None => 0,
+                                    Some(i) if i < controller.paired_devices.len() - 1 => i + 1,
+                                    _ => 0,
                                 };
 
                                 app.paired_devices_state.select(Some(i));
@@ -364,14 +350,8 @@ pub async fn handle_key_events(
 
                             if !controller.new_devices.is_empty() {
                                 let i = match app.new_devices_state.selected() {
-                                    Some(i) => {
-                                        if i < controller.new_devices.len() - 1 {
-                                            i + 1
-                                        } else {
-                                            0
-                                        }
-                                    }
-                                    None => 0,
+                                    Some(i) if i < controller.new_devices.len() - 1 => i + 1,
+                                    _ => 0,
                                 };
 
                                 app.new_devices_state.select(Some(i));
@@ -384,21 +364,19 @@ pub async fn handle_key_events(
 
                 // scroll up
                 KeyCode::Char('k') | KeyCode::Up => match app.focused_block {
-                    FocusedBlock::Adapter => {
-                        if !app.controllers.is_empty() {
-                            let i = match app.controller_state.selected() {
-                                Some(i) => {
-                                    if i > 0 {
-                                        i - 1
-                                    } else {
-                                        app.controllers.len() - 1
-                                    }
+                    FocusedBlock::Adapter if !app.controllers.is_empty() => {
+                        let i = match app.controller_state.selected() {
+                            Some(i) => {
+                                if i > 0 {
+                                    i - 1
+                                } else {
+                                    app.controllers.len() - 1
                                 }
-                                None => 0,
-                            };
+                            }
+                            None => 0,
+                        };
 
-                            app.controller_state.select(Some(i));
-                        }
+                        app.controller_state.select(Some(i));
                     }
 
                     FocusedBlock::PairedDevices => {

@@ -760,17 +760,12 @@ impl App {
             if self.controllers.is_empty() {
                 self.controller_state.select(None);
             } else {
-                let i = match self.controller_state.selected() {
-                    Some(i) => {
-                        if i > 0 {
-                            (i - 1).min(self.controllers.len() - 1)
-                        } else {
-                            0
-                        }
-                    }
-                    None => 0,
+                let next_i = if let Some(i) = self.controller_state.selected() {
+                    (i - 1).min(self.controllers.len() - 1)
+                } else {
+                    0
                 };
-                self.controller_state.select(Some(i));
+                self.controller_state.select(Some(next_i));
             }
         }
 
