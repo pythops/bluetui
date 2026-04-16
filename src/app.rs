@@ -382,62 +382,35 @@ impl App {
             }
 
             let paired_devices_table = Table::new(rows, widths)
-                .header({
+                .header(
                     if show_battery_column {
                         if self.focused_block == FocusedBlock::PairedDevices {
-                            Row::new(vec![
-                                Cell::from("").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Name").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
-                                Cell::from("Battery").style(Style::default().fg(Color::Yellow)),
-                            ])
-                            .style(Style::new().bold())
-                            .bottom_margin(1)
+                            Row::new(["", "Name", "Trusted", "Connected", "Battery"])
+                                .yellow()
+                                .bold()
                         } else {
-                            Row::new(vec![
-                                Cell::from(""),
-                                Cell::from("Name"),
-                                Cell::from("Trusted"),
-                                Cell::from("Connected"),
-                                Cell::from("Battery"),
-                            ])
-                            .bottom_margin(1)
+                            Row::new(["", "Name", "Trusted", "Connected", "Battery"])
                         }
                     } else if self.focused_block == FocusedBlock::PairedDevices {
-                        Row::new(vec![
-                            Cell::from("").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Name").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Trusted").style(Style::default().fg(Color::Yellow)),
-                            Cell::from("Connected").style(Style::default().fg(Color::Yellow)),
-                        ])
-                        .style(Style::new().bold())
-                        .bottom_margin(1)
+                        Row::new(["", "Name", "Trusted", "Connected"])
+                            .yellow()
+                            .bold()
                     } else {
-                        Row::new(vec![
-                            Cell::from(""),
-                            Cell::from("Name"),
-                            Cell::from("Trusted"),
-                            Cell::from("Connected"),
-                        ])
-                        .style(Style::new().bold())
-                        .bottom_margin(1)
+                        Row::new(["", "Name", "Trusted", "Connected", "Battery"])
                     }
-                })
+                    .bottom_margin(1),
+                )
                 .block(
-                    Block::default()
+                    Block::bordered()
                         .title(" Paired Devices ")
-                        .title_style({
-                            if self.focused_block == FocusedBlock::PairedDevices {
-                                Style::default().bold()
-                            } else {
-                                Style::default()
-                            }
+                        .title_style(if self.focused_block == FocusedBlock::PairedDevices {
+                            Style::default().bold()
+                        } else {
+                            Style::default()
                         })
-                        .borders(Borders::ALL)
                         .border_style({
                             if self.focused_block == FocusedBlock::PairedDevices {
-                                Style::default().fg(Color::Green)
+                                Style::default().green()
                             } else {
                                 Style::default()
                             }
@@ -452,7 +425,7 @@ impl App {
                 )
                 .flex(self.config.layout)
                 .row_highlight_style(if self.focused_block == FocusedBlock::PairedDevices {
-                    Style::default().bg(Color::DarkGray).fg(Color::White)
+                    Style::default().white().on_dark_gray()
                 } else {
                     Style::default()
                 });
