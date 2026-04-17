@@ -101,7 +101,7 @@ impl App {
             ..Default::default()
         };
 
-        let favorite_devices = read_favorite_devices_from_disk().await.unwrap_or_default();
+        let favorite_devices = read_favorite_devices_from_disk().unwrap_or_default();
 
         let handle = session.register_agent(agent).await?;
         let controllers: Vec<Controller> =
