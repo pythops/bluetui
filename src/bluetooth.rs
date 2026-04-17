@@ -6,6 +6,50 @@ use bluer::Device as BTDevice;
 
 use crate::app::AppResult;
 
+/// Fallback: read battery percentage from /sys/class/power_supply/ for devices
+/// that report battery via kernel drivers (e.g. PS4/PS5 controllers, Nintendo
+/// Switch Pro Controllers) instead of the Bluetooth Battery Service (BAS) profile
+/// exposed through BlueZ's Battery1 D-Bus interface.
+///
+/// First tries to read `capacity` (exact percentage). If unavailable, falls back
+/// to `capacity_level` which provides a rough estimate using kernel-defined levels:
+/// Unknown, Critical, Low, Normal, High, Full.
+/// See: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/include/linux/power_supply.h
+fn read_battery_from_sysfs(addr: &Address) -> Option<u8> {
+    let addr_str = addr.to_string().to_lowercase();
+    let power_supply_dir = std::path::Path::new("/sys/class/power_supply");
+
+    if let Ok(entries) = std::fs::read_dir(power_supply_dir) {
+        for entry in entries.flatten() {
+            let name = entry.file_name();
+            let name_str = name.to_string_lossy();
+            if name_str.contains(&addr_str) {
+                let dir = entry.path();
+
+                // Try exact percentage first
+                if let Ok(content) = std::fs::read_to_string(dir.join("capacity")) {
+                    if let Ok(val) = content.trim().parse::<u8>() {
+                        return Some(val);
+                    }
+                }
+
+                // Fall back to capacity_level (e.g. Nintendo Switch Pro Controller)
+                if let Ok(level) = std::fs::read_to_string(dir.join("capacity_level")) {
+                    return match level.trim().to_lowercase().as_str() {
+                        "full" => Some(100),
+                        "high" => Some(75),
+                        "normal" => Some(50),
+                        "low" => Some(25),
+                        "critical" => Some(5),
+                        _ => None,
+                    };
+                }
+            }
+        }
+    }
+    None
+}
+
 #[derive(Debug, Clone)]
 pub struct Controller {
     pub adapter: Arc<Adapter>,
@@ -115,7 +159,8 @@ impl Controller {
             let is_trusted = device.is_trusted().await?;
             let is_connected = device.is_connected().await?;
             let is_favorite = favorite_devices.contains(&addr);
-            let battery_percentage = device.battery_percentage().await?;
+            let battery_percentage =
+                device.battery_percentage().await?.or_else(|| read_battery_from_sysfs(&addr));
 
             let dev = Device {
                 device,
