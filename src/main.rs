@@ -11,7 +11,7 @@ use clap::Parser;
 use ratatui::{Terminal, backend::CrosstermBackend};
 use std::{io, process::exit, sync::Arc};
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> AppResult<()> {
     let args = cli::Args::parse();
 
