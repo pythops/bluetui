@@ -67,9 +67,9 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `shift+Tab` or `h`: Scroll up between different sections.
 
-`j` or `Down` : Scroll down.
+`j` or `Down` or `Ctrl-n` : Scroll down.
 
-`k` or `Up`: Scroll up.
+`k` or `Up` or `Ctrl-p` : Scroll up.
 
 `s`: Start/Stop scanning.
 

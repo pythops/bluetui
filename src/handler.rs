@@ -363,6 +363,50 @@ pub async fn handle_key_events(
                     _ => {}
                 },
 
+                KeyCode::Char('n') if key_event.modifiers == KeyModifiers::CONTROL => match app.focused_block {
+                    FocusedBlock::Adapter if !app.controllers.is_empty() => {
+                        let i = match app.controller_state.selected() {
+                            Some(i) if i < app.controllers.len() - 1 => i + 1,
+                            _ => 0,
+                        };
+
+                        app.controller_state.select(Some(i));
+                    }
+
+                    FocusedBlock::PairedDevices => {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            let controller = &mut app.controllers[selected_controller];
+
+                            if !controller.paired_devices.is_empty() {
+                                let i = match app.paired_devices_state.selected() {
+                                    Some(i) if i < controller.paired_devices.len() - 1 => i + 1,
+                                    _ => 0,
+                                };
+
+                                app.paired_devices_state.select(Some(i));
+                            }
+                        }
+                    }
+
+                    FocusedBlock::NewDevices => {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            let controller = &mut app.controllers[selected_controller];
+
+                            if !controller.new_devices.is_empty() {
+                                let i = match app.new_devices_state.selected() {
+                                    Some(i) if i < controller.new_devices.len() - 1 => i + 1,
+                                    _ => 0,
+                                };
+
+                                app.new_devices_state.select(Some(i));
+                            }
+                        }
+                    }
+
+                    _ => {}
+                },
+
+
                 // scroll up
                 KeyCode::Char('k') | KeyCode::Up => match app.focused_block {
                     FocusedBlock::Adapter if !app.controllers.is_empty() => {
@@ -419,6 +463,64 @@ pub async fn handle_key_events(
                     }
                     _ => {}
                 },
+
+                
+                KeyCode::Char('p') if key_event.modifiers == KeyModifiers::CONTROL => match app.focused_block {
+                    FocusedBlock::Adapter if !app.controllers.is_empty() => {
+                        let i = match app.controller_state.selected() {
+                            Some(i) => {
+                                if i > 0 {
+                                    i - 1
+                                } else {
+                                    app.controllers.len() - 1
+                                }
+                            }
+                            None => 0,
+                        };
+
+                        app.controller_state.select(Some(i));
+                    }
+
+                    FocusedBlock::PairedDevices => {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            let controller = &mut app.controllers[selected_controller];
+                            if !controller.paired_devices.is_empty() {
+                                let i = match app.paired_devices_state.selected() {
+                                    Some(i) => {
+                                        if i > 0 {
+                                            i - 1
+                                        } else {
+                                            controller.paired_devices.len() - 1
+                                        }
+                                    }
+                                    None => 0,
+                                };
+                                app.paired_devices_state.select(Some(i));
+                            }
+                        }
+                    }
+
+                    FocusedBlock::NewDevices => {
+                        if let Some(selected_controller) = app.controller_state.selected() {
+                            let controller = &mut app.controllers[selected_controller];
+                            if !controller.new_devices.is_empty() {
+                                let i = match app.new_devices_state.selected() {
+                                    Some(i) => {
+                                        if i > 0 {
+                                            i - 1
+                                        } else {
+                                            controller.new_devices.len() - 1
+                                        }
+                                    }
+                                    None => 0,
+                                };
+                                app.new_devices_state.select(Some(i));
+                            }
+                        }
+                    }
+                    _ => {}
+                },
+
 
                 // Start/Stop Scan
                 KeyCode::Char(c) if c == config.toggle_scanning => {
