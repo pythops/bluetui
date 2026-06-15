@@ -14,9 +14,10 @@ use ratatui::{
     Frame,
     layout::{Constraint, Layout, Margin, Rect},
     style::{Style, Stylize},
+    text::{Line, ToLine, ToSpan},
     widgets::{
-        Block, BorderType, Cell, Padding, Row, Scrollbar, ScrollbarOrientation, ScrollbarState,
-        Table, TableState,
+        Block, BorderType, Cell, Clear, Padding, Row, Scrollbar, ScrollbarOrientation,
+        ScrollbarState, Table, TableState,
     },
 };
 use tokio::sync::mpsc::UnboundedSender;
@@ -45,6 +46,7 @@ pub enum FocusedBlock {
     NewDevices,
     SetDeviceAliasBox,
     RequestConfirmation,
+    UnpairConfirmation { confirm: bool },
     EnterPinCode,
     EnterPasskey,
     DisplayPinCode,
@@ -519,6 +521,57 @@ impl App {
         }
     }
 
+    fn render_unpair_confirmation(&self, confirm: bool, frame: &mut Frame, area: Rect) {
+        let center_area = area.centered(Constraint::Max(70), Constraint::Length(6));
+        frame.render_widget(Clear, center_area);
+
+        let block = Block::bordered().border_type(BorderType::Thick).green();
+        frame.render_widget(&block, center_area);
+
+        let inside_area = block.inner(center_area);
+
+        let [message_block, choices_block] = inside_area.layout(&Layout::vertical([
+            Constraint::Length(1),
+            Constraint::Fill(1),
+        ]));
+
+        let Some(selected_controller) = self.controller_state.selected() else {
+            frame.render_widget("Trying to unpair with no controller selected!", inside_area);
+            return;
+        };
+        let controller = &self.controllers[selected_controller];
+
+        let Some(selected_device) = self.paired_devices_state.selected() else {
+            frame.render_widget("No device selected for unpairing.", inside_area);
+            return;
+        };
+
+        let device_alias = &controller.paired_devices[selected_device].alias;
+        frame.render_widget(
+            Line::from(vec![
+                " Are you sure you want to unpair ".into(),
+                device_alias.to_span().italic(),
+                " ".into(),
+            ])
+            .centered(),
+            message_block,
+        );
+
+        let [no_block, yes_block] = choices_block
+            .layout(&Layout::horizontal([Constraint::Fill(1); 2]))
+            .map(|b| b.centered_vertically(Constraint::Length(1)));
+
+        let no = "No".to_line().centered();
+        let yes = "Yes".to_line().centered();
+        if confirm {
+            frame.render_widget(no, no_block);
+            frame.render_widget(yes.on_dark_gray().bold(), yes_block);
+        } else {
+            frame.render_widget(no.on_dark_gray().bold(), no_block);
+            frame.render_widget(yes, yes_block);
+        }
+    }
+
     pub fn render(&mut self, frame: &mut Frame) {
         if let Some(selected_controller_index) = self.controller_state.selected() {
             let (render_new_devices, paired_devices_block_height) = {
@@ -590,6 +643,11 @@ impl App {
             // Request Confirmation
             if let Some(req) = &self.requests.confirmation {
                 req.render(frame, popup_area);
+            }
+
+            // Unpair Confirmation
+            if let FocusedBlock::UnpairConfirmation { confirm } = self.focused_block {
+                self.render_unpair_confirmation(confirm, frame, popup_area);
             }
 
             // Request to enter pin code

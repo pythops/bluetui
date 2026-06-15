@@ -150,7 +150,7 @@ impl Help {
                     Span::from(" Apply"),
                 ])]
             }
-            FocusedBlock::RequestConfirmation => {
+            FocusedBlock::RequestConfirmation | FocusedBlock::UnpairConfirmation { .. } => {
                 vec![Line::from(vec![
                     Span::from("↵ ").bold(),
                     Span::from(" Ok"),
