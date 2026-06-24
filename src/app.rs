@@ -525,7 +525,9 @@ impl App {
         let center_area = area.centered(Constraint::Max(70), Constraint::Length(6));
         frame.render_widget(Clear, center_area);
 
-        let block = Block::bordered().border_type(BorderType::Thick).green();
+        let block = Block::bordered()
+            .border_type(BorderType::Thick)
+            .border_style(Style::default().green());
         frame.render_widget(&block, center_area);
 
         let inside_area = block.inner(center_area);
