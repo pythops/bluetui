@@ -36,10 +36,11 @@ async fn main() -> AppResult<()> {
     tui.init()?;
 
     // Run the app, but always restore the terminal afterwards so a failure
-    // does not leave the user's terminal in raw mode.
+    // does not leave the user's terminal in raw mode. Prioritize the run
+    // error so a failing exit() does not mask the real cause.
     let result = run(&mut tui, config).await;
-    tui.exit()?;
-    result
+    let exit_result = tui.exit();
+    result.and(exit_result)
 }
 
 async fn run(tui: &mut Tui<CrosstermBackend<io::Stdout>>, config: Arc<Config>) -> AppResult<()> {
