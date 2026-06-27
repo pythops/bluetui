@@ -35,6 +35,14 @@ async fn main() -> AppResult<()> {
 
     tui.init()?;
 
+    // Run the app, but always restore the terminal afterwards so a failure
+    // does not leave the user's terminal in raw mode.
+    let result = run(&mut tui, config).await;
+    tui.exit()?;
+    result
+}
+
+async fn run(tui: &mut Tui<CrosstermBackend<io::Stdout>>, config: Arc<Config>) -> AppResult<()> {
     let mut app = App::new(config.clone(), tui.events.sender.clone()).await?;
 
     while app.running {
@@ -145,6 +153,5 @@ async fn main() -> AppResult<()> {
         }
     }
 
-    tui.exit()?;
     Ok(())
 }
