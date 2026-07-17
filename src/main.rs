@@ -35,7 +35,10 @@ async fn main() -> AppResult<()> {
 
     tui.init()?;
 
-    let mut app = App::new(config.clone(), tui.events.sender.clone()).await?;
+    let Ok(mut app) = App::new(config.clone(), tui.events.sender.clone()).await else {
+        tui.exit()?;
+        return Ok(());
+    };
 
     while app.running {
         tui.draw(&mut app)?;
