@@ -497,19 +497,25 @@ impl App {
                 Style::default()
             });
 
-        let mut state = self.new_devices_state;
-        if self.focused_block == FocusedBlock::NewDevices && state.selected().is_none() {
-            state.select(Some(0));
+        if rows_len > 0
+            && self.focused_block == FocusedBlock::NewDevices
+            && self.new_devices_state.selected().is_none()
+        {
+            self.new_devices_state.select(Some(0));
         }
 
-        frame.render_stateful_widget(new_devices_table, new_devices_block, &mut state);
+        frame.render_stateful_widget(
+            new_devices_table,
+            new_devices_block,
+            &mut self.new_devices_state,
+        );
 
         if rows_len > new_devices_block.height.saturating_sub(4) as usize {
             let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
                 .begin_symbol(Some("↑"))
                 .end_symbol(Some("↓"));
-            let mut scrollbar_state =
-                ScrollbarState::new(rows_len).position(state.selected().unwrap_or_default());
+            let mut scrollbar_state = ScrollbarState::new(rows_len)
+                .position(self.new_devices_state.selected().unwrap_or_default());
             frame.render_stateful_widget(
                 scrollbar,
                 new_devices_block.inner(Margin {
