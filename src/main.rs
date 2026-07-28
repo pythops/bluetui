@@ -17,7 +17,7 @@ async fn main() -> AppResult<()> {
 
     let config_file_path = args.config_path.map(|config_path| {
         if config_path.exists() {
-            config_path.clone()
+            config_path
         } else {
             eprintln!("Config file not found");
             exit(1);

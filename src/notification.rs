@@ -59,7 +59,7 @@ impl Notification {
     pub fn send(
         message: StringRef,
         level: NotificationLevel,
-        sender: UnboundedSender<Event>,
+        sender: &UnboundedSender<Event>,
     ) -> AppResult<()> {
         let notif = Notification {
             message,
