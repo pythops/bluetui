@@ -6,6 +6,7 @@ use crate::app::{App, AppResult};
 use crate::config::Config;
 use crate::event::Event;
 use crate::notification::{Notification, NotificationLevel};
+use crate::string_ref::StringRef;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use futures::StreamExt;
 use tokio::sync::mpsc::UnboundedSender;
@@ -31,13 +32,7 @@ fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                                                 sender.clone(),
                                             );
                                         }
-                                        Err(e) => {
-                                            let _ = Notification::send(
-                                                e.into(),
-                                                NotificationLevel::Error,
-                                                sender.clone(),
-                                            );
-                                        }
+                                        Err(e) => send_error(e.into(), sender.clone()),
                                     }
                                 } else {
                                     match device.connect().await {
@@ -48,29 +43,15 @@ fn toggle_connect(app: &mut App, sender: UnboundedSender<Event>) {
                                                 sender.clone(),
                                             );
                                         }
-                                        Err(e) => {
-                                            let _ = Notification::send(
-                                                e.into(),
-                                                NotificationLevel::Error,
-                                                sender.clone(),
-                                            );
-                                        }
+                                        Err(e) => send_error(e.into(), sender.clone()),
                                     }
                                 }
                             }
-                            Err(e) => {
-                                let _ = Notification::send(
-                                    e.into(),
-                                    NotificationLevel::Error,
-                                    sender.clone(),
-                                );
-                            }
+                            Err(e) => send_error(e.into(), sender.clone()),
                         }
                     });
                 }
-                Err(e) => {
-                    let _ = Notification::send(e.into(), NotificationLevel::Error, sender.clone());
-                }
+                Err(e) => send_error(e.into(), sender.clone()),
             }
         }
     }
@@ -108,13 +89,7 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                                 sender.clone(),
                                             );
                                         }
-                                        Err(e) => {
-                                            let _ = Notification::send(
-                                                e.into(),
-                                                NotificationLevel::Error,
-                                                sender.clone(),
-                                            );
-                                        }
+                                        Err(e) => send_error(e.into(), sender.clone()),
                                     }
                                     match device.connect().await {
                                         Ok(()) => {
@@ -124,34 +99,19 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
                                                 sender.clone(),
                                             );
                                         }
-                                        Err(e) => {
-                                            let _ = Notification::send(
-                                                e.into(),
-                                                NotificationLevel::Error,
-                                                sender.clone(),
-                                            );
-                                        }
+                                        Err(e) => send_error(e.into(), sender.clone()),
                                     }
                                 }
                                 Err(e) => {
-                                    let _ = Notification::send(
-                                        e.into(),
-                                        NotificationLevel::Error,
-                                        sender.clone(),
-                                    );
+                                    send_error(e.into(), sender.clone());
                                     let _ = sender.send(Event::FailedPairing(device.address()));
                                 }
                             }
                         });
                     }
-                    Err(e) => {
-                        let _ =
-                            Notification::send(e.into(), NotificationLevel::Error, sender.clone());
-                    }
+                    Err(e) => send_error(e.into(), sender.clone()),
                 },
-                Err(e) => {
-                    let _ = Notification::send(e.into(), NotificationLevel::Error, sender.clone());
-                }
+                Err(e) => send_error(e.into(), sender.clone()),
             }
         }
     }
@@ -277,13 +237,7 @@ pub async fn handle_key_events(
                                     sender.clone(),
                                 );
                             }
-                            Err(e) => {
-                                let _ = Notification::send(
-                                    e.into(),
-                                    NotificationLevel::Error,
-                                    sender.clone(),
-                                );
-                            }
+                            Err(e) => send_error(e.into(), sender.clone()),
                         }
                     }
                 }
@@ -493,13 +447,7 @@ pub async fn handle_key_events(
                                             }
                                         }
                                     }
-                                    Err(e) => {
-                                        let _ = Notification::send(
-                                            e.into(),
-                                            NotificationLevel::Error,
-                                            sender.clone(),
-                                        );
-                                    }
+                                    Err(e) => send_error(e.into(), sender.clone()),
                                 }
                             });
                         }
@@ -545,13 +493,7 @@ pub async fn handle_key_events(
                                                                         sender.clone(),
                                                                     );
                                                                         }
-                                                                        Err(e) => {
-                                                                            let _ = Notification::send(
-                                                                        e.into(),
-                                                                        NotificationLevel::Error,
-                                                                        sender.clone(),
-                                                                    );
-                                                                        }
+                                                                        Err(e) => send_error(e.into(), sender.clone()),
                                                                     }
                                                                 } else {
                                                                     match device
@@ -567,33 +509,15 @@ pub async fn handle_key_events(
                                                                     );
                                                                         }
 
-                                                                        Err(e) => {
-                                                                            let _ = Notification::send(
-                                                                        e.into(),
-                                                                        NotificationLevel::Error,
-                                                                        sender.clone(),
-                                                                    );
-                                                                        }
+                                                                        Err(e) => send_error(e.into(), sender.clone()),
                                                                     }
                                                                 }
                                                             }
-                                                            Err(e) => {
-                                                                let _ = Notification::send(
-                                                                    e.into(),
-                                                                    NotificationLevel::Error,
-                                                                    sender.clone(),
-                                                                );
-                                                            }
+                                                            Err(e) => send_error(e.into(), sender.clone()),
                                                         }
                                                     });
                                                 }
-                                                Err(e) => {
-                                                    let _ = Notification::send(
-                                                        e.into(),
-                                                        NotificationLevel::Error,
-                                                        sender.clone(),
-                                                    );
-                                                }
+                                                Err(e) => send_error(e.into(), sender.clone()),
                                             }
                                         }
                                     }
@@ -643,13 +567,7 @@ pub async fn handle_key_events(
                                                                         sender.clone(),
                                                                     );
                                                                 }
-                                                                Err(e) => {
-                                                                    let _ = Notification::send(
-                                                                        e.into(),
-                                                                        NotificationLevel::Error,
-                                                                        sender.clone(),
-                                                                    );
-                                                                }
+                                                                Err(e) => send_error(e.into(), sender.clone()),
                                                             }
                                                         } else {
                                                             match adapter.set_pairable(true).await {
@@ -660,23 +578,11 @@ pub async fn handle_key_events(
                                                                         sender.clone(),
                                                                     );
                                                                 }
-                                                                Err(e) => {
-                                                                    let _ = Notification::send(
-                                                                        e.into(),
-                                                                        NotificationLevel::Error,
-                                                                        sender.clone(),
-                                                                    );
-                                                                }
+                                                                Err(e) => send_error(e.into(), sender.clone()),
                                                             }
                                                         }
                                                     }
-                                                    Err(e) => {
-                                                        let _ = Notification::send(
-                                                            e.into(),
-                                                            NotificationLevel::Error,
-                                                            sender.clone(),
-                                                        );
-                                                    }
+                                                    Err(e) => send_error(e.into(), sender.clone()),
                                                 }
                                             }
                                         });
@@ -704,13 +610,7 @@ pub async fn handle_key_events(
                                                                         sender.clone(),
                                                                     );
                                                                 }
-                                                                Err(e) => {
-                                                                    let _ = Notification::send(
-                                                                        e.into(),
-                                                                        NotificationLevel::Error,
-                                                                        sender.clone(),
-                                                                    );
-                                                                }
+                                                                Err(e) => send_error(e.into(), sender.clone()),
                                                             }
                                                         } else {
                                                             match adapter.set_powered(true).await {
@@ -721,23 +621,11 @@ pub async fn handle_key_events(
                                                                         sender.clone(),
                                                                     );
                                                                 }
-                                                                Err(e) => {
-                                                                    let _ = Notification::send(
-                                                                        e.into(),
-                                                                        NotificationLevel::Error,
-                                                                        sender.clone(),
-                                                                    );
-                                                                }
+                                                                Err(e) => send_error(e.into(), sender.clone()),
                                                             }
                                                         }
                                                     }
-                                                    Err(e) => {
-                                                        let _ = Notification::send(
-                                                            e.into(),
-                                                            NotificationLevel::Error,
-                                                            sender.clone(),
-                                                        );
-                                                    }
+                                                    Err(e) => send_error(e.into(), sender.clone()),
                                                 }
                                             }
                                         });
@@ -768,13 +656,7 @@ pub async fn handle_key_events(
                                                                         sender.clone(),
                                                                     );
                                                                 }
-                                                                Err(e) => {
-                                                                    let _ = Notification::send(
-                                                                        e.into(),
-                                                                        NotificationLevel::Error,
-                                                                        sender.clone(),
-                                                                    );
-                                                                }
+                                                                Err(e) => send_error(e.into(), sender.clone()),
                                                             }
                                                         } else {
                                                             match adapter
@@ -789,23 +671,11 @@ pub async fn handle_key_events(
                                                                         sender.clone(),
                                                                     );
                                                                 }
-                                                                Err(e) => {
-                                                                    let _ = Notification::send(
-                                                                        e.into(),
-                                                                        NotificationLevel::Error,
-                                                                        sender.clone(),
-                                                                    );
-                                                                }
+                                                                Err(e) => send_error(e.into(), sender.clone()),
                                                             }
                                                         }
                                                     }
-                                                    Err(e) => {
-                                                        let _ = Notification::send(
-                                                            e.into(),
-                                                            NotificationLevel::Error,
-                                                            sender.clone(),
-                                                        );
-                                                    }
+                                                    Err(e) => send_error(e.into(), sender.clone()),
                                                 }
                                             }
                                         });
@@ -832,4 +702,12 @@ pub async fn handle_key_events(
     }
 
     Ok(())
+}
+
+fn send_error(msg: StringRef, sender: UnboundedSender<Event>) {
+    let _ = Notification::send(
+        msg,
+        NotificationLevel::Error,
+        sender.clone(),
+    );
 }
