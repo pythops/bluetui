@@ -19,7 +19,7 @@ pub struct Confirmation {
 }
 
 impl Confirmation {
-    pub fn new(adapter: String, device: Address, passkey: u32) -> Self {
+    pub const fn new(adapter: String, device: Address, passkey: u32) -> Self {
         Self {
             adapter,
             device,
@@ -44,7 +44,7 @@ impl Confirmation {
         Ok(())
     }
 
-    pub fn toggle_select(&mut self) {
+    pub const fn toggle_select(&mut self) {
         self.confirmed = !self.confirmed;
     }
 

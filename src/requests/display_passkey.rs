@@ -19,7 +19,7 @@ pub struct DisplayPasskey {
 }
 
 impl DisplayPasskey {
-    pub fn new(adapter: String, device: Address, passkey: u32, entered: u16) -> Self {
+    pub const fn new(adapter: String, device: Address, passkey: u32, entered: u16) -> Self {
         Self {
             adapter,
             device,

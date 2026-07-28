@@ -5,7 +5,7 @@ pub enum StringRef {
 }
 
 impl StringRef {
-    pub fn as_str(&self) -> &str {
+    pub const fn as_str(&self) -> &str {
         match self {
             StringRef::Owned(s) => s.as_str(),
             StringRef::Static(s) => s,

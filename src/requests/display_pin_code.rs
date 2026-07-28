@@ -18,7 +18,7 @@ pub struct DisplayPinCode {
 }
 
 impl DisplayPinCode {
-    pub fn new(adapter: String, device: Address, pin_code: String) -> Self {
+    pub const fn new(adapter: String, device: Address, pin_code: String) -> Self {
         Self {
             adapter,
             device,

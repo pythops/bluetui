@@ -161,43 +161,43 @@ where
     }
 }
 
-fn default_layout() -> Flex {
+const fn default_layout() -> Flex {
     Flex::SpaceAround
 }
 
-fn default_set_new_name() -> char {
+const fn default_set_new_name() -> char {
     'e'
 }
 
-fn default_toggle_scanning() -> char {
+const fn default_toggle_scanning() -> char {
     's'
 }
 
-fn default_esc_quit() -> bool {
+const fn default_esc_quit() -> bool {
     false
 }
 
-fn default_toggle_adapter_pairing() -> char {
+const fn default_toggle_adapter_pairing() -> char {
     'p'
 }
 
-fn default_toggle_adapter_power() -> char {
+const fn default_toggle_adapter_power() -> char {
     'o'
 }
 
-fn default_toggle_adapter_discovery() -> char {
+const fn default_toggle_adapter_discovery() -> char {
     'd'
 }
 
-fn default_unpair_device() -> char {
+const fn default_unpair_device() -> char {
     'u'
 }
 
-fn default_toggle_device_trust() -> char {
+const fn default_toggle_device_trust() -> char {
     't'
 }
 
-fn default_toggle_device_favorite() -> char {
+const fn default_toggle_device_favorite() -> char {
     'f'
 }
 
