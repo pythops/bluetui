@@ -126,9 +126,9 @@ toggle_favorite = "f"
 rename = "e"
 ```
 
-## Contributing
+## W🤝 Contributing
 
-- No AI slop.
+- Strict No LLM.
 - Only submit a pull request after having a prior issue or discussion.
 - Keep PRs small and focused.
 
