@@ -6,6 +6,7 @@ use crate::app::{App, AppResult};
 use crate::config::Config;
 use crate::event::Event;
 use crate::notification::{Notification, NotificationLevel};
+use crate::search::SearchTarget;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use futures::StreamExt;
 use tokio::sync::mpsc::UnboundedSender;
@@ -163,6 +164,11 @@ pub async fn handle_key_events(
     sender: UnboundedSender<Event>,
     config: Arc<Config>,
 ) -> AppResult<()> {
+    if app.search.is_some() {
+        app.handle_search_key_events(key_event);
+        return Ok(());
+    }
+
     match app.focused_block {
         FocusedBlock::SetDeviceAliasBox => match key_event.code {
             KeyCode::Enter => {
@@ -510,6 +516,15 @@ pub async fn handle_key_events(
                     match app.focused_block {
                         FocusedBlock::PairedDevices => {
                             match key_event.code {
+                                // Search
+                                KeyCode::Char(c) if c == config.search => {
+                                    app.start_search(
+                                        SearchTarget::PairedDevices,
+                                        config.search_case_sensitive,
+                                        config.paired_device.search_fields.clone(),
+                                    );
+                                }
+
                                 // Unpair
                                 KeyCode::Char(c) if c == config.paired_device.unpair => {
                                     app.focused_block =
@@ -819,6 +834,14 @@ pub async fn handle_key_events(
                         FocusedBlock::NewDevices => {
                             // Pair new device
                             match key_event.code {
+                                // Search
+                                KeyCode::Char(c) if c == config.search => {
+                                    app.start_search(
+                                        SearchTarget::NewDevices,
+                                        config.search_case_sensitive,
+                                        config.new_device.search_fields.clone(),
+                                    );
+                                }
                                 KeyCode::Enter | KeyCode::Char(' ') => pair(app, sender).await,
                                 _ => {}
                             }

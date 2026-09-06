@@ -11,6 +11,7 @@ mod help;
 pub mod notification;
 pub mod requests;
 pub mod rfkill;
+mod search;
 pub mod spinner;
 pub mod string_ref;
 pub mod tui;

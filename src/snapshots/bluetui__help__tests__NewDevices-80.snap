@@ -2,5 +2,5 @@
 source: src/help.rs
 expression: terminal.backend()
 ---
-"          k,  Up | j,  Down | 󱁐  or ↵  Pair | s  Scan on/off | ⇄ Nav          "
+"    k,  Up | j,  Down | 󱁐  or ↵  Pair | s  Scan on/off | /  Search | ⇄ Nav    "
 "                                                                                "

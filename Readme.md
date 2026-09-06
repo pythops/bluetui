@@ -95,9 +95,13 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 `e`: Rename the device.
 
+`/`: Search/filter the devices (by `alias` and/or `address`, configurable).
+
 ### New devices
 
 `Space or Enter`: Pair the device.
+
+`/`: Search/filter the devices (by `alias` and/or `address`, configurable).
 
 ## Config
 
@@ -112,6 +116,8 @@ layout = "SpaceAround"
 width = "auto"
 
 toggle_scanning = "s"
+search = "/"
+search_case_sensitive = false
 esc_quit = false  # Set to true to enable Esc key to quit the app
 
 [adapter]
@@ -124,6 +130,11 @@ unpair = "u"
 toggle_trust = "t"
 toggle_favorite = "f"
 rename = "e"
+# Possible search_fields values: "alias", "address"
+search_fields = ["alias", "address"]
+
+[new_device]
+search_fields = ["alias", "address"]
 ```
 
 ## W🤝 Contributing

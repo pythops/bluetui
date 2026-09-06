@@ -9,6 +9,7 @@ use bluer::{
     Address, Session,
     agent::{Agent, AgentHandle},
 };
+use crossterm::event::{KeyCode, KeyEvent};
 use futures::FutureExt;
 use ratatui::{
     Frame,
@@ -22,15 +23,17 @@ use ratatui::{
 };
 use tokio::sync::mpsc::UnboundedSender;
 use tui_input::Input;
+use tui_input::backend::crossterm::EventHandler;
 
 use crate::{
     agent::AuthAgent,
     alias::render_set_alias,
     bluetooth::Controller,
-    config::{Config, Width},
+    config::{Config, SearchField, Width},
     favorite::{read_favorite_devices_from_disk, save_favorite_devices_to_disk},
     notification::Notification,
     requests::Requests,
+    search::{Search, SearchTarget, device_matches},
     spinner::Spinner,
 };
 use std::sync::{Arc, atomic::Ordering};
@@ -70,6 +73,7 @@ pub struct App {
     pub config: Arc<Config>,
     pub requests: Requests,
     pub auth_agent: AuthAgent,
+    pub search: Option<Search>,
 }
 
 impl App {
@@ -132,6 +136,7 @@ impl App {
             config,
             requests: Requests::default(),
             auth_agent,
+            search: None,
         })
     }
 
@@ -150,6 +155,184 @@ impl App {
                 self.new_devices_state.select(Some(0));
             }
         }
+    }
+
+    pub fn start_search(
+        &mut self,
+        target: SearchTarget,
+        case_sensitive: bool,
+        fields: Vec<SearchField>,
+    ) {
+        let previous_selection = match target {
+            SearchTarget::PairedDevices => self.paired_devices_state.selected(),
+            SearchTarget::NewDevices => self.new_devices_state.selected(),
+        };
+
+        self.search = Some(Search::new(
+            target,
+            previous_selection,
+            case_sensitive,
+            fields,
+        ));
+    }
+
+    pub fn handle_search_key_events(&mut self, key_event: KeyEvent) {
+        if self.search.is_none() {
+            return;
+        }
+
+        match key_event.code {
+            KeyCode::Enter => {
+                self.search = None;
+            }
+            KeyCode::Esc => {
+                if let Some(search) = self.search.take() {
+                    let previous = search.previous_selection;
+                    match search.target {
+                        SearchTarget::PairedDevices => {
+                            self.paired_devices_state.select(previous);
+                        }
+                        SearchTarget::NewDevices => {
+                            self.new_devices_state.select(previous);
+                        }
+                    }
+                }
+            }
+            KeyCode::Char('j') | KeyCode::Down => {
+                self.search_move(1);
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                self.search_move(-1);
+            }
+            _ => {
+                if let Some(search) = &mut self.search {
+                    search
+                        .input
+                        .handle_event(&crossterm::event::Event::Key(key_event));
+                }
+                self.search_jump_first_match();
+            }
+        }
+    }
+
+    fn search_move(&mut self, delta: isize) {
+        let indices = self.search_visible();
+
+        if indices.is_empty() {
+            return;
+        }
+
+        let current = self.search_selected();
+        let position = current
+            .and_then(|c| indices.iter().position(|&i| i == c))
+            .unwrap_or(0);
+
+        let new_position = if delta > 0 {
+            (position + 1) % indices.len()
+        } else if position == 0 {
+            indices.len() - 1
+        } else {
+            position - 1
+        };
+
+        self.search_select(Some(indices[new_position]));
+    }
+
+    fn search_jump_first_match(&mut self) {
+        let indices = self.search_visible();
+
+        if indices.is_empty() {
+            self.search_select(None);
+            return;
+        }
+
+        let current = self.search_selected();
+
+        if !current.is_some_and(|c| indices.contains(&c)) {
+            self.search_select(Some(indices[0]));
+        }
+    }
+
+    fn search_filter(&self, target: SearchTarget) -> Option<(&str, bool, &[SearchField])> {
+        self.search.as_ref().and_then(|s| {
+            if s.target == target {
+                Some((s.input.value(), s.case_sensitive, s.fields.as_slice()))
+            } else {
+                None
+            }
+        })
+    }
+
+    fn search_visible(&self) -> Vec<usize> {
+        let Some(search) = &self.search else {
+            return Vec::new();
+        };
+        let Some(controller_index) = self.controller_state.selected() else {
+            return Vec::new();
+        };
+
+        match search.target {
+            SearchTarget::PairedDevices => self.visible_paired_indices(controller_index),
+            SearchTarget::NewDevices => self.visible_new_indices(controller_index),
+        }
+    }
+
+    fn search_selected(&self) -> Option<usize> {
+        match self.search.as_ref()?.target {
+            SearchTarget::PairedDevices => self.paired_devices_state.selected(),
+            SearchTarget::NewDevices => self.new_devices_state.selected(),
+        }
+    }
+
+    fn search_select(&mut self, index: Option<usize>) {
+        let Some(target) = self.search.as_ref().map(|s| s.target) else {
+            return;
+        };
+
+        match target {
+            SearchTarget::PairedDevices => self.paired_devices_state.select(index),
+            SearchTarget::NewDevices => self.new_devices_state.select(index),
+        }
+    }
+
+    fn visible_paired_indices(&self, controller_index: usize) -> Vec<usize> {
+        let filter = self.search_filter(SearchTarget::PairedDevices);
+        let Some(controller) = self.controllers.get(controller_index) else {
+            return Vec::new();
+        };
+
+        controller
+            .paired_devices
+            .iter()
+            .enumerate()
+            .filter(|(_, device)| match filter {
+                Some((query, case_sensitive, fields)) => {
+                    device_matches(device, query, case_sensitive, fields)
+                }
+                None => true,
+            })
+            .map(|(index, _)| index)
+            .collect()
+    }
+
+    fn visible_new_indices(&self, controller_index: usize) -> Vec<usize> {
+        let filter = self.search_filter(SearchTarget::NewDevices);
+        let Some(controller) = self.controllers.get(controller_index) else {
+            return Vec::new();
+        };
+
+        controller
+            .new_devices
+            .iter()
+            .enumerate()
+            .filter(|(_, device)| match filter {
+                Some((query, case_sensitive, fields)) => {
+                    device_matches(device, query, case_sensitive, fields)
+                }
+                None => true,
+            })
+            .map(|(index, _)| index)
+            .collect()
     }
 
     pub fn area(&self, frame: &Frame) -> Rect {
@@ -278,10 +461,11 @@ impl App {
         frame: &mut Frame,
     ) {
         let selected_controller = &self.controllers[selected_controller_index];
-        let rows: Vec<Row> = selected_controller
-            .paired_devices
+        let visible_indices = self.visible_paired_indices(selected_controller_index);
+        let rows: Vec<Row> = visible_indices
             .iter()
-            .map(|d| {
+            .map(|&index| {
+                let d = &selected_controller.paired_devices[index];
                 Row::new(vec![
                     if d.is_favorite {
                         STAR_SYMBOL.to_string()
@@ -406,18 +590,25 @@ impl App {
                 Style::default()
             });
 
+        let selected = self
+            .paired_devices_state
+            .selected()
+            .and_then(|current| visible_indices.iter().position(|&i| i == current));
+
+        let mut paired_devices_state = TableState::default().with_selected(selected);
+
         frame.render_stateful_widget(
             paired_devices_table,
             paired_devices_block,
-            &mut self.paired_devices_state.clone(),
+            &mut paired_devices_state,
         );
 
         if rows_len > paired_devices_block.height.saturating_sub(4) as usize {
             let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
                 .begin_symbol(Some("↑"))
                 .end_symbol(Some("↓"));
-            let mut scrollbar_state = ScrollbarState::new(rows_len)
-                .position(self.paired_devices_state.selected().unwrap_or_default());
+            let mut scrollbar_state =
+                ScrollbarState::new(rows_len).position(selected.unwrap_or_default());
             frame.render_stateful_widget(
                 scrollbar,
                 paired_devices_block.inner(Margin {
@@ -436,10 +627,11 @@ impl App {
         frame: &mut Frame,
     ) {
         let selected_controller = &self.controllers[selected_controller_index];
-        let rows: Vec<Row> = selected_controller
-            .new_devices
+        let visible_indices = self.visible_new_indices(selected_controller_index);
+        let rows: Vec<Row> = visible_indices
             .iter()
-            .map(|d| {
+            .map(|&index| {
+                let d = &selected_controller.new_devices[index];
                 Row::new(vec![
                     d.addr.to_string(),
                     format!("{} {}", &d.icon, &d.alias),
@@ -504,18 +696,21 @@ impl App {
             self.new_devices_state.select(Some(0));
         }
 
-        frame.render_stateful_widget(
-            new_devices_table,
-            new_devices_block,
-            &mut self.new_devices_state,
-        );
+        let selected = self
+            .new_devices_state
+            .selected()
+            .and_then(|current| visible_indices.iter().position(|&i| i == current));
+
+        let mut new_devices_state = TableState::default().with_selected(selected);
+
+        frame.render_stateful_widget(new_devices_table, new_devices_block, &mut new_devices_state);
 
         if rows_len > new_devices_block.height.saturating_sub(4) as usize {
             let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
                 .begin_symbol(Some("↑"))
                 .end_symbol(Some("↓"));
-            let mut scrollbar_state = ScrollbarState::new(rows_len)
-                .position(self.new_devices_state.selected().unwrap_or_default());
+            let mut scrollbar_state =
+                ScrollbarState::new(rows_len).position(selected.unwrap_or_default());
             frame.render_stateful_widget(
                 scrollbar,
                 new_devices_block.inner(Margin {
@@ -592,6 +787,14 @@ impl App {
 
             if !render_new_devices && self.focused_block == FocusedBlock::NewDevices {
                 self.focused_block = FocusedBlock::PairedDevices;
+
+                if self
+                    .search
+                    .as_ref()
+                    .is_some_and(|search| search.target == SearchTarget::NewDevices)
+                {
+                    self.search = None;
+                }
             }
 
             let adapter_block_height = self.controllers.len() as u16 + 4;
@@ -629,13 +832,17 @@ impl App {
 
             let popup_area = self.area(frame);
 
-            Help::render(
-                frame,
-                popup_area,
-                self.focused_block,
-                help_block,
-                self.config.clone(),
-            );
+            if let Some(search) = &self.search {
+                search.render(frame, help_block, self.config.clone());
+            } else {
+                Help::render(
+                    frame,
+                    popup_area,
+                    self.focused_block,
+                    help_block,
+                    self.config.clone(),
+                );
+            }
 
             if self.focused_block == FocusedBlock::SetDeviceAliasBox {
                 render_set_alias(

@@ -21,6 +21,12 @@ pub struct Config {
     #[serde(default = "default_toggle_scanning")]
     pub toggle_scanning: char,
 
+    #[serde(default = "default_search")]
+    pub search: char,
+
+    #[serde(default)]
+    pub search_case_sensitive: bool,
+
     #[serde(default = "default_esc_quit")]
     pub esc_quit: bool,
 
@@ -29,6 +35,20 @@ pub struct Config {
 
     #[serde(default)]
     pub paired_device: PairedDevice,
+
+    #[serde(default)]
+    pub new_device: NewDevice,
+}
+
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum SearchField {
+    Alias,
+    Address,
+}
+
+fn default_search_fields() -> Vec<SearchField> {
+    vec![SearchField::Alias, SearchField::Address]
 }
 
 #[derive(Debug, Default)]
@@ -125,6 +145,9 @@ pub struct PairedDevice {
 
     #[serde(default = "default_set_new_name")]
     pub rename: char,
+
+    #[serde(default = "default_search_fields")]
+    pub search_fields: Vec<SearchField>,
 }
 
 impl Default for PairedDevice {
@@ -134,6 +157,21 @@ impl Default for PairedDevice {
             toggle_trust: 't',
             toggle_favorite: 'f',
             rename: 'e',
+            search_fields: default_search_fields(),
+        }
+    }
+}
+
+#[derive(Deserialize, Debug)]
+pub struct NewDevice {
+    #[serde(default = "default_search_fields")]
+    pub search_fields: Vec<SearchField>,
+}
+
+impl Default for NewDevice {
+    fn default() -> Self {
+        Self {
+            search_fields: default_search_fields(),
         }
     }
 }
@@ -171,6 +209,10 @@ fn default_set_new_name() -> char {
 
 fn default_toggle_scanning() -> char {
     's'
+}
+
+fn default_search() -> char {
+    '/'
 }
 
 fn default_esc_quit() -> bool {
