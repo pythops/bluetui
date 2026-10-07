@@ -1,3 +1,8 @@
+## v0.8.2 - 2026-10-07
+
+- Add unpair confirmation popup
+- Several UI fixes
+
 ## v0.8.1 - 2026-01-17
 
 - Serve static binaries

@@ -61,43 +61,9 @@ This will produce an executable file at `target/release/bluetui` that you can co
 
 ## 🪄 Usage
 
-### Global
-
-`Tab` or `l`: Scroll down between different sections.
-
-`shift+Tab` or `h`: Scroll up between different sections.
-
-`j` or `Down` : Scroll down.
-
-`k` or `Up`: Scroll up.
-
-`s`: Start/Stop scanning.
-
-`ctrl+c` or `q`: Quit the app. (Note: `<Esc>` can also quit if `esc_quit = true` is set in config)
-
-### Adapters
-
-`p`: Enable/Disable the pairing.
-
-`o`: Power on/off the adapter.
-
-`d`: Enable/Disable the discovery.
-
-### Paired devices
-
-`u`: Unpair the device.
-
-`Space or Enter`: Connect/Disconnect the device.
-
-`t`: Trust/Untrust the device.
-
-`f`: Favorite/Unfavorite the device.
-
-`e`: Rename the device.
-
-### New devices
-
-`Space or Enter`: Pair the device.
+```
+$ bluetui
+```
 
 ## Config
 
@@ -126,7 +92,7 @@ toggle_favorite = "f"
 rename = "e"
 ```
 
-## W🤝 Contributing
+## 🤝 Contributing
 
 - Strict No LLM.
 - Only submit a pull request after having a prior issue or discussion.

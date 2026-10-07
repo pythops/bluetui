@@ -1,6 +1,6 @@
 [package]
 name = "bluetui"
-version = "0.8.1"
+version = "0.8.2"
 authors = ["Badr Badri <contact@pythops.com>"]
 license = "GPL-3.0"
 edition = "2024"
@@ -18,8 +18,8 @@ crossterm = { version = "0.29", default-features = false, features = [
 futures = "0.3"
 ratatui = "0.30"
 tokio = { version = "1", features = ["macros", "rt"] }
-dirs = "6"
-toml = "0.9"
+dirs = "7"
+toml = "1.1"
 serde = { version = "1", features = ["derive"] }
 clap = { version = "4", features = ["derive"] }
 tui-input = "0.15"
@@ -28,7 +28,7 @@ libdbus-sys = { version = "0.2", features = ["vendored"] }
 
 [dev-dependencies]
 insta = "1"
-rstest = "0.26"
+rstest = "0.27"
 
 [profile.release]
 strip = true
