@@ -7,26 +7,20 @@ use bluetui::{
     rfkill,
     tui::Tui,
 };
-use clap::Parser;
 use ratatui::{Terminal, backend::CrosstermBackend};
-use std::{io, process::exit, sync::Arc};
+use std::{io, path::PathBuf, sync::Arc};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> AppResult<()> {
-    let args = cli::Args::parse();
-
-    let config_file_path = args.config_path.map(|config_path| {
-        if config_path.exists() {
-            config_path.clone()
-        } else {
-            eprintln!("Config file not found");
-            exit(1);
-        }
-    });
+    let args = cli::cli().get_matches();
 
     rfkill::check()?;
 
-    let config = Arc::new(Config::new(config_file_path));
+    let custom_config_file = args.get_one::<PathBuf>("config");
+
+    let mut config = Config::new(custom_config_file);
+    config.ascii = args.get_flag("ascii");
+    let config = Arc::new(config);
 
     let backend = CrosstermBackend::new(io::stdout());
     let terminal = Terminal::new(backend)?;

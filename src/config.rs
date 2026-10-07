@@ -12,6 +12,9 @@ use serde::{
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    #[serde(default = "default_ascii")]
+    pub ascii: bool,
+
     #[serde(default = "default_layout", deserialize_with = "deserialize_layout")]
     pub layout: Flex,
 
@@ -29,6 +32,10 @@ pub struct Config {
 
     #[serde(default)]
     pub paired_device: PairedDevice,
+}
+
+fn default_ascii() -> bool {
+    false
 }
 
 #[derive(Debug, Default)]
@@ -202,13 +209,15 @@ fn default_toggle_device_favorite() -> char {
 }
 
 impl Config {
-    pub fn new(config_file_path: Option<PathBuf>) -> Self {
-        let conf_path = config_file_path.unwrap_or(
+    pub fn new(config_file_path: Option<&PathBuf>) -> Self {
+        let conf_path = if let Some(path) = config_file_path {
+            path.to_owned()
+        } else {
             dirs::config_dir()
                 .unwrap()
                 .join("bluetui")
-                .join("config.toml"),
-        );
+                .join("config.toml")
+        };
 
         let config = std::fs::read_to_string(conf_path).unwrap_or_default();
         let app_config: Config = match toml::from_str(&config) {
