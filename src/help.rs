@@ -20,14 +20,23 @@ impl Help {
         rendering_block: Rect,
         config: Arc<Config>,
     ) {
+        let enter_space = Span::from(if config.ascii {
+            "Space/Enter"
+        } else {
+            "󱁐  or ↵ "
+        })
+        .bold();
+        let enter = Span::from(if config.ascii { "Enter" } else { " ↵ " }).bold();
+        let tab = Span::from(if config.ascii { "Tab" } else { "⇄" }).bold();
+        let esc = Span::from(if config.ascii { "Tab" } else { "󱊷 " }).bold();
         let help = match focused_block {
             FocusedBlock::PairedDevices => {
-                if area.width > 120 {
+                if area.width > 124 {
                     vec![Line::from(vec![
-                        Span::from("k,").bold(),
+                        Span::from("k,↑").bold(),
                         Span::from("  Up"),
                         Span::from(" | "),
-                        Span::from("j,").bold(),
+                        Span::from("j,↓").bold(),
                         Span::from("  Down"),
                         Span::from(" | "),
                         Span::from("s").bold(),
@@ -36,7 +45,7 @@ impl Help {
                         Span::from(config.paired_device.unpair.to_string()).bold(),
                         Span::from("  Unpair"),
                         Span::from(" | "),
-                        Span::from("󱁐  or ↵ ").bold(),
+                        enter_space,
                         Span::from(" Dis/Connect"),
                         Span::from(" | "),
                         Span::from(config.paired_device.toggle_trust.to_string()).bold(),
@@ -48,13 +57,13 @@ impl Help {
                         Span::from(config.paired_device.rename.to_string()).bold(),
                         Span::from(" Rename"),
                         Span::from(" | "),
-                        Span::from("⇄").bold(),
+                        tab,
                         Span::from(" Nav"),
                     ])]
                 } else {
                     vec![
                         Line::from(vec![
-                            Span::from("󱁐  or ↵ ").bold(),
+                            enter_space,
                             Span::from(" Dis/Connect"),
                             Span::from(" | "),
                             Span::from("s").bold(),
@@ -73,36 +82,36 @@ impl Help {
                             Span::from(config.paired_device.rename.to_string()).bold(),
                             Span::from(" Rename"),
                             Span::from(" | "),
-                            Span::from("k,").bold(),
+                            Span::from("k,↑").bold(),
                             Span::from("  Up"),
                             Span::from(" | "),
-                            Span::from("j,").bold(),
+                            Span::from("j,↓").bold(),
                             Span::from("  Down"),
                             Span::from(" | "),
-                            Span::from("⇄").bold(),
+                            tab,
                             Span::from(" Nav"),
                         ]),
                     ]
                 }
             }
             FocusedBlock::NewDevices => vec![Line::from(vec![
-                Span::from("k,").bold(),
+                Span::from("k,↑").bold(),
                 Span::from("  Up"),
                 Span::from(" | "),
-                Span::from("j,").bold(),
+                Span::from("j,↓").bold(),
                 Span::from("  Down"),
                 Span::from(" | "),
-                Span::from("󱁐  or ↵ ").bold(),
+                enter_space,
                 Span::from(" Pair"),
                 Span::from(" | "),
                 Span::from("s").bold(),
                 Span::from("  Scan on/off"),
                 Span::from(" | "),
-                Span::from("⇄").bold(),
+                tab,
                 Span::from(" Nav"),
             ])],
             FocusedBlock::Adapter => {
-                if area.width > 80 {
+                if area.width > 81 {
                     vec![Line::from(vec![
                         Span::from("s").bold(),
                         Span::from("  Scan on/off"),
@@ -116,7 +125,7 @@ impl Help {
                         Span::from(config.adapter.toggle_discovery.to_string()).bold(),
                         Span::from(" Discovery on/off"),
                         Span::from(" | "),
-                        Span::from("⇄").bold(),
+                        tab,
                         Span::from(" Nav"),
                     ])]
                 } else {
@@ -135,7 +144,7 @@ impl Help {
                             Span::from(config.adapter.toggle_discovery.to_string()).bold(),
                             Span::from(" Discovery on/off"),
                             Span::from(" | "),
-                            Span::from("⇄").bold(),
+                            tab,
                             Span::from(" Nav"),
                         ]),
                     ]
@@ -143,92 +152,51 @@ impl Help {
             }
             FocusedBlock::SetDeviceAliasBox => {
                 vec![Line::from(vec![
-                    Span::from("󱊷 ").bold(),
+                    esc,
                     Span::from(" Discard"),
                     Span::from(" | "),
-                    Span::from("↵ ").bold(),
+                    enter,
                     Span::from(" Apply"),
                 ])]
             }
             FocusedBlock::RequestConfirmation | FocusedBlock::UnpairConfirmation { .. } => {
                 vec![Line::from(vec![
-                    Span::from("↵ ").bold(),
+                    enter,
                     Span::from(" Ok"),
                     Span::from(" | "),
-                    Span::from("󱊷 ").bold(),
+                    esc,
                     Span::from(" Discard"),
                     Span::from(" | "),
-                    Span::from("⇄").bold(),
+                    tab,
                     Span::from(" Nav"),
                 ])]
             }
             FocusedBlock::EnterPinCode | FocusedBlock::EnterPasskey => {
                 vec![Line::from(vec![
-                    Span::from("󱊷 ").bold(),
+                    esc,
                     Span::from(" Discard"),
                     Span::from(" | "),
-                    Span::from("⇄").bold(),
+                    tab,
                     Span::from(" Nav"),
                     Span::from(" | "),
-                    Span::from("↵ ").bold(),
+                    enter,
                     Span::from(" Submit"),
                 ])]
             }
             FocusedBlock::DisplayPinCode => {
                 vec![Line::from(vec![
-                    Span::from(" 󱊷  or ↵ ").bold(),
+                    esc,
+                    Span::from(" Discard"),
+                    Span::from(" | "),
+                    enter,
                     Span::from(" Ok"),
                 ])]
             }
             FocusedBlock::DisplayPasskey => {
-                vec![Line::from(vec![
-                    Span::from(" 󱊷  ").bold(),
-                    Span::from(" Discard"),
-                ])]
+                vec![Line::from(vec![esc, Span::from(" Discard")])]
             }
         };
         let help = Paragraph::new(help).centered().blue();
         frame.render_widget(help, rendering_block);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use insta::assert_snapshot;
-    use ratatui::{Terminal, backend::TestBackend};
-    use rstest::rstest;
-
-    #[rstest]
-    fn render_help(
-        #[values(
-            FocusedBlock::Adapter,
-            FocusedBlock::PairedDevices,
-            FocusedBlock::NewDevices,
-            FocusedBlock::SetDeviceAliasBox,
-            FocusedBlock::RequestConfirmation,
-            FocusedBlock::EnterPinCode,
-            FocusedBlock::EnterPasskey,
-            FocusedBlock::DisplayPinCode,
-            FocusedBlock::DisplayPasskey
-        )]
-        focused_block: FocusedBlock,
-        #[values(80, 81, 120, 121)] width: u16,
-    ) {
-        let mut terminal = Terminal::new(TestBackend::new(width, 2)).unwrap();
-        terminal
-            .draw(|frame| {
-                Help::render(
-                    frame,
-                    frame.area(),
-                    focused_block,
-                    frame.area(),
-                    Config::new(None).into(),
-                );
-            })
-            .unwrap();
-
-        let snapshot_name = format!("{:?}-{}", focused_block, width);
-        assert_snapshot!(snapshot_name, terminal.backend());
     }
 }

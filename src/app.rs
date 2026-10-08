@@ -37,8 +37,6 @@ use std::sync::{Arc, atomic::Ordering};
 
 pub type AppResult<T> = anyhow::Result<T>;
 
-const STAR_SYMBOL: &str = "★";
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FocusedBlock {
     Adapter,
@@ -284,45 +282,107 @@ impl App {
             .map(|d| {
                 Row::new(vec![
                     if d.is_favorite {
-                        STAR_SYMBOL.to_string()
+                        if self.config.ascii {
+                            "*".to_string()
+                        } else {
+                            " ".to_string()
+                        }
                     } else {
                         String::new()
                     },
-                    format!("{} {}", &d.icon, &d.alias),
-                    d.is_trusted.to_string(),
-                    d.is_connected.to_string(),
+                    {
+                        if self.config.ascii {
+                            d.alias.clone()
+                        } else {
+                            format!("{} {}", d.icon, d.alias)
+                        }
+                    },
+                    {
+                        if d.is_trusted {
+                            "Yes".to_string()
+                        } else {
+                            "No".to_string()
+                        }
+                    },
+                    {
+                        if d.is_connected {
+                            "Yes".to_string()
+                        } else {
+                            "No".to_string()
+                        }
+                    },
                     {
                         if let Some(battery_percentage) = d.battery_percentage {
                             match battery_percentage {
                                 n if n >= 90 => {
-                                    format!("{battery_percentage}% 󰥈 ")
+                                    if self.config.ascii {
+                                        format!("{battery_percentage}%")
+                                    } else {
+                                        format!("{battery_percentage}% 󰥈 ")
+                                    }
                                 }
                                 n if (80..90).contains(&n) => {
-                                    format!("{battery_percentage}% 󰥅 ")
+                                    if self.config.ascii {
+                                        format!("{battery_percentage}%")
+                                    } else {
+                                        format!("{battery_percentage}% 󰥅 ")
+                                    }
                                 }
                                 n if (70..80).contains(&n) => {
-                                    format!("{battery_percentage}% 󰥄 ")
+                                    if self.config.ascii {
+                                        format!("{battery_percentage}%")
+                                    } else {
+                                        format!("{battery_percentage}% 󰥄 ")
+                                    }
                                 }
                                 n if (60..70).contains(&n) => {
-                                    format!("{battery_percentage}% 󰥃 ")
+                                    if self.config.ascii {
+                                        format!("{battery_percentage}%")
+                                    } else {
+                                        format!("{battery_percentage}% 󰥃 ")
+                                    }
                                 }
                                 n if (50..60).contains(&n) => {
-                                    format!("{battery_percentage}% 󰥂 ")
+                                    if self.config.ascii {
+                                        format!("{battery_percentage}%")
+                                    } else {
+                                        format!("{battery_percentage}% 󰥂 ")
+                                    }
                                 }
                                 n if (40..50).contains(&n) => {
-                                    format!("{battery_percentage}% 󰥁 ")
+                                    if self.config.ascii {
+                                        format!("{battery_percentage}%")
+                                    } else {
+                                        format!("{battery_percentage}% 󰥁 ")
+                                    }
                                 }
                                 n if (30..40).contains(&n) => {
-                                    format!("{battery_percentage}% 󰥀 ")
+                                    if self.config.ascii {
+                                        format!("{battery_percentage}%")
+                                    } else {
+                                        format!("{battery_percentage}% 󰥀 ")
+                                    }
                                 }
                                 n if (20..30).contains(&n) => {
-                                    format!("{battery_percentage}% 󰤿 ")
+                                    if self.config.ascii {
+                                        format!("{battery_percentage}%")
+                                    } else {
+                                        format!("{battery_percentage}% 󰤿 ")
+                                    }
                                 }
                                 n if (10..20).contains(&n) => {
-                                    format!("{battery_percentage}% 󰤾 ")
+                                    if self.config.ascii {
+                                        format!("{battery_percentage}%")
+                                    } else {
+                                        format!("{battery_percentage}% 󰤾 ")
+                                    }
                                 }
                                 _ => {
-                                    format!("{battery_percentage}% 󰤾 ")
+                                    if self.config.ascii {
+                                        format!("{battery_percentage}%")
+                                    } else {
+                                        format!("{battery_percentage}% 󰤾 ")
+                                    }
                                 }
                             }
                         } else {
@@ -440,10 +500,13 @@ impl App {
             .new_devices
             .iter()
             .map(|d| {
-                Row::new(vec![
-                    d.addr.to_string(),
-                    format!("{} {}", &d.icon, &d.alias),
-                ])
+                Row::new(vec![d.addr.to_string(), {
+                    if self.config.ascii {
+                        d.alias.clone()
+                    } else {
+                        format!("{} {}", d.icon, d.alias)
+                    }
+                }])
             })
             .collect();
         let rows_len = rows.len();
@@ -470,7 +533,11 @@ impl App {
                 Block::bordered()
                     .padding(Padding::horizontal(1))
                     .title(if selected_controller.is_scanning.load(Ordering::Relaxed) {
-                        format!(" Scanning {} ", self.spinner.draw())
+                        if self.config.ascii {
+                            " Scanning ".to_string()
+                        } else {
+                            format!(" Scanning {}  ", self.spinner.draw())
+                        }
                     } else {
                         String::from(" Discovered devices ")
                     })

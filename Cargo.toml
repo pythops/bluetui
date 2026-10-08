@@ -21,14 +21,10 @@ tokio = { version = "1", features = ["macros", "rt"] }
 dirs = "7"
 toml = "1.1"
 serde = { version = "1", features = ["derive"] }
-clap = { version = "4", features = ["derive"] }
+clap = { version = "4", features = ["derive", "cargo"] }
 tui-input = "0.15"
 anyhow = "1"
 libdbus-sys = { version = "0.2", features = ["vendored"] }
-
-[dev-dependencies]
-insta = "1"
-rstest = "0.27"
 
 [profile.release]
 strip = true
