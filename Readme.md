@@ -65,11 +65,24 @@ This will produce an executable file at `target/release/bluetui` that you can co
 $ bluetui
 ```
 
+You can run `impala` with options:
+
+```
+$ bluetui --help
+Options:
+  -c, --config <path>  config file path. Default ~/.config/bluetui/config.toml
+      --ascii          Ascii display
+  -h, --help           Print help
+  -V, --version        Print version
+```
+
 ## Config
 
 Keybindings can be customized in the default config file location `$HOME/.config/bluetui/config.toml` or from a custom path with `-c`
 
 ```toml
+ascii = false # ascii display (false = do not show icons)
+
 # Possible values: "Legacy", "Start", "End", "Center", "SpaceAround", "SpaceBetween"
 layout = "SpaceAround"
 
