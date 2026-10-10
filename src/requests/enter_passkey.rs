@@ -58,7 +58,7 @@ impl EnterPasskey {
 
         agent
             .tx_passkey
-            .send(self.passkey.field.value().parse::<u32>().unwrap())
+            .send(self.passkey.field.value().parse::<u32>()?)
             .await?;
 
         agent.event_sender.send(Event::PasskeySumitted)?;
