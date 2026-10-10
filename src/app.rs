@@ -649,12 +649,9 @@ impl App {
 
     pub fn render(&mut self, frame: &mut Frame) {
         if let Some(selected_controller_index) = self.controller_state.selected() {
-            let (render_new_devices, paired_devices_block_height) = {
+            let render_new_devices = {
                 let selected_controller = &self.controllers[selected_controller_index];
-                (
-                    selected_controller.is_scanning.load(Ordering::Relaxed),
-                    selected_controller.paired_devices.len() as u16 + 4,
-                )
+                selected_controller.is_scanning.load(Ordering::Relaxed)
             };
 
             if !render_new_devices && self.focused_block == FocusedBlock::NewDevices {
@@ -670,8 +667,8 @@ impl App {
                 help_block,
             ] = Layout::vertical(if render_new_devices {
                 [
-                    Constraint::Length(paired_devices_block_height),
-                    Constraint::Fill(1),
+                    Constraint::Min(4),
+                    Constraint::Min(4),
                     Constraint::Length(adapter_block_height),
                     Constraint::Length(2),
                 ]
