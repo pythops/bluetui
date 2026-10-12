@@ -34,6 +34,27 @@ pub struct Device {
 }
 
 impl Device {
+    async fn new(device: BTDevice, addr: Address, is_favorite: bool) -> bluer::Result<Self> {
+        let alias = device.alias().await?;
+        let icon = Device::get_icon(device.icon().await?.unwrap_or("-".to_string()).as_str());
+        let is_paired = device.is_paired().await?;
+        let is_trusted = device.is_trusted().await?;
+        let is_connected = device.is_connected().await?;
+        let battery_percentage = device.battery_percentage().await?;
+
+        Ok(Self {
+            device,
+            addr,
+            icon,
+            alias,
+            is_paired,
+            is_favorite,
+            is_trusted,
+            is_connected,
+            battery_percentage,
+        })
+    }
+
     pub async fn set_alias(&self, alias: String) -> AppResult<()> {
         self.device.set_alias(alias).await?;
         Ok(())
@@ -108,25 +129,14 @@ impl Controller {
         let connected_devices_addresses = adapter.device_addresses().await?;
         for addr in connected_devices_addresses {
             let device = adapter.device(addr)?;
-
-            let alias = device.alias().await?;
-            let icon = Device::get_icon(device.icon().await?.unwrap_or("-".to_string()).as_str());
-            let is_paired = device.is_paired().await?;
-            let is_trusted = device.is_trusted().await?;
-            let is_connected = device.is_connected().await?;
             let is_favorite = favorite_devices.contains(&addr);
-            let battery_percentage = device.battery_percentage().await?;
 
-            let dev = Device {
-                device,
-                addr,
-                icon,
-                alias,
-                is_paired,
-                is_favorite,
-                is_trusted,
-                is_connected,
-                battery_percentage,
+            let dev = match Device::new(device, addr, is_favorite).await {
+                Ok(dev) => dev,
+                // BlueZ can remove a device (e.g. a discovered one that went out of range)
+                // between listing the addresses and reading its properties: skip it.
+                Err(e) if e.kind == bluer::ErrorKind::NotFound => continue,
+                Err(e) => return Err(e.into()),
             };
 
             if dev.is_paired {
