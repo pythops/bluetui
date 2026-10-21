@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use clap::{ArgAction, Command, arg, crate_version};
 
 pub fn cli() -> Command {
-    Command::new("impala")
+    Command::new("bluetui")
         .about(crate_description!())
         .version(crate_version!())
         .arg(
