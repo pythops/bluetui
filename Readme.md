@@ -65,7 +65,7 @@ This will produce an executable file at `target/release/bluetui` that you can co
 $ bluetui
 ```
 
-You can run `impala` with options:
+You can run `bluetui` with options:
 
 ```
 $ bluetui --help
