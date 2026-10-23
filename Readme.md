@@ -86,6 +86,8 @@ ascii = false # ascii display (false = do not show icons)
 # Possible values: "Legacy", "Start", "End", "Center", "SpaceAround", "SpaceBetween"
 layout = "SpaceAround"
 
+confirm_unpair = false # Don't ask to confirm unpair device
+
 # Window width
 # Possible values: "auto" or a positive integer
 width = "auto"

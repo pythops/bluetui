@@ -27,6 +27,9 @@ pub struct Config {
     #[serde(default = "default_esc_quit")]
     pub esc_quit: bool,
 
+    #[serde(default = "default_confirm_unpair")]
+    pub confirm_unpair: bool,
+
     #[serde(default)]
     pub adapter: Adapter,
 
@@ -182,6 +185,10 @@ fn default_toggle_scanning() -> char {
 
 fn default_esc_quit() -> bool {
     false
+}
+
+fn default_confirm_unpair() -> bool {
+    true
 }
 
 fn default_toggle_adapter_pairing() -> char {
