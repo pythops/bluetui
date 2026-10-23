@@ -286,30 +286,7 @@ pub async fn handle_key_events(
                     app.focused_block = FocusedBlock::PairedDevices;
                     return Ok(());
                 }
-
                 unpair(app, &sender).await;
-                // if let Some(selected_controller) = app.controller_state.selected() {
-                //     let controller = &app.controllers[selected_controller];
-                //     if let Some(index) = app.paired_devices_state.selected() {
-                //         let addr = controller.paired_devices[index].addr;
-                //         match controller.adapter.remove_device(addr).await {
-                //             Ok(()) => {
-                //                 let _ = Notification::send(
-                //                     "Device unpaired".into(),
-                //                     NotificationLevel::Info,
-                //                     sender.clone(),
-                //                 );
-                //             }
-                //             Err(e) => {
-                //                 let _ = Notification::send(
-                //                     e.into(),
-                //                     NotificationLevel::Error,
-                //                     sender.clone(),
-                //                 );
-                //             }
-                //         }
-                //     }
-                // }
             }
             _ => {}
         },
