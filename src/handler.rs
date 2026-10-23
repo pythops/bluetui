@@ -157,6 +157,27 @@ async fn pair(app: &mut App, sender: UnboundedSender<Event>) {
     }
 }
 
+async fn unpair(app: &mut App, sender: UnboundedSender<Event>) {
+    if let Some(selected_controller) = app.controller_state.selected() {
+        let controller = &app.controllers[selected_controller];
+        if let Some(index) = app.paired_devices_state.selected() {
+            let addr = controller.paired_devices[index].addr;
+            match controller.adapter.remove_device(addr).await {
+                Ok(()) => {
+                    let _ = Notification::send(
+                        "Device unpaired".into(),
+                        NotificationLevel::Info,
+                        sender.clone(),
+                    );
+                }
+                Err(e) => {
+                    let _ = Notification::send(e.into(), NotificationLevel::Error, sender.clone());
+                }
+            }
+        }
+    }
+}
+
 pub async fn handle_key_events(
     key_event: KeyEvent,
     app: &mut App,
@@ -265,28 +286,7 @@ pub async fn handle_key_events(
                     app.focused_block = FocusedBlock::PairedDevices;
                     return Ok(());
                 }
-                if let Some(selected_controller) = app.controller_state.selected() {
-                    let controller = &app.controllers[selected_controller];
-                    if let Some(index) = app.paired_devices_state.selected() {
-                        let addr = controller.paired_devices[index].addr;
-                        match controller.adapter.remove_device(addr).await {
-                            Ok(()) => {
-                                let _ = Notification::send(
-                                    "Device unpaired".into(),
-                                    NotificationLevel::Info,
-                                    sender.clone(),
-                                );
-                            }
-                            Err(e) => {
-                                let _ = Notification::send(
-                                    e.into(),
-                                    NotificationLevel::Error,
-                                    sender.clone(),
-                                );
-                            }
-                        }
-                    }
-                }
+                unpair(app, sender).await;
             }
             _ => {}
         },
@@ -512,8 +512,12 @@ pub async fn handle_key_events(
                             match key_event.code {
                                 // Unpair
                                 KeyCode::Char(c) if c == config.paired_device.unpair => {
-                                    app.focused_block =
-                                        FocusedBlock::UnpairConfirmation { confirm: false }
+                                    if config.confirm_unpair {
+                                        app.focused_block =
+                                            FocusedBlock::UnpairConfirmation { confirm: false }
+                                    } else {
+                                        unpair(app, sender).await;
+                                    }
                                 }
 
                                 // Connect / Disconnect

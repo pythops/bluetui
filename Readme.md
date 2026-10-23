@@ -92,6 +92,7 @@ width = "auto"
 
 toggle_scanning = "s"
 esc_quit = false  # Set to true to enable Esc key to quit the app
+confirm_unpair = true  # Set to false to unpair without a confirmation popup
 
 [adapter]
 toggle_pairing = "p"
