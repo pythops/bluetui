@@ -1,10 +1,10 @@
-use clap::{crate_description, value_parser};
+use clap::{crate_description, crate_name, value_parser};
 use std::path::PathBuf;
 
 use clap::{ArgAction, Command, arg, crate_version};
 
 pub fn cli() -> Command {
-    Command::new("impala")
+    Command::new(crate_name!())
         .about(crate_description!())
         .version(crate_version!())
         .arg(
