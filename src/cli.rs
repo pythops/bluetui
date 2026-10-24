@@ -1,7 +1,7 @@
-use clap::{crate_name, crate_description, value_parser};
+use clap::{crate_description, crate_name, value_parser};
 use std::path::PathBuf;
 
-use clap::{ArgAction, Command, arg, crate_version};
+use clap::{arg, crate_version, ArgAction, Command};
 
 pub fn cli() -> Command {
     Command::new(crate_name!())
