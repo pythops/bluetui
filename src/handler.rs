@@ -276,6 +276,7 @@ pub async fn handle_key_events(
                                     NotificationLevel::Info,
                                     sender.clone(),
                                 );
+                                app.focused_block = FocusedBlock::PairedDevices;
                             }
                             Err(e) => {
                                 let _ = Notification::send(
