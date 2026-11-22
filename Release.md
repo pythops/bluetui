@@ -1,3 +1,10 @@
+## v0.8.3 - 2026-11-22
+
+- Close confirmation popup on successful unpair confirmation
+- improve responsive layout when scanning
+- restore cleaner terminal after abnormal termination
+- add ascii mode
+
 ## v0.8.2 - 2026-10-07
 
 - Add unpair confirmation popup
