@@ -18,8 +18,18 @@ async fn main() -> AppResult<()> {
 
     let custom_config_file = args.get_one::<PathBuf>("config");
 
+    if let Some(path) = custom_config_file {
+        anyhow::ensure!(
+            path.exists(),
+            "Config file does not exist: {}",
+            path.display()
+        );
+    }
+
     let mut config = Config::new(custom_config_file);
-    config.ascii = args.get_flag("ascii");
+
+    config.ascii |= args.get_flag("ascii");
+
     let config = Arc::new(config);
 
     let backend = CrosstermBackend::new(io::stdout());
