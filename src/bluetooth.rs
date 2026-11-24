@@ -31,12 +31,35 @@ pub struct Device {
     pub is_trusted: bool,
     pub is_connected: bool,
     pub battery_percentage: Option<u8>,
+    pub rssi: Option<i16>,
 }
 
 impl Device {
     pub async fn set_alias(&self, alias: String) -> AppResult<()> {
         self.device.set_alias(alias).await?;
         Ok(())
+    }
+
+    /// Signal strength on a 0-3 scale derived from the RSSI (dBm).
+    pub fn signal_level(&self) -> Option<u8> {
+        self.rssi.map(|rssi| match rssi {
+            r if r >= -60 => 3,
+            r if r >= -75 => 2,
+            r if r >= -90 => 1,
+            _ => 0,
+        })
+    }
+
+    /// Single-glyph signal meter, or a question-mark icon when the device
+    /// hasn't reported an RSSI.
+    pub fn signal_icon(&self) -> &'static str {
+        match self.signal_level() {
+            Some(3) => "󰢾 ",
+            Some(2) => "󰢽 ",
+            Some(1) => "󰢼 ",
+            Some(_) => "󰢿 ",
+            None => "󰋖 ",
+        }
     }
 
     // https://specifications.freedesktop.org/icon-naming/latest/
@@ -116,6 +139,7 @@ impl Controller {
             let is_connected = device.is_connected().await?;
             let is_favorite = favorite_devices.contains(&addr);
             let battery_percentage = device.battery_percentage().await?;
+            let rssi = device.rssi().await.unwrap_or(None);
 
             let dev = Device {
                 device,
@@ -127,6 +151,7 @@ impl Controller {
                 is_trusted,
                 is_connected,
                 battery_percentage,
+                rssi,
             };
 
             if dev.is_paired {

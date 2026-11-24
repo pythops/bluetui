@@ -504,14 +504,14 @@ impl App {
                     if self.config.ascii {
                         d.alias.clone()
                     } else {
-                        format!("{} {}", d.icon, d.alias)
+                        format!("{} {} {}", d.signal_icon(), d.icon, d.alias)
                     }
                 }])
             })
             .collect();
         let rows_len = rows.len();
 
-        let widths = [Constraint::Length(20), Constraint::Length(20)];
+        let widths = [Constraint::Length(20), Constraint::Length(23)];
 
         let new_devices_table = Table::new(rows, widths)
             .header(
